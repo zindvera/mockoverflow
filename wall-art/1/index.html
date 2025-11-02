@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Responsive Camera Preview with Overlay and Multi-Touch</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+
+  <style>
+    /* Default for mobile/tablet */
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: #474747;
+      user-select: none;
+      overflow-x: hidden;
+      overflow-y: hidden;
+    }
+
+
+
+    #previewCanvas {
+      background: #1f1f1f;
+      cursor: grab;
+      touch-action: none;
+      display: block;
+    }
+
+    #controls {
+      width: 100%;
+      justify-content: center;
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 15px;
+      z-index: 10;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 10px 20px;
+      border-radius: 12px;
+    }
+
+    #phonecontrols {
+      width: 100%;
+      justify-content: center;
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 15px;
+      z-index: 10;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 10px 20px;
+      border-radius: 12px;
+    }
+
+    #captureBtn {
+      padding: 7px 12px;
+      font-size: 16px;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: bold;
+      color: white;
+      background-image: linear-gradient(90deg, #b525f7 0%, #b517a0 100%);
+      user-select: none;
+      transition: background 0.3s ease;
+    }
+
+
+
+    #switchCameraBtn {
+      padding: 12px 24px;
+      font-size: 16px;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: bold;
+      color: rgb(0, 0, 0);
+      background: linear-gradient(90deg, #f8f8f8, #fcf9ff);
+      user-select: none;
+      transition: background 0.3s ease;
+    }
+
+
+
+    #phonecaptureBtn {
+      padding: 8px;
+      font-size: 16px;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: bold;
+      color: white;
+      background-image: linear-gradient(90deg, #b525f7 0%, #b517a0 100%);
+      user-select: none;
+      transition: background 0.3s ease;
+    }
+
+
+
+    #phoneswitchCameraBtn {
+      padding: 8px;
+      font-size: 16px;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: bold;
+      color: rgb(0, 0, 0);
+      background: linear-gradient(90deg, #f8f8f8, #fcf9ff);
+      user-select: none;
+      transition: background 0.3s ease;
+    }
+
+
+    #loadingText {
+      position: fixed;
+      top: 48%;
+      color: white;
+      font-size: 16px;
+      padding: 6px 12px;
+      z-index: 10;
+      user-select: none;
+      display: none;
+    }
+
+
+
+    #phone {
+      width: 300px;
+      height: 600px;
+      border: 15px solid #333;
+      border-radius: 40px;
+      overflow: hidden;
+      position: relative;
+      margin: 50px auto;
+      margin-top: 8px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+      background: #000;
+      transition: transform 3s ease-in-out;
+      transform-origin: center center;
+    }
+
+    #imageContainer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 110vh;
+      width: 100%;
+      transition: transform 8s ease-in-out;
+    }
+
+    #imageContainer img {
+      height: 100%;
+      width: 130%;
+      object-fit: cover;
+      display: block;
+      transition: transform 3s ease-in-out;
+      transform-origin: center center;
+    }
+
+    #wallArt {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      background-position: center;
+      background-size: contain;
+      background-repeat: no-repeat;
+      transform: scale(0.4) translateY(-20%);
+      transform-origin: center center;
+      transition: transform 2s ease-in-out;
+    }
+
+
+    #leftColumn {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: black;
+      padding: 20px;
+    }
+
+    .highlighted-text {
+      font-weight: 900;
+      font-size: 1.8rem;
+      color: #7209b7;
+      /* deep violet */
+      background: linear-gradient(90deg, #f72585, #7209b7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 15px;
+      margin-top: 0.4in;
+    }
+
+    .light-text {
+      font-weight: 500;
+      font-size: 1rem;
+      color: #181818;
+      /* lighter grey */
+      margin-bottom: 0.25in;
+      margin-top: 0.3in;
+    }
+
+    .qr-code {
+      width: 180px;
+      height: 180px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(245, 245, 245, 0.3);
+      /* pink shadow */
+      margin-bottom: 20px;
+    }
+
+    .link-text {
+      font-size: 18px;
+      font-weight: 600;
+      color: #0e46ad;
+      margin-bottom: 8px;
+      margin-top: 10px;
+    }
+
+    .link-box {
+      width: 100%;
+      max-width: 450px;
+      padding: 10px 15px;
+      font-size: 1rem;
+      font-weight: 500;
+      border: 1px solid #0e46ad;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+      color: #0e46ad;
+    }
+
+
+    /* Desktop overrides */
+    @media (min-width: 1025px) {
+      body {
+        background: #f6f4f7;
+        overflow-x: auto;
+        overflow-y: auto;
+      }
+    }
+
+    /* Tablet & Phone view */
+    @media (max-width: 1024px) {
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+
+    /* CSS: Add this to your stylesheet or inside a <style> tag */
+    #page-loader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: #ffffff;
+      /* White background */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    .loader-circle {
+      border: 6px solid #e0e0e0;
+      /* Light grey circle background */
+      border-top: 6px solid rgb(223, 86, 223);
+      /* Violet colored front for spinner */
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+
+
+</head>
+
+<body>
+
+
+  <!-- HTML: Place this inside your <body> at the very top -->
+  <div id="page-loader">
+    <div class="loader-circle"></div>
+  </div>
+
+
+  <div class="camera-container" id="cameraContainer">
+    <div id="loadingText">Loading camera...</div>
+    <canvas id="previewCanvas" aria-label="Camera preview with overlay"></canvas>
+
+    <div id="controls">
+      <button id="switchCameraBtn" aria-label="Switch Camera">Reverse Camera</button>
+      <button id="captureBtn" aria-label="Capture Picture">Capture</button>
+    </div>
+  </div>
+
+
+
+
+  <div class="container mt-3" id="desktopAlert">
+    <div class="row" style="padding:15px; background:#fff;">
+      <!-- Left Column: QR code instructions -->
+      <div class="col-6 text-center" id="leftColumn">
+        <h2 class="highlighted-text">For better experience, open it in phone or tablet</h2>
+        <p class="light-text">Scan QR code to open this in phone or tablet</p>
+        <img
+          src="https://previews.123rf.com/images/foxindustry/foxindustry1310/foxindustry131000007/23317483-sample-qr-code-ready-to-scan-with-smart-phone.jpg"
+          alt="Scan QR Code" class="qr-code" />
+        <p class="link-text">or you can use this link</p>
+        <input type="text" readonly value="https://example.com/your-link" class="link-box" />
+      </div>
+      <!-- Right Column: Phone Demo -->
+      <div class="col-6">
+        <div id="phone">
+          <div id="imageContainer">
+            <img id="bedroomImage" src="" alt="Bedroom" />
+          </div>
+          <div id="wallArt"></div>
+          <div id="phonecontrols">
+            <button id="phoneswitchCameraBtn" aria-label="Switch Camera">Reverse Camera</button>
+            <button id="phonecaptureBtn" aria-label="Capture Picture">Capture</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const canvas = document.getElementById('previewCanvas');
+      const ctx = canvas.getContext('2d');
+      const switchBtn = document.getElementById('switchCameraBtn');
+      const captureBtn = document.getElementById('captureBtn');
+      const loadingText = document.getElementById('loadingText');
+
+      let stream = null;
+      let usingFrontCamera = true;
+      let video = null;
+      let overlayImg = new Image();
+      overlayImg.src = 'asset.png'; // overlay PNG path
+      let isOverlayLoaded = false;
+
+      const overlayState = {
+        x: null,
+        y: null,
+        scale: 1,
+        rotation: 0,
+        dragStartX: 0,
+        dragStartY: 0,
+        lastX: 0,
+        lastY: 0,
+      };
+
+
+
+
+      // Device check: mobile/tablet if <= 1024px width, else desktop
+      function getDeviceType() {
+        return (window.innerWidth <= 1024) ? 'mobile' : 'desktop';
+      }
+
+      function handleConditionalElements() {
+        const camera = document.getElementById('cameraContainer');
+        const alert = document.getElementById('desktopAlert');
+
+        if (getDeviceType() === 'desktop') {
+          if (camera) camera.remove();
+
+        } else {
+          if (alert) alert.remove();
+          // camera stays visible
+        }
+      }
+
+      // --- Multi-touch overlay control ---
+
+      let isDragging = false;
+      let initialDistance = 0;
+      let initialAngle = 0;
+      let lastScale = 1;
+      let lastRotation = 0;
+      let isTouchDragging = false;
+      let lastTouchCenter = { x: 0, y: 0 };
+
+      function getPointerPos(evt) {
+        const rect = canvas.getBoundingClientRect();
+        if (evt.touches) {
+          return { x: evt.touches[0].clientX - rect.left, y: evt.touches[0].clientY - rect.top };
+        }
+        return { x: evt.clientX - rect.left, y: evt.clientY - rect.top };
+      }
+
+      function pointInRotatedRect(px, py, rx, ry, rw, rh, angle) {
+        const cx = rx + rw / 2;
+        const cy = ry + rh / 2;
+        const dx = px - cx;
+        const dy = py - cy;
+        const rad = -angle * Math.PI / 180;
+        const rdx = dx * Math.cos(rad) - dy * Math.sin(rad);
+        const rdy = dx * Math.sin(rad) + dy * Math.cos(rad);
+        return rdx > -rw / 2 && rdx < rw / 2 && rdy > -rh / 2 && rdy < rh / 2;
+      }
+
+      function getDistance(t1, t2) {
+        return Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+      }
+      function getAngle(t1, t2) {
+        return Math.atan2(t2.clientY - t1.clientY, t2.clientX - t1.clientX) * 180 / Math.PI;
+      }
+      function getTouchCenter(t1, t2) {
+        return { x: (t1.clientX + t2.clientX) / 2 - canvas.getBoundingClientRect().left, y: (t1.clientY + t2.clientY) / 2 - canvas.getBoundingClientRect().top };
+      }
+
+      canvas.addEventListener('touchstart', e => {
+        if (!isOverlayLoaded) return;
+        if (e.touches.length === 1) {
+          const pos = getPointerPos(e);
+          const ow = overlayImg.width * overlayState.scale;
+          const oh = overlayImg.height * overlayState.scale;
+          if (pointInRotatedRect(pos.x, pos.y, overlayState.x, overlayState.y, ow, oh, overlayState.rotation)) {
+            isTouchDragging = true;
+            overlayState.dragStartX = pos.x;
+            overlayState.dragStartY = pos.y;
+            overlayState.lastX = overlayState.x;
+            overlayState.lastY = overlayState.y;
+            canvas.style.cursor = 'grabbing';
+          }
+          initialDistance = 0; // reset multi touch vars
+          initialAngle = 0;
+          lastScale = overlayState.scale;
+          lastRotation = overlayState.rotation;
+        } else if (e.touches.length === 2) {
+          isTouchDragging = false;
+          initialDistance = getDistance(e.touches[0], e.touches[1]);
+          initialAngle = getAngle(e.touches[0], e.touches[1]);
+          lastScale = overlayState.scale;
+          lastRotation = overlayState.rotation;
+          lastTouchCenter = getTouchCenter(e.touches[0], e.touches[1]);
+        }
+      }, { passive: false });
+
+      canvas.addEventListener('touchmove', e => {
+        if (!isOverlayLoaded) return;
+        e.preventDefault();
+        if (e.touches.length === 1 && isTouchDragging) {
+          const pos = getPointerPos(e);
+          overlayState.x = overlayState.lastX + (pos.x - overlayState.dragStartX);
+          overlayState.y = overlayState.lastY + (pos.y - overlayState.dragStartY);
+        } else if (e.touches.length === 2) {
+          const currDistance = getDistance(e.touches[0], e.touches[1]);
+          const currAngle = getAngle(e.touches[0], e.touches[1]);
+          const scaleChange = currDistance / initialDistance;
+          overlayState.scale = lastScale * scaleChange;
+
+          const rotationChange = currAngle - initialAngle;
+          overlayState.rotation = lastRotation + rotationChange;
+
+          const currCenter = getTouchCenter(e.touches[0], e.touches[1]);
+          const dx = currCenter.x - lastTouchCenter.x;
+          const dy = currCenter.y - lastTouchCenter.y;
+
+          overlayState.x += dx;
+          overlayState.y += dy;
+
+          lastTouchCenter = currCenter;
+        }
+      }, { passive: false });
+
+      canvas.addEventListener('touchend', e => {
+        if (e.touches.length === 0) {
+          isTouchDragging = false;
+          canvas.style.cursor = 'grab';
+        }
+      }, { passive: false });
+
+      // Mouse drag fallback for desktop
+      canvas.addEventListener('mousedown', e => {
+        if (!isOverlayLoaded) return;
+        const pos = getPointerPos(e);
+        const ow = overlayImg.width * overlayState.scale;
+        const oh = overlayImg.height * overlayState.scale;
+        if (pointInRotatedRect(pos.x, pos.y, overlayState.x, overlayState.y, ow, oh, overlayState.rotation)) {
+          isDragging = true;
+          overlayState.dragStartX = pos.x;
+          overlayState.dragStartY = pos.y;
+          overlayState.lastX = overlayState.x;
+          overlayState.lastY = overlayState.y;
+          canvas.style.cursor = 'grabbing';
+        }
+      });
+      window.addEventListener('mousemove', e => {
+        if (!isDragging) return;
+        const pos = getPointerPos(e);
+        overlayState.x = overlayState.lastX + (pos.x - overlayState.dragStartX);
+        overlayState.y = overlayState.lastY + (pos.y - overlayState.dragStartY);
+      });
+      window.addEventListener('mouseup', e => {
+        if (isDragging) {
+          isDragging = false;
+          canvas.style.cursor = 'grab';
+        }
+      });
+
+      function resizeCanvas() {
+        if (!video || video.videoWidth === 0 || video.videoHeight === 0) return;
+
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        const videoAspect = video.videoWidth / video.videoHeight;
+
+        if (vw <= 768) { // mobile: height fixed, width may overflow invisible
+          const ch = vh;
+          const cw = ch * videoAspect;
+          canvas.width = cw;
+          canvas.height = ch;
+          canvas.style.width = cw + 'px';
+          canvas.style.height = ch + 'px';
+          document.body.style.overflowX = 'hidden';
+          document.body.style.overflowY = 'hidden';
+
+        } else { // tablet/desktop: width fixed, height may overflow invisible
+          const cw = vw;
+          const ch = cw / videoAspect;
+          canvas.width = cw;
+          canvas.height = ch;
+          canvas.style.width = cw + 'px';
+          canvas.style.height = ch + 'px';
+          document.body.style.overflowX = 'hidden';
+          document.body.style.overflowY = 'hidden';
+        }
+
+        if (overlayState.x === null || overlayState.y === null) {
+          overlayState.scale = (canvas.width * 0.7) / overlayImg.width;
+          overlayState.x = canvas.width * 0.15;
+          overlayState.y = canvas.height * 0.2;
+        }
+      }
+
+      function startCamera() {
+        if (stream) stream.getTracks().forEach(track => track.stop());
+        video = document.createElement('video');
+        video.autoplay = true;
+        video.playsInline = true;
+        video.muted = true;
+        loadingText.style.display = 'block';
+
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: usingFrontCamera ? 'user' : 'environment' }, audio: false })
+          .then(s => {
+            stream = s;
+            video.srcObject = stream;
+            video.onloadedmetadata = () => {
+              video.play();
+              loadingText.style.display = 'none';
+              resizeCanvas();
+              requestAnimationFrame(drawLoop);
+            };
+          })
+          .catch(err => {
+            loadingText.innerText = ('Error: ' + err.message);
+          });
+      }
+
+      function drawLoop() {
+        if (!video || video.readyState !== 4) {
+          requestAnimationFrame(drawLoop);
+          return;
+        }
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const vA = video.videoWidth / video.videoHeight;
+        const cA = canvas.width / canvas.height;
+
+        let drawW, drawH, offsetX, offsetY;
+
+        if (cA > vA) {
+          drawH = canvas.height;
+          drawW = drawH * vA;
+          offsetX = (canvas.width - drawW) / 2;
+          offsetY = 0;
+        } else {
+          drawW = canvas.width;
+          drawH = drawW / vA;
+          offsetX = 0;
+          offsetY = (canvas.height - drawH) / 2;
+        }
+
+        ctx.save();
+        if (usingFrontCamera) {
+          ctx.translate(canvas.width, 0);
+          ctx.scale(-1, 1);
+          ctx.drawImage(video, offsetX, offsetY, drawW, drawH);
+        } else {
+          ctx.drawImage(video, offsetX, offsetY, drawW, drawH);
+        }
+        ctx.restore();
+
+        if (isOverlayLoaded) {
+          ctx.save();
+          const iw = overlayImg.width * overlayState.scale;
+          const ih = overlayImg.height * overlayState.scale;
+          const cx = overlayState.x + iw / 2;
+          const cy = overlayState.y + ih / 2;
+          ctx.translate(cx, cy);
+          ctx.rotate(overlayState.rotation * Math.PI / 180);
+          ctx.translate(-iw / 2, -ih / 2);
+          ctx.drawImage(overlayImg, 0, 0, iw, ih);
+          ctx.restore();
+        }
+
+        requestAnimationFrame(drawLoop);
+      }
+
+      overlayImg.onload = () => {
+        isOverlayLoaded = true;
+        resizeCanvas();
+      };
+
+      switchBtn.addEventListener('click', () => {
+        usingFrontCamera = !usingFrontCamera;
+        startCamera();
+      });
+
+      captureBtn.addEventListener('click', () => {
+        if (!video || video.videoWidth === 0 || video.videoHeight === 0) {
+          loadingText.innerText = ('The camera is not opening. Please allow camera access.');
+          return;
+        }
+        const videoAspect = video.videoWidth / video.videoHeight;
+        const canvasAspect = canvas.width / canvas.height;
+
+        let drawWidth, drawHeight, offsetX, offsetY;
+        if (canvasAspect > videoAspect) {
+          drawHeight = canvas.height;
+          drawWidth = drawHeight * videoAspect;
+          offsetX = (canvas.width - drawWidth) / 2;
+          offsetY = 0;
+        } else {
+          drawWidth = canvas.width;
+          drawHeight = drawWidth / videoAspect;
+          offsetX = 0;
+          offsetY = (canvas.height - drawHeight) / 2;
+        }
+
+        const offscreenCanvas = document.createElement('canvas');
+        offscreenCanvas.width = drawWidth;
+        offscreenCanvas.height = drawHeight;
+        const offctx = offscreenCanvas.getContext('2d');
+
+        offctx.save();
+        if (usingFrontCamera) {
+          offctx.translate(drawWidth, 0);
+          offctx.scale(-1, 1);
+        }
+        offctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, drawWidth, drawHeight);
+        offctx.restore();
+
+        const overlayX = overlayState.x - offsetX;
+        const overlayY = overlayState.y - offsetY;
+        const ow = overlayImg.width * overlayState.scale;
+        const oh = overlayImg.height * overlayState.scale;
+
+        offctx.save();
+        offctx.translate(overlayX + ow / 2, overlayY + oh / 2);
+        offctx.rotate(overlayState.rotation * Math.PI / 180);
+        offctx.translate(-ow / 2, -oh / 2);
+        offctx.drawImage(overlayImg, 0, 0, ow, oh);
+        offctx.restore();
+
+        offscreenCanvas.toBlob(blob => {
+          if (!blob) {
+            alert('Capture failed: empty image.');
+            return;
+          }
+          const url = URL.createObjectURL(blob);
+          window.open(url, '_blank');
+        }, 'image/png');
+      });
+
+      // Initialize and control flow
+      let isDesktop = getDeviceType() === 'desktop';
+
+      handleConditionalElements();
+
+      if (!isDesktop) {
+        resizeCanvas();
+        startCamera();
+      } else {
+        // Desktop: only resize canvas without starting camera
+        resizeCanvas();
+      }
+
+      window.addEventListener('resize', () => {
+        // If device type changes on resize, reload to reset UI
+        let nowDesktop = getDeviceType() === 'desktop';
+        if (nowDesktop !== isDesktop) {
+          location.reload();
+        }
+      });
+
+
+
+
+
+      //Phone Demo Script Here 
+
+      if (getDeviceType() === 'desktop') {
+        const bedroomSrc = "https://www.shutterstock.com/image-illustration/interior-modern-bedroom-beige-walls-600nw-2387252829.jpg";
+        const wallArtSrc = overlayImg.src;
+
+        const bedroomImage = document.getElementById('bedroomImage');
+        const wallArtDiv = document.getElementById('wallArt');
+        const phone = document.getElementById('phone');
+        const imageContainer = document.getElementById('imageContainer');
+
+        bedroomImage.src = bedroomSrc;
+        wallArtDiv.style.backgroundImage = `url(${wallArtSrc})`;
+
+        let toLeft = true;
+        let step = 0;
+        let rotated = false;
+        let paused = false;
+        let slideInterval, wallArtInterval;
+
+        function slideImage() {
+          if (paused) return;
+          if (!rotated) {
+            imageContainer.style.transform = toLeft ? "translateX(-70px)" : "translateX(0)";
+          } else {
+            imageContainer.style.transform = toLeft ? "translateY(-70px)" : "translateY(0)";
+          }
+          toLeft = !toLeft;
+        }
+
+        function animateWallArt() {
+          if (paused) return;
+          switch (step) {
+
+
+            case 0:
+              wallArtDiv.style.transform = "scale(0.6) translateY(-20%) ";
+              break;
+            case 1:
+              wallArtDiv.style.transform = "scale(0.4) translateY(-30%) ";
+              break;
+            case 2:
+              wallArtDiv.style.transform = "scale(0.55) translateY(-18%) ";
+              break;
+            case 3:
+              wallArtDiv.style.transform = "scale(0.64) translateY(-21%) ";
+              break;
+            case 4:
+              wallArtDiv.style.transform = "scale(0.45) translateY(-20%) ";
+              break;
+            case 5:
+              wallArtDiv.style.transform = "scale(0.38) translateY(-28%) ";
+              break;
+            case 6:
+              wallArtDiv.style.transform = "scale(0.5) translateY(-18%) ";
+              break;
+            case 7:
+              wallArtDiv.style.transform = "scale(0.4) translateY(-23%) ";
+              break;
+            case 8:
+              wallArtDiv.style.transform = "scale(0.55) translateY(-19%) ";
+              break;
+            case 9:
+              wallArtDiv.style.transform = "scale(0.4) translateY(-25%) ";
+              break;
+
+          }
+          step = (step + 1) % 10;
+        }
+
+        function startAnimations() {
+          slideInterval = setInterval(slideImage, 5000);
+          wallArtInterval = setInterval(animateWallArt, 5000);
+          slideImage();
+          animateWallArt();
+        }
+
+        function stopAnimations() {
+          paused = true;
+          clearInterval(slideInterval);
+          clearInterval(wallArtInterval);
+        }
+
+        // Start animations initially
+        setTimeout(startAnimations, 2500);
+      }
+
+    });
+
+    // JavaScript: Place this just before closing </body> or inside a script tag
+    window.addEventListener('load', function () {
+      var loader = document.getElementById('page-loader');
+      if (loader) {
+        loader.style.display = 'none'; // Hide loader after full page load
+      }
+    });
+
+  </script>
+</body>
+
+</html>
