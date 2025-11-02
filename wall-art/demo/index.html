@@ -46,8 +46,23 @@
       border-radius: 12px;
     }
 
+    #phonecontrols {
+      width: 100%;
+      justify-content: center;
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 15px;
+      z-index: 10;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 10px 20px;
+      border-radius: 12px;
+    }
+
     #captureBtn {
-      padding: 12px 24px;
+      padding: 7px 12px;
       font-size: 16px;
       border: none;
       border-radius: 25px;
@@ -63,6 +78,36 @@
 
     #switchCameraBtn {
       padding: 12px 24px;
+      font-size: 16px;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: bold;
+      color: rgb(0, 0, 0);
+      background: linear-gradient(90deg, #f8f8f8, #fcf9ff);
+      user-select: none;
+      transition: background 0.3s ease;
+    }
+
+
+
+    #phonecaptureBtn {
+      padding: 8px;
+      font-size: 16px;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: bold;
+      color: white;
+      background-image: linear-gradient(90deg, #b525f7 0%, #b517a0 100%);
+      user-select: none;
+      transition: background 0.3s ease;
+    }
+
+
+
+    #phoneswitchCameraBtn {
+      padding: 8px;
       font-size: 16px;
       border: none;
       border-radius: 25px;
@@ -120,51 +165,6 @@
       transition: transform 3s ease-in-out;
       transform-origin: center center;
     }
-
-
-
-    #phonecaptureBtn {
-      padding: 8px;
-      font-size: 16px;
-      border: none;
-      border-radius: 25px;
-      cursor: pointer;
-      font-weight: bold;
-      color: white;
-      background-image: linear-gradient(90deg, #b525f7 0%, #b517a0 100%);
-      user-select: none;
-      transition: background 0.3s ease;
-    }
-
-    #phonecontrols {
-      width: 100%;
-      justify-content: center;
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 15px;
-      z-index: 10;
-      background: rgba(0, 0, 0, 0.4);
-      padding: 10px 20px;
-      border-radius: 12px;
-    }
-
-
-    #phoneswitchCameraBtn {
-      padding: 8px;
-      font-size: 16px;
-      border: none;
-      border-radius: 25px;
-      cursor: pointer;
-      font-weight: bold;
-      color: rgb(0, 0, 0);
-      background: linear-gradient(90deg, #f8f8f8, #fcf9ff);
-      user-select: none;
-      transition: background 0.3s ease;
-    }
-
 
     #wallArt {
       position: absolute;
@@ -257,7 +257,6 @@
       }
     }
 
-
     /* CSS: Add this to your stylesheet or inside a <style> tag */
     #page-loader {
       position: fixed;
@@ -296,6 +295,7 @@
 
 <body>
 
+
   <!-- HTML: Place this inside your <body> at the very top -->
   <div id="page-loader">
     <div class="loader-circle"></div>
@@ -331,16 +331,15 @@
       <div class="col-6">
         <div id="phone">
           <div id="imageContainer">
-            <img id="bedroomImage" src="../../media/wall-demo.jpg" alt="laptop" />
+            <img id="bedroomImage" src="" alt="Bedroom" />
           </div>
-          <div id="wallArt" style="background-image: url('/media/wall-art-demo.jpg')">
-          </div>
+          <div id="wallArt"></div>
           <div id="phonecontrols">
             <button id="phoneswitchCameraBtn" aria-label="Switch Camera">Reverse Camera</button>
             <button id="phonecaptureBtn" aria-label="Capture Picture">Capture</button>
           </div>
         </div>
-
+ 
       </div>
     </div>
   </div>
@@ -359,7 +358,7 @@
       let usingFrontCamera = true;
       let video = null;
       let overlayImg = new Image();
-      overlayImg.src = '../../media/sticker-demo.jpg'; // overlay PNG path
+      overlayImg.src = 'https://zindvera.github.io/mockoverflow/media/wall-art-demo.jpg'; // overlay PNG path
       let isOverlayLoaded = false;
 
       const overlayState = {
@@ -726,49 +725,49 @@
       //Phone Demo Script Here 
 
       if (getDeviceType() === 'desktop') {
+        const bedroomSrc = "https://www.shutterstock.com/image-illustration/interior-modern-bedroom-beige-walls-600nw-2387252829.jpg";
+        const wallArtSrc = overlayImg.src;
 
-        const imageContainer = document.getElementById('imageContainer');
+        const bedroomImage = document.getElementById('bedroomImage');
         const wallArtDiv = document.getElementById('wallArt');
+        const phone = document.getElementById('phone');
+        const imageContainer = document.getElementById('imageContainer');
+
+        bedroomImage.src = bedroomSrc;
+        wallArtDiv.style.backgroundImage = `url(${wallArtSrc})`;
+
         let toLeft = true;
         let step = 0;
+        let rotated = false;
+        let paused = false;
         let slideInterval, wallArtInterval;
+
         function slideImage() {
-          switch (step) {
-            case 0:
-              imageContainer.style.transform = "translateX(-40px) translateY(0px)";
-              break;
-            case 1:
-              imageContainer.style.transform = "translateX(-30px) translateY(0px)";
-              break;
-            case 2:
-              imageContainer.style.transform = "translateX(-40px) translateY(0px)";
-              break;
-            case 3:
-              imageContainer.style.transform = "translateX(-25px) translateY(0px)";
-              break;
-            case 4:
-              imageContainer.style.transform = "translateX(0) translateY(0)";
-              break;
+          if (paused) return;
+          if (!rotated) {
+            imageContainer.style.transform = toLeft ? "translateX(-70px)" : "translateX(0)";
+          } else {
+            imageContainer.style.transform = toLeft ? "translateY(-70px)" : "translateY(0)";
           }
-          step = (step + 1) % 6;
+          toLeft = !toLeft;
         }
 
-
-
         function animateWallArt() {
+          if (paused) return;
           switch (step) {
 
+
             case 0:
-              wallArtDiv.style.transform = "scale(0.6) translateY(-40%) ";
+              wallArtDiv.style.transform = "scale(0.6) translateY(-20%) ";
               break;
             case 1:
               wallArtDiv.style.transform = "scale(0.4) translateY(-30%) ";
               break;
             case 2:
-              wallArtDiv.style.transform = "scale(0.55) translateY(-42%) ";
+              wallArtDiv.style.transform = "scale(0.55) translateY(-18%) ";
               break;
             case 3:
-              wallArtDiv.style.transform = "scale(0.6) translateY(-28%) ";
+              wallArtDiv.style.transform = "scale(0.64) translateY(-21%) ";
               break;
             case 4:
               wallArtDiv.style.transform = "scale(0.45) translateY(-20%) ";
@@ -792,18 +791,22 @@
           }
           step = (step + 1) % 10;
         }
+
         function startAnimations() {
           slideInterval = setInterval(slideImage, 5000);
           wallArtInterval = setInterval(animateWallArt, 5000);
           slideImage();
           animateWallArt();
         }
+
+        function stopAnimations() {
+          paused = true;
+          clearInterval(slideInterval);
+          clearInterval(wallArtInterval);
+        }
+
+        // Start animations initially
         setTimeout(startAnimations, 2500);
-        document.getElementById('openCameraBtn').addEventListener('click', () => {
-          window.location.href = '/camera-overlay.html';
-        });
-
-
       }
 
     });
@@ -814,7 +817,7 @@
       if (loader) {
         loader.style.display = 'none'; // Hide loader after full page load
       }
-    }); 
+    });
 
   </script>
 </body>
