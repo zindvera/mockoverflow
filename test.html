@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Live Wall Art Previewer (Full Quality)</title>
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -42,410 +42,406 @@
             cursor: grab;
         }
         #overlayImage.cursor-grabbing {
-             cursor: grabbing;
+            cursor: grabbing;
         }
     </style>
 </head>
 <body>
 
-    <div id="viewportContainer">
+<div id="viewportContainer">
 
-        <!-- Camera Feed Element -->
-        <video id="cameraFeed" autoplay playsinline muted></video>
+    <!-- Camera Feed Element -->
+    <video id="cameraFeed" autoplay playsinline muted></video>
 
-        <!-- Art Image URL Input Bar -->
-        <div id="urlInputBar" class="absolute top-4 left-1/2 -translate-x-1/2 w-11/12 max-w-lg bg-gray-900/80 p-3 rounded-xl shadow-2xl z-40 flex flex-col space-y-2 md:space-y-0 md:flex-row md:space-x-2">
-            <input
-                type="url"
-                id="newImageUrl"
-                placeholder="Paste new Art URL here (e.g., JPEG, PNG)"
-                value="https://zindvera.github.io/mockoverflow/media/wall-art-demo.jpg"
-                class="flex-grow p-2 rounded-lg text-sm bg-gray-700 text-white placeholder-gray-400 focus:ring-indigo-500 focus:border-indigo-500 border-none"
-            />
-            <button id="applyUrlBtn" class="px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg text-sm transition-colors active:scale-95">
-                Change Art
-            </button>
-        </div>
-
-
-        <!-- Image Overlay - Added crossorigin="anonymous" to allow canvas capture -->
-        <img
-            id="overlayImage"
-            crossorigin="anonymous"
-            src="https://zindvera.github.io/mockoverflow/media/wall-art-demo.jpg"
-            alt="Wall Art Overlay"
-            class="w-72 h-auto rounded-xl shadow-2xl"
-            draggable="false"
-            onerror="this.src='https://placehold.co/256x256/374151/ffffff?text=Art+Loading+Failed';"
-        >
-
-        <!-- Message/Error Display -->
-        <div id="message" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white text-center p-4 bg-red-700/80 rounded-lg shadow-2xl z-50 hidden">
-            Awaiting camera permission...
-        </div>
-
-        <!-- Hidden Tip/Reset Indicator -->
-        <div id="resetTip" class="absolute top-[120px] p-2 bg-gray-800/70 text-white text-xs rounded-full shadow-lg z-30 opacity-70 hidden md:block">
-            Drag, Pinch, or Double-Tap to Reset
-        </div>
-        
-        <!-- Capture Button -->
-        <button id="captureBtn" class="absolute bottom-6 p-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-full shadow-lg z-40 transition-colors active:scale-95 flex items-center justify-center space-x-2">
-            <!-- Icon: Camera (Lucide icon, using inline SVG) -->
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
-            <span>Capture</span>
+    <!-- Art Image URL Input Bar -->
+    <div id="urlInputBar" class="absolute top-4 left-1/2 -translate-x-1/2 w-11/12 max-w-lg bg-gray-900/80 p-3 rounded-xl shadow-2xl z-40 flex flex-col space-y-2 md:space-y-0 md:flex-row md:space-x-2">
+        <input
+            type="url"
+            id="newImageUrl"
+            placeholder="Paste new Art URL here (e.g., JPEG, PNG)"
+            value="https://zindvera.github.io/mockoverflow/media/wall-art-demo.jpg"
+            class="flex-grow p-2 rounded-lg text-sm bg-gray-700 text-white placeholder-gray-400 focus:ring-indigo-500 focus:border-indigo-500 border-none"
+        />
+        <button id="applyUrlBtn" class="px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg text-sm transition-colors active:scale-95">
+            Change Art
         </button>
-
     </div>
 
+    <!-- Image Overlay - Added crossorigin="anonymous" to allow canvas capture -->
+    <img
+        id="overlayImage"
+        crossorigin="anonymous"
+        src="https://zindvera.github.io/mockoverflow/media/wall-art-demo.jpg"
+        alt="Wall Art Overlay"
+        class="w-72 h-auto rounded-xl shadow-2xl"
+        draggable="false"
+        onerror="this.src='https://placehold.co/256x256/374151/ffffff?text=Art+Loading+Failed';"
+    >
+
+    <!-- Message/Error Display -->
+    <div id="message" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white text-center p-4 bg-red-700/80 rounded-lg shadow-2xl z-50 hidden">
+        Awaiting camera permission...
+    </div>
+
+    <!-- Hidden Tip/Reset Indicator -->
+    <div id="resetTip" class="absolute top-[120px] p-2 bg-gray-800/70 text-white text-xs rounded-full shadow-lg z-30 opacity-70 hidden md:block">
+        Drag, Pinch, or Double-Tap to Reset
+    </div>
     
-    <!-- Hidden Canvas for Image Processing/Capture -->
-    <canvas id="captureCanvas" style="display:none;"></canvas>
+    <!-- Capture Button -->
+    <button id="captureBtn" class="absolute bottom-6 p-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-full shadow-lg z-40 transition-colors active:scale-95 flex items-center justify-center space-x-2">
+        <!-- Icon: Camera (Lucide icon, using inline SVG) -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+        <span>Capture</span>
+    </button>
 
-    <script>
-        const video = document.getElementById('cameraFeed');
-        const overlay = document.getElementById('overlayImage');
-        const message = document.getElementById('message');
-        const resetTip = document.getElementById('resetTip');
-        
-        // Capture feature elements
-        const captureBtn = document.getElementById('captureBtn');
-        const captureCanvas = document.getElementById('captureCanvas');
-        const ctx = captureCanvas.getContext('2d');
-        
-        // Elements for URL Input
-        const newImageUrl = document.getElementById('newImageUrl');
-        const applyUrlBtn = document.getElementById('applyUrlBtn');
+</div>
 
+<!-- Hidden Canvas for Image Processing/Capture -->
+<canvas id="captureCanvas" style="display:none;"></canvas>
 
-        // Initial state for the overlay image transformations
-        let state = {
-            x: 0,
-            y: 0,
-            scale: 1,
-            rotation: 0,
-            // Temporary variables for gesture start
-            startX: 0,
-            startY: 0,
-            baseX: 0,
-            baseY: 0,
-            baseScale: 1,
-            baseRotation: 0,
-        };
+<script>
+    const video = document.getElementById('cameraFeed');
+    const overlay = document.getElementById('overlayImage');
+    const message = document.getElementById('message');
+    const resetTip = document.getElementById('resetTip');
+    
+    // Capture feature elements
+    const captureBtn = document.getElementById('captureBtn');
+    const captureCanvas = document.getElementById('captureCanvas');
+    const ctx = captureCanvas.getContext('2d');
+    
+    // Elements for URL Input
+    const newImageUrl = document.getElementById('newImageUrl');
+    const applyUrlBtn = document.getElementById('applyUrlBtn');
 
-        // Map to track all active pointers (touch IDs)
-        const activePointers = new Map();
-        let initialDistance = null;
-        let initialAngle = null;
+    // Initial state for the overlay image transformations
+    let state = {
+        x: 0,
+        y: 0,
+        scale: 1,
+        rotation: 0,
+        // Temporary variables for gesture start
+        startX: 0,
+        startY: 0,
+        baseX: 0,
+        baseY: 0,
+        baseScale: 1,
+        baseRotation: 0,
+    };
 
-        // Function to apply the current state to the overlay's CSS transform
-        const updateOverlay = () => {
-            overlay.style.transform = `translateX(${state.x}px) translateY(${state.y}px) scale(${state.scale}) rotate(${state.rotation}deg)`;
-        };
-        updateOverlay(); // Initialize transform
+    // Map to track all active pointers (touch IDs)
+    const activePointers = new Map();
+    let initialDistance = null;
+    let initialAngle = null;
 
-        // --- Camera Access ---
-        async function startCamera() {
-            message.classList.remove('hidden');
-            message.textContent = 'Awaiting camera permission...';
+    // Function to apply the current state to the overlay's CSS transform
+    const updateOverlay = () => {
+        overlay.style.transform = `translateX(${state.x}px) translateY(${state.y}px) scale(${state.scale}) rotate(${state.rotation}deg)`;
+    };
+    updateOverlay(); // Initialize transform
 
-            try {
-                // Request the highest possible resolution (ideal values for 4K)
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: 'environment',
-                        width: { ideal: 4096 },  // Request high width
-                        height: { ideal: 2160 } // Request high height
-                    }
-                });
-                video.srcObject = stream;
-                message.classList.add('hidden'); // Hide message on success
+    // --- Camera Access ---
+    async function startCamera() {
+        message.classList.remove('hidden');
+        message.textContent = 'Awaiting camera permission...';
 
-                video.play().catch(e => console.error("Video play failed:", e));
-                
-                // Log the actual resolution obtained
-                video.addEventListener('loadedmetadata', () => {
-                    console.log(`Video Stream Resolution: ${video.videoWidth}x${video.videoHeight}`);
-                }, { once: true });
-
-            } catch (err) {
-                console.error("Error accessing camera: ", err);
-                message.classList.remove('hidden');
-                message.textContent = 'Camera access denied or unavailable. Please enable permissions.';
-                video.style.display = 'none'; // Hide video if camera fails
-            }
-        }
-
-        // --- Multi-Touch Gesture Logic (Pointer Events) ---
-
-        // Helper to get distance and angle between two active pointers
-        function getPinchDetails() {
-            const pointers = Array.from(activePointers.values());
-            if (pointers.length < 2) return null;
-
-            const p1 = pointers[0];
-            const p2 = pointers[1];
-
-            const dx = p1.clientX - p2.clientX;
-            const dy = p1.clientY - p2.clientY;
-
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            // Angle in degrees
-            const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-
-            return { distance, angle };
-        }
-
-        overlay.addEventListener('pointerdown', (e) => {
-            e.preventDefault();
-            overlay.setPointerCapture(e.pointerId);
-
-            // Add the new pointer
-            activePointers.set(e.pointerId, {
-                id: e.pointerId,
-                clientX: e.clientX,
-                clientY: e.clientY
+        try {
+            // Request the highest possible resolution (ideal values for 4K)
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: 'environment',
+                    width: { ideal: 4096 },  // Request high width
+                    height: { ideal: 2160 } // Request high height
+                }
             });
+            video.srcObject = stream;
+            message.classList.add('hidden'); // Hide message on success
 
-            if (activePointers.size === 1) {
-                // Single pointer: Setup for translation (pan)
-                state.startX = e.clientX;
-                state.startY = e.clientY;
-                state.baseX = state.x; // Store the current translation
-                state.baseY = state.y;
-                overlay.classList.add('cursor-grabbing');
+            video.play().catch(e => console.error("Video play failed:", e));
+            
+            // Log the actual resolution obtained
+            video.addEventListener('loadedmetadata', () => {
+                console.log(`Video Stream Resolution: ${video.videoWidth}x${video.videoHeight}`);
+            }, { once: true });
 
-            } else if (activePointers.size === 2) {
-                // Two pointers: Setup for scale/rotate (pinch)
-                const details = getPinchDetails();
-                if (details) {
-                    initialDistance = details.distance;
-                    initialAngle = details.angle;
-                    // Store the current scale/rotation as the base for the gesture
-                    state.baseScale = state.scale;
-                    state.baseRotation = state.rotation;
-                }
-                overlay.classList.remove('cursor-grabbing');
-            }
+        } catch (err) {
+            console.error("Error accessing camera: ", err);
+            message.classList.remove('hidden');
+            message.textContent = 'Camera access denied or unavailable. Please enable permissions.';
+            video.style.display = 'none'; // Hide video if camera fails
+        }
+    }
+
+    // --- Multi-Touch Gesture Logic (Pointer Events) ---
+
+    // Helper to get distance and angle between two active pointers
+    function getPinchDetails() {
+        const pointers = Array.from(activePointers.values());
+        if (pointers.length < 2) return null;
+
+        const p1 = pointers[0];
+        const p2 = pointers[1];
+
+        const dx = p1.clientX - p2.clientX;
+        const dy = p1.clientY - p2.clientY;
+
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        // Angle in degrees
+        const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+
+        return { distance, angle };
+    }
+
+    overlay.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        overlay.setPointerCapture(e.pointerId);
+
+        // Add the new pointer
+        activePointers.set(e.pointerId, {
+            id: e.pointerId,
+            clientX: e.clientX,
+            clientY: e.clientY
         });
 
-        overlay.addEventListener('pointermove', (e) => {
-            // Check if the pointer exists in our map and the button is pressed (important for mouse events)
-            if (!activePointers.has(e.pointerId)) return;
-            e.preventDefault();
+        if (activePointers.size === 1) {
+            // Single pointer: Setup for translation (pan)
+            state.startX = e.clientX;
+            state.startY = e.clientY;
+            state.baseX = state.x; // Store the current translation
+            state.baseY = state.y;
+            overlay.classList.add('cursor-grabbing');
 
-            // Update the position of the moved pointer
-            activePointers.get(e.pointerId).clientX = e.clientX;
-            activePointers.get(e.pointerId).clientY = e.clientY;
-
-            if (activePointers.size === 1) {
-                // Single pointer: Pan/Translate
-                const dx = e.clientX - state.startX;
-                const dy = e.clientY - state.startY;
-
-                state.x = state.baseX + dx;
-                state.y = state.baseY + dy;
-
-            } else if (activePointers.size >= 2) {
-                // Multi-pointer: Pinch/Rotate
-                const currentDetails = getPinchDetails();
-                if (currentDetails && initialDistance && initialAngle) {
-                    // 1. Scale
-                    const scaleFactor = currentDetails.distance / initialDistance;
-                    // Clamp scale to prevent image from disappearing or becoming too large
-                    state.scale = Math.min(2.5, Math.max(0.2, state.baseScale * scaleFactor));
-
-                    // 2. Rotation
-                    const rotationDelta = currentDetails.angle - initialAngle;
-                    state.rotation = state.baseRotation + rotationDelta;
-                }
+        } else if (activePointers.size === 2) {
+            // Two pointers: Setup for scale/rotate (pinch)
+            const details = getPinchDetails();
+            if (details) {
+                initialDistance = details.distance;
+                initialAngle = details.angle;
+                // Store the current scale/rotation as the base for the gesture
+                state.baseScale = state.scale;
+                state.baseRotation = state.rotation;
             }
-            updateOverlay();
-        });
+            overlay.classList.remove('cursor-grabbing');
+        }
+    });
 
-        function pointerEnd(e) {
-            // Check if this pointer was captured (i.e., initiated on the overlay)
-            if (!activePointers.has(e.pointerId)) return;
+    overlay.addEventListener('pointermove', (e) => {
+        // Check if the pointer exists in our map and the button is pressed (important for mouse events)
+        if (!activePointers.has(e.pointerId)) return;
+        e.preventDefault();
 
-            activePointers.delete(e.pointerId);
+        // Update the position of the moved pointer
+        activePointers.get(e.pointerId).clientX = e.clientX;
+        activePointers.get(e.pointerId).clientY = e.clientY;
 
-            if (activePointers.size < 2) {
-                // Stop scaling/rotating setup
-                initialDistance = null;
-                initialAngle = null;
-            }
+        if (activePointers.size === 1) {
+            // Single pointer: Pan/Translate
+            const dx = e.clientX - state.startX;
+            const dy = e.clientY - state.startY;
 
-            if (activePointers.size === 1) {
-                // If one pointer remains, reset translation base for the remaining finger to allow smooth continuous pan
-                const remainingPointer = Array.from(activePointers.values())[0];
-                state.startX = remainingPointer.clientX;
-                state.startY = remainingPointer.clientY;
-                state.baseX = state.x;
-                state.baseY = state.y;
-                overlay.classList.add('cursor-grabbing');
-            }
+            state.x = state.baseX + dx;
+            state.y = state.baseY + dy;
 
-            if (activePointers.size === 0) {
-                overlay.classList.remove('cursor-grabbing');
+        } else if (activePointers.size >= 2) {
+            // Multi-pointer: Pinch/Rotate
+            const currentDetails = getPinchDetails();
+            if (currentDetails && initialDistance && initialAngle) {
+                // 1. Scale
+                const scaleFactor = currentDetails.distance / initialDistance;
+                // Clamp scale to prevent image from disappearing or becoming too large
+                state.scale = Math.min(2.5, Math.max(0.2, state.baseScale * scaleFactor));
+
+                // 2. Rotation
+                const rotationDelta = currentDetails.angle - initialAngle;
+                state.rotation = state.baseRotation + rotationDelta;
             }
         }
+        updateOverlay();
+    });
 
-        overlay.addEventListener('pointerup', pointerEnd);
-        overlay.addEventListener('pointercancel', pointerEnd);
-        overlay.addEventListener('pointerleave', pointerEnd);
+    function pointerEnd(e) {
+        // Check if this pointer was captured (i.e., initiated on the overlay)
+        if (!activePointers.has(e.pointerId)) return;
 
-        // --- Double-Tap to Reset Logic ---
-        let lastTap = 0;
-        overlay.addEventListener('click', () => {
-            const now = new Date().getTime();
-            const timesince = now - lastTap;
+        activePointers.delete(e.pointerId);
 
-            if ((timesince < 300) && (timesince > 0)) {
-                // Double tap detected
-                state = {
-                    x: 0,
-                    y: 0,
-                    scale: 1,
-                    rotation: 0,
-                    startX: 0, startY: 0, baseX: 0, baseY: 0, baseScale: 1, baseRotation: 0
-                };
-                updateOverlay();
-                // Brief visual feedback for reset
-                resetTip.textContent = "RESET!";
-                setTimeout(() => {
-                    resetTip.textContent = "Drag, Pinch, or Double-Tap to Reset";
-                }, 1000);
-            }
-            lastTap = now;
-        });
+        if (activePointers.size < 2) {
+            // Stop scaling/rotating setup
+            initialDistance = null;
+            initialAngle = null;
+        }
+
+        if (activePointers.size === 1) {
+            // If one pointer remains, reset translation base for the remaining finger to allow smooth continuous pan
+            const remainingPointer = Array.from(activePointers.values())[0];
+            state.startX = remainingPointer.clientX;
+            state.startY = remainingPointer.clientY;
+            state.baseX = state.x;
+            state.baseY = state.y;
+            overlay.classList.add('cursor-grabbing');
+        }
+
+        if (activePointers.size === 0) {
+            overlay.classList.remove('cursor-grabbing');
+        }
+    }
+
+    overlay.addEventListener('pointerup', pointerEnd);
+    overlay.addEventListener('pointercancel', pointerEnd);
+    overlay.addEventListener('pointerleave', pointerEnd);
+
+    // --- Double-Tap to Reset Logic ---
+    let lastTap = 0;
+    overlay.addEventListener('click', () => {
+        const now = new Date().getTime();
+        const timesince = now - lastTap;
+
+        if ((timesince < 300) && (timesince > 0)) {
+            // Double tap detected
+            state = {
+                x: 0,
+                y: 0,
+                scale: 1,
+                rotation: 0,
+                startX: 0, startY: 0, baseX: 0, baseY: 0, baseScale: 1, baseRotation: 0
+            };
+            updateOverlay();
+            // Brief visual feedback for reset
+            resetTip.textContent = "RESET!";
+            setTimeout(() => {
+                resetTip.textContent = "Drag, Pinch, or Double-Tap to Reset";
+            }, 1000);
+        }
+        lastTap = now;
+    });
+    
+    // --- Image Change Logic ---
+    function setNewArtImage() {
+        const url = newImageUrl.value.trim();
+        if (!url) {
+            message.textContent = "Please enter a valid image URL.";
+            message.classList.remove('hidden');
+            setTimeout(() => message.classList.add('hidden'), 3000);
+            return;
+        }
+
+        // 1. Create a temporary image element to check loading and handle CORS
+        const tempImg = new Image();
+        tempImg.crossOrigin = "anonymous";
         
-        // --- Image Change Logic ---
-        function setNewArtImage() {
-            const url = newImageUrl.value.trim();
-            if (!url) {
-                message.textContent = "Please enter a valid image URL.";
+        message.textContent = "Loading new art...";
+        message.classList.remove('hidden');
+
+        tempImg.onload = () => {
+            // 2. Image loaded successfully, update the main overlay
+            overlay.src = url;
+            message.textContent = "Art changed successfully!";
+            setTimeout(() => message.classList.add('hidden'), 2000);
+            
+            // 3. Reset transformations for the new image to start centered
+            state = { x: 0, y: 0, scale: 1, rotation: 0, startX: 0, startY: 0, baseX: 0, baseY: 0, baseScale: 1, baseRotation: 0 };
+            updateOverlay();
+        };
+
+        tempImg.onerror = () => {
+            message.textContent = "Failed to load image from URL. Ensure it's a direct link and supports CORS.";
+            // Keep error message visible for longer
+            setTimeout(() => message.classList.add('hidden'), 5000);
+        };
+
+        // 4. Start loading the image
+        tempImg.src = url;
+    }
+
+    // --- Capture Logic ---
+    function captureFrame() {
+        // Use the intrinsic resolution of the video track for full quality capture
+        const intrinsicWidth = video.videoWidth;
+        const intrinsicHeight = video.videoHeight;
+        
+        // Set actual canvas drawing surface size to match video stream resolution
+        captureCanvas.width = intrinsicWidth;
+        captureCanvas.height = intrinsicHeight;
+        
+        ctx.clearRect(0, 0, intrinsicWidth, intrinsicHeight);
+
+        // 1. Draw the Video Frame (Background) at its intrinsic size
+        ctx.drawImage(video, 0, 0, intrinsicWidth, intrinsicHeight);
+
+        // 2. Calculate scale factor to map screen coordinates to high-res canvas coordinates
+        const clientWidth = video.clientWidth;
+        const clientHeight = video.clientHeight;
+
+        // These ratios scale screen pixels to intrinsic video pixels
+        const scaleFactorX = intrinsicWidth / clientWidth;
+        const scaleFactorY = intrinsicHeight / clientHeight;
+
+        // 3. Draw the Overlay Image with Transformations on the high-res canvas
+        ctx.save();
+        
+        // Calculate the size the image is currently rendered at on screen
+        const displayedWidth = overlay.offsetWidth;
+        const displayedHeight = overlay.offsetHeight;
+
+        // Calculate the high-resolution draw size for the overlay
+        const overlayDrawWidth = displayedWidth * scaleFactorX;
+        const overlayDrawHeight = displayedHeight * scaleFactorY;
+
+        // Calculate the translation (x, y) also scaled up from screen pixels
+        const scaledX = state.x * scaleFactorX;
+        const scaledY = state.y * scaleFactorY;
+        
+        // High-res canvas center point
+        const canvasCenterX = intrinsicWidth / 2;
+        const canvasCenterY = intrinsicHeight / 2;
+        
+        // Apply transformations
+        // Translate to the center of the image's final, transformed position on the high-res canvas
+        ctx.translate(canvasCenterX + scaledX, canvasCenterY + scaledY);
+        ctx.rotate(state.rotation * Math.PI / 180);
+        
+        // Apply the user's scale factor
+        ctx.scale(state.scale, state.scale);
+        
+        // Draw the image, centered on the current translated/rotated origin
+        ctx.drawImage(
+            overlay,
+            -overlayDrawWidth / 2,
+            -overlayDrawHeight / 2,
+            overlayDrawWidth,
+            overlayDrawHeight
+        );
+        
+        ctx.restore();
+
+        // 4. Get the image as a Blob and open it in a new tab as a URL
+        captureCanvas.toBlob(blob => {
+            if (!blob) {
+                message.textContent = "Capture failed: Unable to create image blob.";
                 message.classList.remove('hidden');
                 setTimeout(() => message.classList.add('hidden'), 3000);
                 return;
             }
-
-            // 1. Create a temporary image element to check loading and handle CORS
-            const tempImg = new Image();
-            tempImg.crossOrigin = "anonymous";
-            
-            message.textContent = "Loading new art...";
-            message.classList.remove('hidden');
-
-            tempImg.onload = () => {
-                // 2. Image loaded successfully, update the main overlay
-                overlay.src = url;
-                message.textContent = "Art changed successfully!";
-                setTimeout(() => message.classList.add('hidden'), 2000);
-                
-                // 3. Reset transformations for the new image to start centered
-                state = { x: 0, y: 0, scale: 1, rotation: 0, startX: 0, startY: 0, baseX: 0, baseY: 0, baseScale: 1, baseRotation: 0 };
-                updateOverlay();
-            };
-
-            tempImg.onerror = () => {
-                message.textContent = "Failed to load image from URL. Ensure it's a direct link and supports CORS.";
-                // Keep error message visible for longer
+            const url = URL.createObjectURL(blob);
+            const newWindow = window.open(url);
+            if (!newWindow) {
+                message.textContent = "Capture failed: Pop-ups blocked. Please allow pop-ups for image preview.";
+                message.classList.remove('hidden');
                 setTimeout(() => message.classList.add('hidden'), 5000);
-            };
-
-            // 4. Start loading the image
-            tempImg.src = url;
-        }
-
-        // --- Capture Logic ---
-        function captureFrame() {
-            // Use the intrinsic resolution of the video track for full quality capture
-            const intrinsicWidth = video.videoWidth;
-            const intrinsicHeight = video.videoHeight;
-            
-            // Set actual canvas drawing surface size to match video stream resolution
-            captureCanvas.width = intrinsicWidth;
-            captureCanvas.height = intrinsicHeight;
-            
-            ctx.clearRect(0, 0, intrinsicWidth, intrinsicHeight);
-
-            // 1. Draw the Video Frame (Background) at its intrinsic size
-            ctx.drawImage(video, 0, 0, intrinsicWidth, intrinsicHeight);
-
-            // 2. Calculate scale factor to map screen coordinates to high-res canvas coordinates
-            const clientWidth = video.clientWidth;
-            const clientHeight = video.clientHeight;
-
-            // These ratios scale screen pixels to intrinsic video pixels
-            const scaleFactorX = intrinsicWidth / clientWidth;
-            const scaleFactorY = intrinsicHeight / clientHeight;
-
-            // 3. Draw the Overlay Image with Transformations on the high-res canvas
-            ctx.save();
-            
-            // Calculate the size the image is currently rendered at on screen
-            const displayedWidth = overlay.offsetWidth;
-            const displayedHeight = overlay.offsetHeight;
-
-            // Calculate the high-resolution draw size for the overlay
-            const overlayDrawWidth = displayedWidth * scaleFactorX;
-            const overlayDrawHeight = displayedHeight * scaleFactorY;
-
-            // Calculate the translation (x, y) also scaled up from screen pixels
-            const scaledX = state.x * scaleFactorX;
-            const scaledY = state.y * scaleFactorY;
-            
-            // High-res canvas center point
-            const canvasCenterX = intrinsicWidth / 2;
-            const canvasCenterY = intrinsicHeight / 2;
-            
-            // Apply transformations
-            // Translate to the center of the image's final, transformed position on the high-res canvas
-            ctx.translate(canvasCenterX + scaledX, canvasCenterY + scaledY);
-            ctx.rotate(state.rotation * Math.PI / 180);
-            
-            // Apply the user's scale factor
-            ctx.scale(state.scale, state.scale); 
-            
-            // Draw the image, centered on the current translated/rotated origin
-            ctx.drawImage(overlay, 
-                -overlayDrawWidth / 2, 
-                -overlayDrawHeight / 2, 
-                overlayDrawWidth, 
-                overlayDrawHeight
-            );
-            
-            ctx.restore();
-
-            // 4. Get the data URL and redirect to a new page
-      try {
-    // Use image/png for lossless, max quality
-    const dataURL = captureCanvas.toDataURL('image/png');
-
-    // Open a new window/tab and display the image immediately
-    const newWindow = window.open(dataURL);
-
-    if (!newWindow) {
-        message.textContent = "Capture failed: Pop-ups blocked. Please allow pop-ups for image preview.";
-        message.classList.remove('hidden');
-        setTimeout(() => message.classList.add('hidden'), 5000);
+                URL.revokeObjectURL(url);
+                return;
+            }
+            // Note: Do not revoke URL immediately because the new tab needs to load the image
+        }, 'image/png');
     }
 
-} catch (error) {
-                console.error("Error capturing canvas (Likely CORS/Permissions):", error);
-                message.textContent = "Capture failed: Check browser console for errors.";
-                message.classList.remove('hidden');
-                setTimeout(() => message.classList.add('hidden'), 3000);
-            }
-        }
+    // --- Event Listeners ---
+    captureBtn.addEventListener('click', captureFrame);
+    applyUrlBtn.addEventListener('click', setNewArtImage);
 
-        // --- Event Listeners ---
-        captureBtn.addEventListener('click', captureFrame);
-        applyUrlBtn.addEventListener('click', setNewArtImage); 
-        
-        // Start the camera when the window loads
-        window.onload = startCamera;
-    </script>
+    // Start the camera when the window loads
+    window.onload = startCamera;
+</script>
 </body>
 </html>
-
