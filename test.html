@@ -1,18 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Live Wall Art Previewer (Full Quality)</title>
-    <!-- Load Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Responsive Camera Preview with Overlay and Multi-Touch</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+
+
     <style>
         /* Custom styles for a clean, full-screen mobile experience */
         body {
             font-family: 'Inter', sans-serif;
-            overflow: hidden; /* Prevent body scrolling */
-            touch-action: none; /* Disable default touch actions like pull-to-refresh */
+            overflow: hidden;
+            /* Prevent body scrolling */
+            touch-action: none;
+            /* Disable default touch actions like pull-to-refresh */
         }
+
         #viewportContainer {
             width: 100vw;
             height: 100vh;
@@ -20,428 +27,875 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: #1f2937; /* Dark background */
+            background-color: #1f2937;
+            /* Dark background */
         }
+
         #cameraFeed {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* Ensures video covers the entire viewport */
+            object-fit: cover;
+            /* Ensures video covers the entire viewport */
             position: absolute;
             top: 0;
             left: 0;
             z-index: 10;
         }
+
         #overlayImage {
             position: absolute;
             z-index: 20;
-            touch-action: none; /* Allows pointer events for dragging, scaling, rotating */
+            touch-action: none;
+            /* Allows pointer events for dragging, scaling, rotating */
             transition: opacity 0.3s ease;
-            max-width: 80%; /* Limit size relative to screen */
+            max-width: 80%;
+            /* Limit size relative to screen */
             max-height: 80%;
             transform-origin: center center;
             cursor: grab;
         }
+
         #overlayImage.cursor-grabbing {
             cursor: grabbing;
         }
+
+
+        #previewCanvas {
+            background: #1f1f1f;
+            cursor: grab;
+            touch-action: none;
+            display: block;
+        }
+
+        #controls {
+            width: 100%;
+            justify-content: center;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 10;
+            padding: 10px 20px;
+            border-radius: 12px;
+        }
+
+        #phonecontrols {
+            width: 100%;
+            justify-content: center;
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 10;
+            border-radius: 12px;
+        }
+
+
+        
+        #democaptureBtn {
+            width: 55px;
+            height: 55px;
+            background-color: transparent;
+            border-radius: 50%;
+            border: 4px solid white;
+            /* outer white border */
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            transition: border-color 0.3s ease;
+        }
+
+        #democaptureBtn::before {
+            content: "";
+            width: 35px;
+            height: 35px;
+            background-color: white;
+            /* inner circle */
+            border-radius: 50%;
+            display: block;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+            transition: opacity 0.3s ease;
+        }
+
+        #captureBtn {
+            width: 70px;
+            height: 70px;
+            background-color: transparent;
+            border-radius: 50%;
+            border: 4px solid white;
+            /* outer white border */
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            transition: border-color 0.3s ease;
+        }
+
+        #captureBtn::before {
+            content: "";
+            width: 40px;
+            height: 40px;
+            background-color: white;
+            /* inner circle */
+            border-radius: 50%;
+            display: block;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+            transition: opacity 0.3s ease;
+        }
+
+
+        #captureBtn.loader {
+            border-color: transparent;
+            background-color: transparent;
+            position: relative;
+            pointer-events: none;
+            /* disable clicks while loading */
+        }
+
+        #captureBtn.loader::before {
+            content: "";
+            box-sizing: border-box;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 40px;
+            height: 40px;
+            margin-top: -20px;
+            margin-left: -20px;
+            border-radius: 50%;
+            border: 4px solid white;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+            background: transparent;
+            box-shadow: none;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+
+        /* Rotation keyframes */
+        @keyframes rotateLoader {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+
+
+        #switchCameraBtn {
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            color: rgb(0, 0, 0);
+            background: linear-gradient(90deg, #f8f8f8, #fcf9ff);
+            user-select: none;
+            transition: background 0.3s ease;
+        }
+
+
+
+        #loadingText {
+            position: fixed;
+            top: 48%;
+            color: white;
+            font-size: 16px;
+            padding: 6px 12px;
+            z-index: 10;
+            user-select: none;
+            display: none;
+        }
+
+
+
+        #phone {
+            width: 300px;
+            height: 600px;
+            border: 15px solid #333;
+            border-radius: 40px;
+            overflow: hidden;
+            position: relative;
+            margin: 50px auto;
+            margin-top: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            background: #000;
+            transition: transform 3s ease-in-out;
+            transform-origin: center center;
+        }
+
+        #imageContainer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 110vh;
+            width: 100%;
+            transition: transform 8s ease-in-out;
+        }
+
+        #imageContainer img {
+            height: 100%;
+            width: 130%;
+            object-fit: cover;
+            display: block;
+            transition: transform 3s ease-in-out;
+            transform-origin: center center;
+        }
+
+        #wallArt {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background-position: center;
+            background-size: contain;
+            background-repeat: no-repeat;
+            transform: scale(0.4) translateY(-20%);
+            transform-origin: center center;
+            transition: transform 2s ease-in-out;
+        }
+
+
+        #leftColumn {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: black;
+            padding: 20px;
+        }
+
+        .highlighted-text {
+            font-weight: 900;
+            font-size: 1.8rem;
+            color: #7209b7;
+            /* deep violet */
+            background: linear-gradient(90deg, #f72585, #7209b7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+            margin-top: 0.4in;
+        }
+
+        .light-text {
+            font-weight: 500;
+            font-size: 1rem;
+            color: #181818;
+            /* lighter grey */
+            margin-bottom: 0.25in;
+            margin-top: 0.3in;
+        }
+
+        .qr-code {
+            width: 180px;
+            height: 180px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(245, 245, 245, 0.3);
+            /* pink shadow */
+            margin-bottom: 20px;
+        }
+
+        .link-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: #0e46ad;
+            margin-bottom: 8px;
+            margin-top: 10px;
+        }
+
+        .link-box {
+            width: 100%;
+            max-width: 450px;
+            padding: 10px 15px;
+            font-size: 1rem;
+            font-weight: 500;
+            border: 1px solid #0e46ad;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            color: #0e46ad;
+        }
+
+
+        /* Desktop overrides */
+        @media (min-width: 1025px) {
+            body {
+                background: #f6f4f7;
+                overflow-x: auto;
+                overflow-y: auto;
+            }
+        }
+
+
+        /* CSS: Add this to your stylesheet or inside a <style> tag */
+        #page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #ffffff;
+            /* White background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .loader-circle {
+            border: 6px solid #e0e0e0;
+            /* Light grey circle background */
+            border-top: 6px solid rgb(223, 86, 223);
+            /* Violet colored front for spinner */
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        #resetTip {
+            position: absolute;
+            top: 120px;
+            padding: 0.5rem;
+            /* 8px */
+            background-color: rgba(31, 41, 55, 0.7);
+            /* gray-800/70 */
+            color: white;
+            font-size: 0.75rem;
+            /* text-xs */
+            border-radius: 9999px;
+            /* fully rounded */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+                0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            /* shadow-lg */
+            z-index: 30;
+            opacity: 0.7;
+            display: none;
+        }
+
+
+
+        #message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            /* center horizontally and vertically */
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            /* 16px */
+            background-color: rgba(127, 28, 185, 0.8);
+            /* red-700/80 */
+            border-radius: 0.5rem;
+            /* rounded-lg */
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            /* shadow-2xl */
+            z-index: 50;
+            display: none;
+        }
     </style>
 </head>
+
 <body>
 
-<div id="viewportContainer">
+    <div id="viewportContainer">
 
-    <!-- Camera Feed Element -->
-    <video id="cameraFeed" autoplay playsinline muted></video>
+        <!-- Camera Feed Element -->
+        <video id="cameraFeed" autoplay playsinline muted></video>
 
-    <!-- Art Image URL Input Bar -->
-    <div id="urlInputBar" class="absolute top-4 left-1/2 -translate-x-1/2 w-11/12 max-w-lg bg-gray-900/80 p-3 rounded-xl shadow-2xl z-40 flex flex-col space-y-2 md:space-y-0 md:flex-row md:space-x-2">
-        <input
-            type="url"
-            id="newImageUrl"
-            placeholder="Paste new Art URL here (e.g., JPEG, PNG)"
-            value="https://zindvera.github.io/mockoverflow/media/wall-art-demo.jpg"
-            class="flex-grow p-2 rounded-lg text-sm bg-gray-700 text-white placeholder-gray-400 focus:ring-indigo-500 focus:border-indigo-500 border-none"
-        />
-        <button id="applyUrlBtn" class="px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg text-sm transition-colors active:scale-95">
-            Change Art
-        </button>
+        <!-- Image Overlay - Added crossorigin="anonymous" to allow canvas capture -->
+        <img id="overlayImage" crossorigin="anonymous"
+            src="https://zindvera.github.io/mockoverflow/media/wall-art-demo.jpg" alt="Wall Art Overlay"
+            class="w-72 h-auto rounded-xl shadow-2xl" draggable="false">
+
+        <!-- Message/Error Display -->
+        <div id="message">
+            Awaiting camera permission...
+        </div>
+
+        <!-- Hidden Tip/Reset Indicator -->
+        <div id="resetTip">
+            Drag, Pinch, or Double-Tap to Reset
+        </div>
+
+        <!-- Capture Button -->
+        <div id="controls">
+            <button id="captureBtn" aria-label="Capture Picture"></button>
+        </div>
+
     </div>
 
-    <!-- Image Overlay - Added crossorigin="anonymous" to allow canvas capture -->
-    <img
-        id="overlayImage"
-        crossorigin="anonymous"
-        src="https://zindvera.github.io/mockoverflow/media/wall-art-demo.jpg"
-        alt="Wall Art Overlay"
-        class="w-72 h-auto rounded-xl shadow-2xl"
-        draggable="false"
-        onerror="this.src='https://placehold.co/256x256/374151/ffffff?text=Art+Loading+Failed';"
-    >
 
-    <!-- Message/Error Display -->
-    <div id="message" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white text-center p-4 bg-red-700/80 rounded-lg shadow-2xl z-50 hidden">
-        Awaiting camera permission...
+    <!-- Hidden Canvas for Image Processing/Capture -->
+    <canvas id="captureCanvas" style="display:none;"></canvas>
+
+
+
+    <div class="container mt-3" id="desktopAlert">
+        <div class="row" style="padding:15px; background:#fff;">
+            <!-- Left Column: QR code instructions -->
+            <div class="col-6 text-center" id="leftColumn">
+                <h2 class="highlighted-text">For better experience, open it in phone or tablet</h2>
+                <p class="light-text">Scan QR code to open this in phone or tablet</p>
+                <img src="https://previews.123rf.com/images/foxindustry/foxindustry1310/foxindustry131000007/23317483-sample-qr-code-ready-to-scan-with-smart-phone.jpg"
+                    alt="Scan QR Code" class="qr-code" />
+                <p class="link-text">or you can use this link</p>
+                <input type="text" readonly value="https://example.com/your-link" class="link-box" />
+            </div>
+            <!-- Right Column: Phone Demo -->
+            <div class="col-6">
+                <div id="phone">
+                    <div id="imageContainer">
+                        <img id="bedroomImage" src="" alt="Bedroom" />
+                    </div>
+                    <div id="wallArt"></div>
+                    <div id="phonecontrols">
+                        <div id="democaptureBtn"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
     </div>
 
-    <!-- Hidden Tip/Reset Indicator -->
-    <div id="resetTip" class="absolute top-[120px] p-2 bg-gray-800/70 text-white text-xs rounded-full shadow-lg z-30 opacity-70 hidden md:block">
-        Drag, Pinch, or Double-Tap to Reset
-    </div>
-    
-    <!-- Capture Button -->
-    <button id="captureBtn" class="absolute bottom-6 p-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-full shadow-lg z-40 transition-colors active:scale-95 flex items-center justify-center space-x-2">
-        <!-- Icon: Camera (Lucide icon, using inline SVG) -->
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
-        <span>Capture</span>
-    </button>
 
-</div>
 
-<!-- Hidden Canvas for Image Processing/Capture -->
-<canvas id="captureCanvas" style="display:none;"></canvas>
+    <script>
 
-<script>
-    const video = document.getElementById('cameraFeed');
-    const overlay = document.getElementById('overlayImage');
-    const message = document.getElementById('message');
-    const resetTip = document.getElementById('resetTip');
-    
-    // Capture feature elements
-    const captureBtn = document.getElementById('captureBtn');
-    const captureCanvas = document.getElementById('captureCanvas');
-    const ctx = captureCanvas.getContext('2d');
-    
-    // Elements for URL Input
-    const newImageUrl = document.getElementById('newImageUrl');
-    const applyUrlBtn = document.getElementById('applyUrlBtn');
 
-    // Initial state for the overlay image transformations
-    let state = {
-        x: 0,
-        y: 0,
-        scale: 1,
-        rotation: 0,
-        // Temporary variables for gesture start
-        startX: 0,
-        startY: 0,
-        baseX: 0,
-        baseY: 0,
-        baseScale: 1,
-        baseRotation: 0,
-    };
-
-    // Map to track all active pointers (touch IDs)
-    const activePointers = new Map();
-    let initialDistance = null;
-    let initialAngle = null;
-
-    // Function to apply the current state to the overlay's CSS transform
-    const updateOverlay = () => {
-        overlay.style.transform = `translateX(${state.x}px) translateY(${state.y}px) scale(${state.scale}) rotate(${state.rotation}deg)`;
-    };
-    updateOverlay(); // Initialize transform
-
-    // --- Camera Access ---
-    async function startCamera() {
-        message.classList.remove('hidden');
-        message.textContent = 'Awaiting camera permission...';
-
-        try {
-            // Request the highest possible resolution (ideal values for 4K)
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: {
-                    facingMode: 'environment',
-                    width: { ideal: 4096 },  // Request high width
-                    height: { ideal: 2160 } // Request high height
-                }
-            });
-            video.srcObject = stream;
-            message.classList.add('hidden'); // Hide message on success
-
-            video.play().catch(e => console.error("Video play failed:", e));
-            
-            // Log the actual resolution obtained
-            video.addEventListener('loadedmetadata', () => {
-                console.log(`Video Stream Resolution: ${video.videoWidth}x${video.videoHeight}`);
-            }, { once: true });
-
-        } catch (err) {
-            console.error("Error accessing camera: ", err);
-            message.classList.remove('hidden');
-            message.textContent = 'Camera access denied or unavailable. Please enable permissions.';
-            video.style.display = 'none'; // Hide video if camera fails
+        // Device check: mobile/tablet if <= 1024px width, else desktop
+        function getDeviceType() {
+            return (window.innerWidth <= 1024) ? 'mobile' : 'desktop';
         }
-    }
 
-    // --- Multi-Touch Gesture Logic (Pointer Events) ---
+        function handleConditionalElements() {
+            const viewportContainer = document.getElementById('viewportContainer');
+            const desktopAlert = document.getElementById('desktopAlert');
 
-    // Helper to get distance and angle between two active pointers
-    function getPinchDetails() {
-        const pointers = Array.from(activePointers.values());
-        if (pointers.length < 2) return null;
-
-        const p1 = pointers[0];
-        const p2 = pointers[1];
-
-        const dx = p1.clientX - p2.clientX;
-        const dy = p1.clientY - p2.clientY;
-
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        // Angle in degrees
-        const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-
-        return { distance, angle };
-    }
-
-    overlay.addEventListener('pointerdown', (e) => {
-        e.preventDefault();
-        overlay.setPointerCapture(e.pointerId);
-
-        // Add the new pointer
-        activePointers.set(e.pointerId, {
-            id: e.pointerId,
-            clientX: e.clientX,
-            clientY: e.clientY
-        });
-
-        if (activePointers.size === 1) {
-            // Single pointer: Setup for translation (pan)
-            state.startX = e.clientX;
-            state.startY = e.clientY;
-            state.baseX = state.x; // Store the current translation
-            state.baseY = state.y;
-            overlay.classList.add('cursor-grabbing');
-
-        } else if (activePointers.size === 2) {
-            // Two pointers: Setup for scale/rotate (pinch)
-            const details = getPinchDetails();
-            if (details) {
-                initialDistance = details.distance;
-                initialAngle = details.angle;
-                // Store the current scale/rotation as the base for the gesture
-                state.baseScale = state.scale;
-                state.baseRotation = state.rotation;
-            }
-            overlay.classList.remove('cursor-grabbing');
-        }
-    });
-
-    overlay.addEventListener('pointermove', (e) => {
-        // Check if the pointer exists in our map and the button is pressed (important for mouse events)
-        if (!activePointers.has(e.pointerId)) return;
-        e.preventDefault();
-
-        // Update the position of the moved pointer
-        activePointers.get(e.pointerId).clientX = e.clientX;
-        activePointers.get(e.pointerId).clientY = e.clientY;
-
-        if (activePointers.size === 1) {
-            // Single pointer: Pan/Translate
-            const dx = e.clientX - state.startX;
-            const dy = e.clientY - state.startY;
-
-            state.x = state.baseX + dx;
-            state.y = state.baseY + dy;
-
-        } else if (activePointers.size >= 2) {
-            // Multi-pointer: Pinch/Rotate
-            const currentDetails = getPinchDetails();
-            if (currentDetails && initialDistance && initialAngle) {
-                // 1. Scale
-                const scaleFactor = currentDetails.distance / initialDistance;
-                // Clamp scale to prevent image from disappearing or becoming too large
-                state.scale = Math.min(2.5, Math.max(0.2, state.baseScale * scaleFactor));
-
-                // 2. Rotation
-                const rotationDelta = currentDetails.angle - initialAngle;
-                state.rotation = state.baseRotation + rotationDelta;
+            if (getDeviceType() === 'desktop') {
+                if (viewportContainer) viewportContainer.remove();
+            } else {
+                if (desktopAlert) desktopAlert.remove();
+                openCamera();
             }
         }
-        updateOverlay();
-    });
 
-    function pointerEnd(e) {
-        // Check if this pointer was captured (i.e., initiated on the overlay)
-        if (!activePointers.has(e.pointerId)) return;
+        handleConditionalElements();
 
-        activePointers.delete(e.pointerId);
 
-        if (activePointers.size < 2) {
-            // Stop scaling/rotating setup
-            initialDistance = null;
-            initialAngle = null;
-        }
+        function openCamera() {
 
-        if (activePointers.size === 1) {
-            // If one pointer remains, reset translation base for the remaining finger to allow smooth continuous pan
-            const remainingPointer = Array.from(activePointers.values())[0];
-            state.startX = remainingPointer.clientX;
-            state.startY = remainingPointer.clientY;
-            state.baseX = state.x;
-            state.baseY = state.y;
-            overlay.classList.add('cursor-grabbing');
-        }
+            const video = document.getElementById('cameraFeed');
+            const overlay = document.getElementById('overlayImage');
+            const message = document.getElementById('message');
+            const resetTip = document.getElementById('resetTip');
 
-        if (activePointers.size === 0) {
-            overlay.classList.remove('cursor-grabbing');
-        }
-    }
+            // Capture feature elements
+            const captureBtn = document.getElementById('captureBtn');
+            const captureCanvas = document.getElementById('captureCanvas');
+            const ctx = captureCanvas.getContext('2d');
 
-    overlay.addEventListener('pointerup', pointerEnd);
-    overlay.addEventListener('pointercancel', pointerEnd);
-    overlay.addEventListener('pointerleave', pointerEnd);
+            // Elements for URL Input
+            const newImageUrl = document.getElementById('newImageUrl');
 
-    // --- Double-Tap to Reset Logic ---
-    let lastTap = 0;
-    overlay.addEventListener('click', () => {
-        const now = new Date().getTime();
-        const timesince = now - lastTap;
-
-        if ((timesince < 300) && (timesince > 0)) {
-            // Double tap detected
-            state = {
+            // Initial state for the overlay image transformations
+            let state = {
                 x: 0,
                 y: 0,
                 scale: 1,
                 rotation: 0,
-                startX: 0, startY: 0, baseX: 0, baseY: 0, baseScale: 1, baseRotation: 0
+                // Temporary variables for gesture start
+                startX: 0,
+                startY: 0,
+                baseX: 0,
+                baseY: 0,
+                baseScale: 1,
+                baseRotation: 0,
             };
-            updateOverlay();
-            // Brief visual feedback for reset
-            resetTip.textContent = "RESET!";
-            setTimeout(() => {
-                resetTip.textContent = "Drag, Pinch, or Double-Tap to Reset";
-            }, 1000);
-        }
-        lastTap = now;
-    });
-    
-    // --- Image Change Logic ---
-    function setNewArtImage() {
-        const url = newImageUrl.value.trim();
-        if (!url) {
-            message.textContent = "Please enter a valid image URL.";
-            message.classList.remove('hidden');
-            setTimeout(() => message.classList.add('hidden'), 3000);
-            return;
-        }
 
-        // 1. Create a temporary image element to check loading and handle CORS
-        const tempImg = new Image();
-        tempImg.crossOrigin = "anonymous";
-        
-        message.textContent = "Loading new art...";
-        message.classList.remove('hidden');
+            // Map to track all active pointers (touch IDs)
+            const activePointers = new Map();
+            let initialDistance = null;
+            let initialAngle = null;
 
-        tempImg.onload = () => {
-            // 2. Image loaded successfully, update the main overlay
-            overlay.src = url;
-            message.textContent = "Art changed successfully!";
-            setTimeout(() => message.classList.add('hidden'), 2000);
-            
-            // 3. Reset transformations for the new image to start centered
-            state = { x: 0, y: 0, scale: 1, rotation: 0, startX: 0, startY: 0, baseX: 0, baseY: 0, baseScale: 1, baseRotation: 0 };
-            updateOverlay();
-        };
+            // Function to apply the current state to the overlay's CSS transform
+            const updateOverlay = () => {
+                overlay.style.transform = `translateX(${state.x}px) translateY(${state.y}px) scale(${state.scale}) rotate(${state.rotation}deg)`;
+            };
+            updateOverlay(); // Initialize transform
 
-        tempImg.onerror = () => {
-            message.textContent = "Failed to load image from URL. Ensure it's a direct link and supports CORS.";
-            // Keep error message visible for longer
-            setTimeout(() => message.classList.add('hidden'), 5000);
-        };
-
-        // 4. Start loading the image
-        tempImg.src = url;
-    }
-
-    // --- Capture Logic ---
-    function captureFrame() {
-        // Use the intrinsic resolution of the video track for full quality capture
-        const intrinsicWidth = video.videoWidth;
-        const intrinsicHeight = video.videoHeight;
-        
-        // Set actual canvas drawing surface size to match video stream resolution
-        captureCanvas.width = intrinsicWidth;
-        captureCanvas.height = intrinsicHeight;
-        
-        ctx.clearRect(0, 0, intrinsicWidth, intrinsicHeight);
-
-        // 1. Draw the Video Frame (Background) at its intrinsic size
-        ctx.drawImage(video, 0, 0, intrinsicWidth, intrinsicHeight);
-
-        // 2. Calculate scale factor to map screen coordinates to high-res canvas coordinates
-        const clientWidth = video.clientWidth;
-        const clientHeight = video.clientHeight;
-
-        // These ratios scale screen pixels to intrinsic video pixels
-        const scaleFactorX = intrinsicWidth / clientWidth;
-        const scaleFactorY = intrinsicHeight / clientHeight;
-
-        // 3. Draw the Overlay Image with Transformations on the high-res canvas
-        ctx.save();
-        
-        // Calculate the size the image is currently rendered at on screen
-        const displayedWidth = overlay.offsetWidth;
-        const displayedHeight = overlay.offsetHeight;
-
-        // Calculate the high-resolution draw size for the overlay
-        const overlayDrawWidth = displayedWidth * scaleFactorX;
-        const overlayDrawHeight = displayedHeight * scaleFactorY;
-
-        // Calculate the translation (x, y) also scaled up from screen pixels
-        const scaledX = state.x * scaleFactorX;
-        const scaledY = state.y * scaleFactorY;
-        
-        // High-res canvas center point
-        const canvasCenterX = intrinsicWidth / 2;
-        const canvasCenterY = intrinsicHeight / 2;
-        
-        // Apply transformations
-        // Translate to the center of the image's final, transformed position on the high-res canvas
-        ctx.translate(canvasCenterX + scaledX, canvasCenterY + scaledY);
-        ctx.rotate(state.rotation * Math.PI / 180);
-        
-        // Apply the user's scale factor
-        ctx.scale(state.scale, state.scale);
-        
-        // Draw the image, centered on the current translated/rotated origin
-        ctx.drawImage(
-            overlay,
-            -overlayDrawWidth / 2,
-            -overlayDrawHeight / 2,
-            overlayDrawWidth,
-            overlayDrawHeight
-        );
-        
-        ctx.restore();
-
-        // 4. Get the image as a Blob and open it in a new tab as a URL
-        captureCanvas.toBlob(blob => {
-            if (!blob) {
-                message.textContent = "Capture failed: Unable to create image blob.";
+            // --- Camera Access ---
+            async function startCamera() {
                 message.classList.remove('hidden');
-                setTimeout(() => message.classList.add('hidden'), 3000);
-                return;
-            }
-            const url = URL.createObjectURL(blob);
-            const newWindow = window.open(url);
-            if (!newWindow) {
-                message.textContent = "Capture failed: Pop-ups blocked. Please allow pop-ups for image preview.";
-                message.classList.remove('hidden');
-                setTimeout(() => message.classList.add('hidden'), 5000);
-                URL.revokeObjectURL(url);
-                return;
-            }
-            // Note: Do not revoke URL immediately because the new tab needs to load the image
-        }, 'image/png');
-    }
+                message.textContent = 'Awaiting camera permission...';
 
-    // --- Event Listeners ---
-    captureBtn.addEventListener('click', captureFrame);
-    applyUrlBtn.addEventListener('click', setNewArtImage);
+                try {
+                    // Request the highest possible resolution (ideal values for 4K)
+                    const stream = await navigator.mediaDevices.getUserMedia({
+                        video: {
+                            facingMode: 'environment',
+                            width: { ideal: 4096 },  // Request high width
+                            height: { ideal: 2160 } // Request high height
+                        }
+                    });
+                    video.srcObject = stream;
+                    message.classList.add('hidden'); // Hide message on success
 
-    // Start the camera when the window loads
-    window.onload = startCamera;
-</script>
+                    video.play().catch(e => console.error("Video play failed:", e));
+
+                    // Log the actual resolution obtained
+                    video.addEventListener('loadedmetadata', () => {
+                        console.log(`Video Stream Resolution: ${video.videoWidth}x${video.videoHeight}`);
+                    }, { once: true });
+
+                } catch (err) {
+                    console.error("Error accessing camera: ", err);
+                    message.classList.remove('hidden');
+                    message.textContent = 'Camera access denied or unavailable. Please enable permissions.';
+                    video.style.display = 'none'; // Hide video if camera fails
+                }
+            }
+
+            // --- Multi-Touch Gesture Logic (Pointer Events) ---
+
+            // Helper to get distance and angle between two active pointers
+            function getPinchDetails() {
+
+                const pointers = Array.from(activePointers.values());
+                if (pointers.length < 2) return null;
+
+                const p1 = pointers[0];
+                const p2 = pointers[1];
+
+                const dx = p1.clientX - p2.clientX;
+                const dy = p1.clientY - p2.clientY;
+
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                // Angle in degrees
+                const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+
+                return { distance, angle };
+            }
+
+            overlay.addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                overlay.setPointerCapture(e.pointerId);
+
+                // Add the new pointer
+                activePointers.set(e.pointerId, {
+                    id: e.pointerId,
+                    clientX: e.clientX,
+                    clientY: e.clientY
+                });
+
+                if (activePointers.size === 1) {
+                    // Single pointer: Setup for translation (pan)
+                    state.startX = e.clientX;
+                    state.startY = e.clientY;
+                    state.baseX = state.x; // Store the current translation
+                    state.baseY = state.y;
+                    overlay.classList.add('cursor-grabbing');
+
+                } else if (activePointers.size === 2) {
+                    // Two pointers: Setup for scale/rotate (pinch)
+                    const details = getPinchDetails();
+                    if (details) {
+                        initialDistance = details.distance;
+                        initialAngle = details.angle;
+                        // Store the current scale/rotation as the base for the gesture
+                        state.baseScale = state.scale;
+                        state.baseRotation = state.rotation;
+                    }
+                    overlay.classList.remove('cursor-grabbing');
+                }
+            });
+
+            overlay.addEventListener('pointermove', (e) => {
+                // Check if the pointer exists in our map and the button is pressed (important for mouse events)
+                if (!activePointers.has(e.pointerId)) return;
+                e.preventDefault();
+
+                // Update the position of the moved pointer
+                activePointers.get(e.pointerId).clientX = e.clientX;
+                activePointers.get(e.pointerId).clientY = e.clientY;
+
+                if (activePointers.size === 1) {
+                    // Single pointer: Pan/Translate
+                    const dx = e.clientX - state.startX;
+                    const dy = e.clientY - state.startY;
+
+                    state.x = state.baseX + dx;
+                    state.y = state.baseY + dy;
+
+                } else if (activePointers.size >= 2) {
+                    // Multi-pointer: Pinch/Rotate
+                    const currentDetails = getPinchDetails();
+                    if (currentDetails && initialDistance && initialAngle) {
+                        // 1. Scale
+                        const scaleFactor = currentDetails.distance / initialDistance;
+                        // Clamp scale to prevent image from disappearing or becoming too large
+                        state.scale = Math.min(2.5, Math.max(0.2, state.baseScale * scaleFactor));
+
+                        // 2. Rotation
+                        const rotationDelta = currentDetails.angle - initialAngle;
+                        state.rotation = state.baseRotation + rotationDelta;
+                    }
+                }
+                updateOverlay();
+            });
+
+            function pointerEnd(e) {
+                // Check if this pointer was captured (i.e., initiated on the overlay)
+                if (!activePointers.has(e.pointerId)) return;
+
+                activePointers.delete(e.pointerId);
+
+                if (activePointers.size < 2) {
+                    // Stop scaling/rotating setup
+                    initialDistance = null;
+                    initialAngle = null;
+                }
+
+                if (activePointers.size === 1) {
+                    // If one pointer remains, reset translation base for the remaining finger to allow smooth continuous pan
+                    const remainingPointer = Array.from(activePointers.values())[0];
+                    state.startX = remainingPointer.clientX;
+                    state.startY = remainingPointer.clientY;
+                    state.baseX = state.x;
+                    state.baseY = state.y;
+                    overlay.classList.add('cursor-grabbing');
+                }
+
+                if (activePointers.size === 0) {
+                    overlay.classList.remove('cursor-grabbing');
+                }
+            }
+
+            overlay.addEventListener('pointerup', pointerEnd);
+            overlay.addEventListener('pointercancel', pointerEnd);
+            overlay.addEventListener('pointerleave', pointerEnd);
+
+            // --- Double-Tap to Reset Logic ---
+            let lastTap = 0;
+            overlay.addEventListener('click', () => {
+                const now = new Date().getTime();
+                const timesince = now - lastTap;
+
+                if ((timesince < 300) && (timesince > 0)) {
+                    // Double tap detected
+                    state = {
+                        x: 0,
+                        y: 0,
+                        scale: 1,
+                        rotation: 0,
+                        startX: 0, startY: 0, baseX: 0, baseY: 0, baseScale: 1, baseRotation: 0
+                    };
+                    updateOverlay();
+                    // Brief visual feedback for reset
+                    resetTip.textContent = "RESET!";
+                    setTimeout(() => {
+                        resetTip.textContent = "Drag, Pinch, or Double-Tap to Reset";
+                    }, 1000);
+                }
+                lastTap = now;
+            });
+
+
+
+            function captureFrame() {
+                const captureBtn = document.getElementById('captureBtn');
+                captureBtn.classList.add('loader');  // Show loader animation
+
+                const intrinsicWidth = video.videoWidth;
+                const intrinsicHeight = video.videoHeight;
+
+                captureCanvas.width = intrinsicWidth;
+                captureCanvas.height = intrinsicHeight;
+
+                ctx.clearRect(0, 0, intrinsicWidth, intrinsicHeight);
+                ctx.drawImage(video, 0, 0, intrinsicWidth, intrinsicHeight);
+
+                const clientWidth = video.clientWidth;
+                const clientHeight = video.clientHeight;
+
+                const scaleFactorX = intrinsicWidth / clientWidth;
+                const scaleFactorY = intrinsicHeight / clientHeight;
+
+                const displayedWidth = overlay.offsetWidth;
+                const displayedHeight = overlay.offsetHeight;
+
+                const overlayDrawWidth = displayedWidth * scaleFactorX;
+                const overlayDrawHeight = displayedHeight * scaleFactorY;
+
+                const scaledX = state.x * scaleFactorX;
+                const scaledY = state.y * scaleFactorY;
+
+                const canvasCenterX = intrinsicWidth / 2;
+                const canvasCenterY = intrinsicHeight / 2;
+
+                ctx.save();
+                ctx.translate(canvasCenterX + scaledX, canvasCenterY + scaledY);
+                ctx.rotate(state.rotation * Math.PI / 180);
+                ctx.scale(state.scale, state.scale);
+                ctx.drawImage(
+                    overlay,
+                    -overlayDrawWidth / 2,
+                    -overlayDrawHeight / 2,
+                    overlayDrawWidth,
+                    overlayDrawHeight
+                );
+                ctx.restore();
+
+                captureCanvas.toBlob(blob => {
+                    captureBtn.classList.remove('loader');  // Remove loader animation
+
+                    if (!blob) {
+                        message.textContent = "Capture failed: Unable to create image blob.";
+                        message.classList.remove('hidden');
+                        setTimeout(() => message.classList.add('hidden'), 3000);
+                        return;
+                    }
+                    const url = URL.createObjectURL(blob);
+                    const newWindow = window.open(url);
+                    if (!newWindow) {
+                        message.textContent = "Capture failed: Pop-ups blocked. Please allow pop-ups for image preview.";
+                        message.classList.remove('hidden');
+                        setTimeout(() => message.classList.add('hidden'), 5000);
+                        URL.revokeObjectURL(url);
+                        return;
+                    }
+                    // Keep the loader off because new tab opened successfully
+                    // The user can click captureBtn again normally
+                }, 'image/png');
+            }
+
+
+
+            // --- Event Listeners ---
+            captureBtn.addEventListener('click', captureFrame);
+
+
+            // Start the camera when the window loads
+            window.onload = startCamera;
+
+
+
+        }
+
+
+
+
+
+
+        if (getDeviceType() === 'desktop') {
+            const bedroomSrc = "media/wall-demo.jpg";
+            const wallArtSrc = "media/wall-art-demo.jpg";
+
+            const bedroomImage = document.getElementById('bedroomImage');
+            const wallArtDiv = document.getElementById('wallArt');
+            const phone = document.getElementById('phone');
+            const imageContainer = document.getElementById('imageContainer');
+
+            bedroomImage.src = bedroomSrc;
+            wallArtDiv.style.backgroundImage = `url(${wallArtSrc})`;
+
+            let toLeft = true;
+            let step = 0;
+            let rotated = false;
+            let paused = false;
+            let slideInterval, wallArtInterval;
+
+            function slideImage() {
+                if (paused) return;
+                if (!rotated) {
+                    imageContainer.style.transform = toLeft ? "translateX(-70px)" : "translateX(0)";
+                } else {
+                    imageContainer.style.transform = toLeft ? "translateY(-70px)" : "translateY(0)";
+                }
+                toLeft = !toLeft;
+            }
+
+            function animateWallArt() {
+                if (paused) return;
+                switch (step) {
+
+
+                    case 0:
+                        wallArtDiv.style.transform = "scale(0.6) translateY(-30%) ";
+                        break;
+                    case 1:
+                        wallArtDiv.style.transform = "scale(0.4) translateY(-40%) ";
+                        break;
+                    case 2:
+                        wallArtDiv.style.transform = "scale(0.35) translateY(-18%) ";
+                        break;
+                    case 3:
+                        wallArtDiv.style.transform = "scale(0.54) translateY(-29%) ";
+                        break;
+                    case 4:
+                        wallArtDiv.style.transform = "scale(0.35) translateY(-35%) ";
+                        break;
+                    case 5:
+                        wallArtDiv.style.transform = "scale(0.38) translateY(-27%) ";
+                        break;
+                    case 6:
+                        wallArtDiv.style.transform = "scale(0.5) translateY(-32%) ";
+                        break;
+                    case 7:
+                        wallArtDiv.style.transform = "scale(0.4) translateY(-22%) ";
+                        break;
+                    case 8:
+                        wallArtDiv.style.transform = "scale(0.55) translateY(-19%) ";
+                        break;
+                    case 9:
+                        wallArtDiv.style.transform = "scale(0.4) translateY(-25%) ";
+                        break;
+
+                }
+                step = (step + 1) % 10;
+            }
+
+            function startAnimations() {
+                slideInterval = setInterval(slideImage, 5000);
+                wallArtInterval = setInterval(animateWallArt, 5000);
+                slideImage();
+                animateWallArt();
+            }
+
+            function stopAnimations() {
+                paused = true;
+                clearInterval(slideInterval);
+                clearInterval(wallArtInterval);
+            }
+
+            // Start animations initially
+            setTimeout(startAnimations, 2500);
+        }
+
+    </script>
 </body>
+
 </html>
