@@ -22,8 +22,6 @@
       overflow-y: hidden;
     }
 
-
-
     #previewCanvas {
       background: #1f1f1f;
       cursor: grab;
@@ -74,8 +72,6 @@
       transition: background 0.3s ease;
     }
 
-
-
     #switchCameraBtn {
       padding: 12px 24px;
       font-size: 16px;
@@ -88,8 +84,6 @@
       user-select: none;
       transition: background 0.3s ease;
     }
-
-
 
     #phonecaptureBtn {
       padding: 8px;
@@ -104,8 +98,6 @@
       transition: background 0.3s ease;
     }
 
-
-
     #phoneswitchCameraBtn {
       padding: 8px;
       font-size: 16px;
@@ -119,7 +111,6 @@
       transition: background 0.3s ease;
     }
 
-
     #loadingText {
       position: fixed;
       top: 48%;
@@ -130,8 +121,6 @@
       user-select: none;
       display: none;
     }
-
-
 
     #phone {
       width: 300px;
@@ -180,7 +169,6 @@
       transform-origin: center center;
       transition: transform 2s ease-in-out;
     }
-
 
     #leftColumn {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -238,7 +226,6 @@
       color: #0e46ad;
     }
 
-
     /* Desktop overrides */
     @media (min-width: 1025px) {
       body {
@@ -290,17 +277,14 @@
     }
   </style>
 
-
 </head>
 
 <body>
-
 
   <!-- HTML: Place this inside your <body> at the very top -->
   <div id="page-loader">
     <div class="loader-circle"></div>
   </div>
-
 
   <div class="camera-container" id="cameraContainer">
     <div id="loadingText">Loading camera...</div>
@@ -311,9 +295,6 @@
       <button id="captureBtn" aria-label="Capture Picture">Capture</button>
     </div>
   </div>
-
-
-
 
   <div class="container mt-3" id="desktopAlert">
     <div class="row" style="padding:15px; background:#fff;">
@@ -339,12 +320,10 @@
             <button id="phonecaptureBtn" aria-label="Capture Picture">Capture</button>
           </div>
         </div>
- 
+
       </div>
     </div>
   </div>
-
-
 
   <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -355,10 +334,10 @@
       const loadingText = document.getElementById('loadingText');
 
       let stream = null;
-      let usingFrontCamera = false;
+      let usingFrontCamera = true;
       let video = null;
       let overlayImg = new Image();
-      overlayImg.src = 'https://zindvera.github.io/mockoverflow/media/wall-art-demo.jpg'; // overlay PNG path
+      overlayImg.src = '../../media/wall-art-demo.jpg'; // overlay PNG path
       let isOverlayLoaded = false;
 
       const overlayState = {
@@ -372,9 +351,6 @@
         lastY: 0,
       };
 
-
-
-
       // Device check: mobile/tablet if <= 1024px width, else desktop
       function getDeviceType() {
         return (window.innerWidth <= 1024) ? 'mobile' : 'desktop';
@@ -386,7 +362,6 @@
 
         if (getDeviceType() === 'desktop') {
           if (camera) camera.remove();
-
         } else {
           if (alert) alert.remove();
           // camera stays visible
@@ -615,6 +590,7 @@
         }
         ctx.restore();
 
+        // Draw the overlay image with current transform
         if (isOverlayLoaded) {
           ctx.save();
           const iw = overlayImg.width * overlayState.scale;
@@ -718,12 +694,7 @@
         }
       });
 
-
-
-
-
-      //Phone Demo Script Here 
-
+      // Phone Demo Script Here 
       if (getDeviceType() === 'desktop') {
         const bedroomSrc = "https://www.shutterstock.com/image-illustration/interior-modern-bedroom-beige-walls-600nw-2387252829.jpg";
         const wallArtSrc = overlayImg.src;
@@ -755,8 +726,6 @@
         function animateWallArt() {
           if (paused) return;
           switch (step) {
-
-
             case 0:
               wallArtDiv.style.transform = "scale(0.6) translateY(-20%) ";
               break;
@@ -787,7 +756,6 @@
             case 9:
               wallArtDiv.style.transform = "scale(0.4) translateY(-25%) ";
               break;
-
           }
           step = (step + 1) % 10;
         }
@@ -818,9 +786,7 @@
         loader.style.display = 'none'; // Hide loader after full page load
       }
     });
-
   </script>
 </body>
 
 </html>
-
