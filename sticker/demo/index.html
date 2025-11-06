@@ -428,7 +428,7 @@
 
         <!-- Image Overlay - Added crossorigin="anonymous" to allow canvas capture -->
         <img id="overlayImage" crossorigin="anonymous"
-            src="asset.png" alt="Wall Art Overlay"
+            src="asset.png?t=4" alt="Wall Art Overlay"
             class="w-72 h-auto rounded-xl shadow-2xl" draggable="false">
 
         <!-- Message/Error Display -->
@@ -812,7 +812,7 @@
 
         if (getDeviceType() === 'desktop') {
             const bedroomSrc = "../../media/laptop-demo.jpg";
-            const wallArtSrc = "asset.png";
+            const wallArtSrc = "asset.png?t=5";
 
             const bedroomImage = document.getElementById('bedroomImage');
             const wallArtDiv = document.getElementById('wallArt');
@@ -899,6 +899,7 @@
 </body>
 
 </html>
+
 
 
 
