@@ -616,7 +616,18 @@
           <div class="example-box">
             <h5 class="mb-4 mt-5 ms-2" style="font-weight:600;color:#3c3a50">Example</h5>
             <div class="example-image">
-              <img id="mockupdemo" src="media/wall-mockupdemo.jpg" alt="" srcset="">
+              
+              <picture>
+  <!-- Desktop view: 1200px and wider -->
+  <source media="(min-width: 1200px)" srcset="wallart-mockupdemo-desktop.jpg">
+
+  <!-- Tablet view: 600px to 1199px -->
+  <source media="(min-width: 600px)" srcset=""wallart-mockupdemo-tablet.jpg">
+
+  <!-- Phone view: less than 600px -->
+  <img src=""wallart-mockupdemo-phone.jpg" alt="Responsive Image">
+</picture>
+
             </div>
           </div>
 
@@ -786,6 +797,7 @@
 
 
 </html>
+
 
 
 
