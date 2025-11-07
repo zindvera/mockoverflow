@@ -547,14 +547,50 @@
   }
 
 
+    .example-image,
+.example-image picture,
+.example-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+  box-sizing: border-box;
+}
+
+
   /* Desktop overrides */
-  @media (min-width: 1025px) {
+  @media (min-width: 1200px) {
     #mockupdemo {
       width: 70%;
     }
 
+      .example-image,
+.example-image picture,
+.example-image img {
+  width: 90%;
+  height: auto;
+  display: block;
+  box-sizing: border-box;
+}
+
+    
   }
 
+
+  //For tablet device
+   @media (min-width: 600px) {
+
+      .example-image,
+.example-image picture,
+.example-image img {
+  width: 95%;
+  height: auto;
+  display: block;
+  box-sizing: border-box;
+}
+   }
+
+
+  
   /* Tablet & Phone view */
   @media (max-width: 1024px) {
     #mockupdemo {
@@ -574,15 +610,7 @@
 
   }
 
-  .example-image,
-.example-image picture,
-.example-image img {
-  max-width: 100%;
-  width: 100%;
-  height: auto;
-  display: block;
-  box-sizing: border-box;
-}
+
 
 </style>
 </head>
@@ -830,6 +858,7 @@
 
 
 </html>
+
 
 
 
