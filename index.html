@@ -513,21 +513,30 @@
   }
 
 
-  /* Desktop overrides */
-  @media (min-width: 1025px) {
-    #mockupdemo {
-      width: 70%;
-    }
 
+  .example-image,
+.example-image picture,
+.example-image img {
+  height: auto;
+  display: block;
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+/* Phone view: width 100% (less than 600px) */
+@media (max-width: 599px) {
+  .example-image picture,
+  .example-image img {
+    width: 100%;
   }
 
-  /* Tablet & Phone view */
-  @media (max-width: 1024px) {
-    #mockupdemo {
-      width: 100%;
+      #createFloatingBtn {
+      bottom: 20px;
+      right: 50%;
+      transform: translateX(50%);
     }
 
-    #linkDescription {
+      #linkDescription {
       color: #560574;
       text-align: center;
       margin-left: 0.15in;
@@ -538,25 +547,48 @@
       font-weight: 700;
     }
 
-  }
-
-  /* Center bottom on phones */
-  @media (max-width: 600px) {
-    #createFloatingBtn {
-      bottom: 20px;
-      right: 50%;
-      transform: translateX(50%);
+      #mockupdemo {
+      width: 100%;
     }
+
+}
+
+/* Tablet view: width 95% (600px to 1199px) */
+@media (min-width: 600px) and (max-width: 1199px) {
+  .example-image picture,
+  .example-image img {
+    width: 95%;
   }
 
+      #linkDescription {
+      color: #560574;
+      text-align: center;
+      margin-left: 0.15in;
+      margin-right: 0.15in;
+      margin-top: 0.45in;
+      margin-bottom: 0.35in;
+      font-size: 30px;
+      font-weight: 700;
+    }
 
-.example-image img {
-  max-width: 100%;
-  width: 100%;
-  height: auto;
-  display: block;
-  box-sizing: border-box;
+      #mockupdemo {
+      width: 100%;
+    }
+
 }
+
+/* Desktop view: width 90% (1200px and above) */
+@media (min-width: 1200px) {
+  .example-image picture,
+  .example-image img {
+    width: 90%;
+  }
+
+      #mockupdemo {
+      width: 70%;
+    }
+}
+
 </style>
 </head>
 
@@ -806,6 +838,7 @@
 
 
 </html>
+
 
 
 
