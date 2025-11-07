@@ -547,57 +547,25 @@
   }
 
 
-    .example-image,
+
+  .example-image,
 .example-image picture,
 .example-image img {
-  width: 100%;
   height: auto;
   display: block;
   box-sizing: border-box;
+  max-width: 100%;
 }
 
-
-  /* Desktop overrides */
-  @media (min-width: 1200px) {
-    #mockupdemo {
-      width: 70%;
-    }
-
-      .example-image,
-.example-image picture,
-.example-image img {
-  width: 90%;
-  height: auto;
-  display: block;
-  box-sizing: border-box;
-}
-
-    
+/* Phone view: width 100% (less than 600px) */
+@media (max-width: 599px) {
+  .example-image picture,
+  .example-image img {
+    width: 100%;
   }
 
 
-  //For tablet device
-   @media (min-width: 600px) {
-
-      .example-image,
-.example-image picture,
-.example-image img {
-  width: 95%;
-  height: auto;
-  display: block;
-  box-sizing: border-box;
-}
-   }
-
-
-  
-  /* Tablet & Phone view */
-  @media (max-width: 1024px) {
-    #mockupdemo {
-      width: 100%;
-    }
-
-    #linkDescription {
+      #linkDescription {
       color: #560574;
       text-align: center;
       margin-left: 0.15in;
@@ -608,8 +576,47 @@
       font-weight: 700;
     }
 
+      #mockupdemo {
+      width: 100%;
+    }
+
+}
+
+/* Tablet view: width 95% (600px to 1199px) */
+@media (min-width: 600px) and (max-width: 1199px) {
+  .example-image picture,
+  .example-image img {
+    width: 95%;
   }
 
+      #linkDescription {
+      color: #560574;
+      text-align: center;
+      margin-left: 0.15in;
+      margin-right: 0.15in;
+      margin-top: 0.45in;
+      margin-bottom: 0.35in;
+      font-size: 30px;
+      font-weight: 700;
+    }
+
+      #mockupdemo {
+      width: 100%;
+    }
+
+}
+
+/* Desktop view: width 90% (1200px and above) */
+@media (min-width: 1200px) {
+  .example-image picture,
+  .example-image img {
+    width: 90%;
+  }
+
+      #mockupdemo {
+      width: 70%;
+    }
+}
 
 
 </style>
@@ -858,6 +865,7 @@
 
 
 </html>
+
 
 
 
