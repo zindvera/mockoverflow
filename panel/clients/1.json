@@ -3,53 +3,13 @@
     "name": "Vineet Kumar",
     "products": [
         {
-            "id": 5,
-            "url": "https:\/\/github.com\/",
-            "product_type": "wall art",
-            "package_name": "free trial",
-            "creation_date": "2025-11-11",
-            "last_payment_date": "2025-11-11",
-            "payment_amount": "",
-            "expiry_date": "2025-11-18"
-        },
-        {
-            "id": 4,
-            "url": "https:\/\/vineetkum25softwork.github.io\/Tindex\/submit.html",
-            "product_type": "wall art",
-            "package_name": "free trial",
-            "creation_date": "2025-11-11",
-            "last_payment_date": "2025-11-11",
-            "payment_amount": "",
-            "expiry_date": "2025-11-18"
-        },
-        {
-            "id": 3,
-            "url": "http:\/\/localhost\/mockoverflow\/client.php?client-id=3",
-            "product_type": "wall art",
-            "package_name": "free trial",
-            "creation_date": "2025-11-11",
-            "last_payment_date": "2025-11-11",
-            "payment_amount": "",
-            "expiry_date": "2025-11-18"
-        },
-        {
-            "id": 2,
-            "url": "http:\/\/localhost\/mockoverflow\/client.php?client-id=3",
-            "product_type": "wall art",
-            "package_name": "free trial",
-            "creation_date": "2025-11-11",
-            "last_payment_date": "2025-11-11",
-            "payment_amount": "",
-            "expiry_date": "2025-11-18"
-        },
-        {
             "id": 1,
             "url": "https:\/\/vineetkum25softwork.github.io\/Tindex\/submit.html",
             "product_type": "wall art",
             "package_name": "free trial",
             "creation_date": "2025-11-11",
             "last_payment_date": "2025-11-11",
-            "payment_amount": "5 USD",
+            "payment_amount": "",
             "expiry_date": "2025-11-18"
         }
     ]
