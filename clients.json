@@ -1,0 +1,20 @@
+[
+    {
+        "id": 1,
+        "name": "Vineet Kumar",
+        "whatsapp": "82523791841",
+        "email": "vineetkum25@gmail.com"
+    },
+    {
+        "id": 2,
+        "name": "mukesh",
+        "whatsapp": "1234568523",
+        "email": "mukesh@gmail.com"
+    },
+    {
+        "id": 3,
+        "name": "ravi",
+        "whatsapp": "4145544454",
+        "email": "sikofe7983@nalwan.com"
+    }
+]
