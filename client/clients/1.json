@@ -3,34 +3,14 @@
     "name": "Vineet Kumar",
     "products": [
         {
-            "id": 3,
+            "id": 1,
             "url": "https:\/\/github.com\/",
             "product_type": "sticker",
             "package_name": "month",
             "creation_date": "2025-11-11",
             "last_payment_date": "2025-11-11",
-            "payment_amount": "5 USD",
+            "payment_amount": "1 USD",
             "expiry_date": "2025-12-11"
-        },
-        {
-            "id": 2,
-            "url": "https:\/\/vineetkum25softwork.github.io\/Tindex\/submit.html",
-            "product_type": "wall art",
-            "package_name": "free trial",
-            "creation_date": "2025-11-11",
-            "last_payment_date": "2025-11-11",
-            "payment_amount": "",
-            "expiry_date": "2025-11-18"
-        },
-        {
-            "id": 1,
-            "url": "https:\/\/vineetkum25softwork.github.io\/Tindex\/submit.html",
-            "product_type": "wall art",
-            "package_name": "free trial",
-            "creation_date": "2025-11-11",
-            "last_payment_date": "2025-11-11",
-            "payment_amount": "",
-            "expiry_date": "2025-11-18"
         }
     ]
 }
