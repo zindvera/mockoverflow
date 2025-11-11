@@ -1,0 +1,22 @@
+# Ignore all node_modules folders recursively
+node_modules/
+
+# Or explicitly ignore node_modules inside admin folder
+admin/node_modules/
+
+# Ignore logs
+*.log
+
+# Ignore Mac and OS files
+.DS_Store
+
+# Ignore environment files
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Ignore npm debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

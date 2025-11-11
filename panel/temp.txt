@@ -1,0 +1,6 @@
+
+Your SSH key pair has been successfully generated and saved at:
+
+Private key: C:\Users\hp\.ssh\id_ed25519
+
+Public key: C:\Users\hp\.ssh\id_ed25519.pub
