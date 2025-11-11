@@ -269,9 +269,13 @@
       window.history.replaceState({}, '', url);
     }
 
+    // Updated fetchJSON function with cache-buster
     async function fetchJSON(url) {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`Failed to fetch: ${url}`);
+      const cacheBuster = new Date().getTime();
+      const delimiter = url.includes('?') ? '&' : '?';
+      const urlWithCacheBuster = `${url}${delimiter}v=${cacheBuster}`;
+      const response = await fetch(urlWithCacheBuster);
+      if (!response.ok) throw new Error(`Failed to fetch: ${urlWithCacheBuster}`);
       return response.json();
     }
 
