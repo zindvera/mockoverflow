@@ -1,0 +1,16 @@
+{
+    "id": 1,
+    "name": "Vineet Kumar 25",
+    "products": [
+        {
+            "id": 1,
+            "url": "https:\/\/vineetkum25softwork.github.io\/Tindex\/submit.html",
+            "product_type": "wall art",
+            "package_name": "year",
+            "last_payment_date": "2025-11-11",
+            "payment_amount": "4 USD",
+            "expiry_date": "2026-11-11",
+            "creation_date": "2025-11-11"
+        }
+    ]
+}
