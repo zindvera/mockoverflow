@@ -3,6 +3,16 @@
     "name": "Vineet Kumar 25",
     "products": [
         {
+            "id": 3,
+            "url": "https:\/\/github.com\/",
+            "product_type": "sticker",
+            "package_name": "month",
+            "creation_date": "2025-11-11",
+            "last_payment_date": "2025-11-11",
+            "payment_amount": "0.5 USD",
+            "expiry_date": "2025-12-11"
+        },
+        {
             "id": 2,
             "url": "https:\/\/www.prodigi.com\/",
             "product_type": "wall art",
