@@ -366,7 +366,7 @@
       clientIdParam = getQueryParam('client-id');
       currentPage = parseInt(getQueryParam('page')) || 1;
 
-      cachedClients = await fetchJSON('../clients.json');
+      cachedClients = await fetchJSON('clients.json');
 
       let clientsToShow = cachedClients;
       if (clientIdParam) {
@@ -382,7 +382,7 @@
       renderClients(clientsToShow);
 
       if (clientsToShow.length === 1) {
-        cachedProducts = (await fetchJSON(`../clients/${clientsToShow[0].id}.json`)).products || [];
+        cachedProducts = (await fetchJSON(`clients/${clientsToShow[0].id}.json`)).products || [];
       } else {
         cachedProducts = [];
       }
