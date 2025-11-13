@@ -5,12 +5,12 @@
         {
             "id": 1,
             "url": "http:\/\/localhost\/mockoverflow\/client.php?client-id=3",
-            "product_type": "sticker",
-            "package_name": "free trial",
-            "creation_date": "2025-11-13",
+            "product_type": "wall art",
+            "package_name": "month",
             "last_payment_date": "2025-11-13",
             "payment_amount": "",
-            "expiry_date": "2025-11-20"
+            "expiry_date": "2025-12-13",
+            "creation_date": "2025-11-13"
         }
     ]
 }
