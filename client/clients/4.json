@@ -1,0 +1,16 @@
+{
+    "id": 4,
+    "name": "Mukesh Khanna",
+    "products": [
+        {
+            "id": 1,
+            "url": "http:\/\/localhost\/mockoverflow\/client.php?client-id=3",
+            "product_type": "sticker",
+            "package_name": "free trial",
+            "creation_date": "2025-11-13",
+            "last_payment_date": "2025-11-13",
+            "payment_amount": "",
+            "expiry_date": "2025-11-20"
+        }
+    ]
+}
