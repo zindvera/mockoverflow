@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MOCKOVERFLOW - See Your Wall Art Live</title>
+  <meta name="robots" content="noindex">
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+</head>
+<!-- Inter Font for Modern Look -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet" />
+<!-- Pacifico Cursive Font for Custom Text -->
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet" />
+
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Momo+Trust+Display&display=swap');
+
+  body {
+    font-family: 'Inter', "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    background: linear-gradient(120deg, #f6f8fa 0%, #eaf2fb 100%);
+    color: #2a2a4d;
+    font-weight: 500;
+    font-size: 1.18rem;
+    line-height: 1.7;
+    letter-spacing: 0.03em;
+    margin: 0;
+    padding: 0;
+  }
+
+  header {
+    color: #9b30bb;
+    font-size: 30px;
+    letter-spacing: 0.07em;
+    font-weight: 700;
+    text-align: center;
+    border-radius: 0 0 32px 32px;
+    box-shadow: 0 4px 18px -2px rgba(60, 20, 200, 0.12);
+    margin-bottom: 0;
+  }
+
+  nav {
+    margin-top: 20px;
+    padding-bottom: 10px;
+    display: flex;
+    justify-content: center;
+    gap: 56px;
+    font-weight: 600;
+    font-size: 1.18rem;
+    background: transparent;
+    border-bottom: 1px solid #ececff;
+  }
+
+  nav a {
+    color: #252533;
+    text-decoration: none;
+    position: relative;
+    padding-bottom: 9px;
+    border-bottom: 2px solid transparent;
+    transition: border-color 0.2s, color 0.18s;
+    font-weight: 500;
+  }
+
+  nav a.selected,
+  nav a:hover {
+    color: #3335a5;
+    border-bottom: 2.5px solid #5557e6;
+    font-weight: 700;
+  }
+
+  .create-cta {
+    margin: 40px 0 24px 0;
+    text-align: center;
+  }
+
+  .create-cta a {
+    display: inline-block;
+    background-image: linear-gradient(90deg, #F72585 0%, #B5179E 100%);
+    color: #fff;
+    padding: 18px 52px;
+    border-radius: 99px;
+    font-size: 1.28rem;
+    font-weight: 700;
+    border: none;
+    letter-spacing: 0.04em;
+    box-shadow: 0 2px 16px -3px #b5179e67;
+    transition: background 0.22s, box-shadow 0.21s;
+    text-decoration: none;
+  }
+
+  .create-cta a:hover {
+    background-image: linear-gradient(90deg, #b5179e 0%, #7209b7 100%);
+    box-shadow: 0 4px 20px -2px #b5179e55;
+    color: #fff;
+    text-decoration: none;
+  }
+
+
+  h1 {
+    font-size: 40px;
+    font-weight: 900;
+    color: #2b0131;
+    padding: 20px 16px 4px 16px;
+    margin: 4px auto 46px auto;
+    max-width: 600px;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  .for-wall-art-seller {
+    font-weight: 400;
+    font-size: 29px;
+    color: #000000;
+    letter-spacing: 0.04em;
+    opacity: 0.75;
+    margin-bottom: 4px;
+    max-width: 600px;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 40px;
+    margin-bottom: 40px;
+  }
+
+  .for-wall-art-highlight {
+    font-family: "Momo Trust Display", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 35px;
+    font-weight: 700;
+    color: #a0108a;
+    display: inline-block;
+    letter-spacing: 0.05em;
+    transition: color 0.3s;
+    position: relative;
+    padding-bottom: 14px;
+    cursor: default;
+  }
+
+  .for-wall-art-highlight svg {
+    position: absolute;
+    bottom: 2px;
+    left: 0;
+    width: 100%;
+    height: 10px;
+    pointer-events: none;
+  }
+
+  .cursive-text-below-phone {
+    font-family: 'Pacifico', cursive;
+    font-size: 30px;
+    color: #222227;
+    text-align: center;
+    margin-top: 12px;
+    margin-bottom: 4px;
+  }
+
+  .cursive-highlight {
+    font-family: "Momo Trust Display", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 34px;
+    background-image: linear-gradient(90deg, #FF4D94, #7B2FF7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+    transition: background 0.3s;
+    letter-spacing: 0.02em;
+    padding-bottom: 14px;
+    cursor: default;
+    position: relative;
+  }
+
+  .cursive-highlight svg {
+    position: absolute;
+    bottom: 2px;
+    left: 0;
+    width: 100%;
+    height: 10px;
+    pointer-events: none;
+  }
+
+  .output-text {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #3a3a6a;
+    margin-bottom: 0.3in;
+    margin-top: 0.5in;
+  }
+
+  .overview-box {
+    padding: 25px 15px 0px 15px;
+    font-size: 1.05rem;
+    line-height: 1.5;
+  }
+
+  .example-box {
+    padding: 0px 8px 18px 8px;
+    font-size: 1.05rem;
+    line-height: 1.5;
+  }
+
+  .custom-you-will-get {
+    font-weight: 900;
+    font-size: 40px;
+    color: #161516;
+    text-align: center;
+    text-transform: none;
+    margin-top: 36px;
+    margin-bottom: 36px;
+  }
+
+  .section-heading {
+    font-size: 1.45rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: #3a0ca3;
+    margin: 56px 0 37px 0;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  #phone {
+    width: 300px;
+    height: 600px;
+    border: 16px solid #424242;
+    border-radius: 46px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 0 28px 0px #bdbdbd40;
+    background: #000;
+    margin: 0 auto 44px;
+  }
+
+  #imageContainer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 110vh;
+    width: 100%;
+    transition: transform 8s cubic-bezier(0.62, 0.21, 0.38, 0.95);
+  }
+
+  #imageContainer img {
+    height: 100%;
+    width: 130%;
+    object-fit: cover;
+    display: block;
+    transition: transform 3s cubic-bezier(0.4, 0.72, 0.39, 0.98);
+    transform-origin: center center;
+  }
+
+  #wallArt {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    background-position: center;
+    background-size: contain;
+    background-repeat: no-repeat;
+    transform: scale(0.4) translateY(-20%);
+    transform-origin: center center;
+    transition: transform 2s cubic-bezier(0.56, 0.1, 0.92, 0.9);
+  }
+
+  #openCameraBtn {
+    position: absolute;
+    text-decoration: none;
+    bottom: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    padding: 18px 0;
+    background-image: linear-gradient(90deg, #5E60CE 0%, #3A0CA3 100%);
+    color: #fff;
+    font-weight: 800;
+    font-size: 1.19rem;
+    border: none;
+    border-radius: 42px;
+    cursor: pointer;
+    z-index: 10;
+    box-shadow: 0 4px 16px -2px #3a0ca352;
+    transition: background 0.3s, box-shadow 0.24s;
+    text-align: center;
+    letter-spacing: 0.04em;
+  }
+
+  #openCameraBtn:hover {
+    background-image: linear-gradient(90deg, #7209b7 10%, #4361ee 90%);
+    color: #fff;
+    box-shadow: 0 2px 30px -3px #3a0ca338;
+  }
+
+  .output-col {
+    background: #fcfcff;
+    border-radius: 19px;
+    box-shadow: 0 8px 34px -8px #4b2ca34a;
+    margin-bottom: 38px;
+    border: 1.5px solid #ececff;
+  }
+
+  .output-col h2 {
+    font-size: 23px;
+    font-weight: 800;
+    color: #B5179E;
+    margin-bottom: 18px;
+    letter-spacing: 0.04em;
+    text-align: left;
+  }
+
+  .output-linkbox-center {
+    justify-content: center;
+    width: 70%;
+    margin: 20px auto 16px auto;
+    padding: 0;
+  }
+
+  @media (max-width: 600px) {
+    .output-linkbox-center {
+      width: 100%;
+      padding: 0;
+    }
+
+  }
+
+  .link-inner {
+    background: linear-gradient(90deg, #f4eaff 60%, #f8f6ff 100%);
+    border-radius: 13px;
+    padding: 14px 25px;
+    box-shadow: 0 2px 10px -4px #b5179e24;
+    font-size: 1.06rem;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    color: #480ca8;
+    display: flex;
+    align-items: center;
+    text-align: center;
+  }
+
+  .link-inner input {
+    border: none;
+    background: transparent;
+    width: 100%;
+    text-align: center;
+    font-size: 1.06rem;
+    color: #480ca8;
+    outline: none;
+  }
+
+  .highlight-text {
+    background: linear-gradient(90deg, #f3f3f3 60%, #f3f3f3 100%);
+    border-radius: 14px;
+    padding: 20px;
+    margin: 16px 0;
+    word-break: break-all;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #480ca8;
+    letter-spacing: 0.03em;
+    box-shadow: 0 2px 10px -4px #b5179e24;
+  }
+
+  .output-imgcard-row {
+    display: flex;
+    gap: 18px;
+    margin-top: 18px;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding-bottom: 8px;
+  }
+
+  .output-imgcard {
+    width: 250px;
+    height: 250px;
+    border-radius: 16px;
+    background: #e6edf3;
+    object-fit: cover;
+    border: 1.5px solid #e0e0ef;
+    display: inline-block;
+    box-shadow: 0 2px 12px -4px #B5179E33;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .output-imgcard:hover {
+    box-shadow: 0 8px 30px -8px #B5179E45;
+    transform: scale(1.035);
+  }
+
+  .qr-img {
+    display: block;
+    margin: 0 auto 16px;
+    width: 100px;
+    height: 100px;
+    background: #f0f0f0;
+    border-radius: 14px;
+    object-fit: contain;
+    box-shadow: 0 4px 12px -6px #5E60CE33;
+  }
+
+  footer {
+    background: linear-gradient(90deg, #dfe3f5 0%, #f7f7ff 100%);
+    color: #414683;
+    font-size: 1.13rem;
+    font-weight: 600;
+    border-radius: 18px 18px 0 0;
+    text-align: center;
+    margin: 48px auto 0 auto;
+    padding: 28px 10px 22px 10px;
+    letter-spacing: 0.02em;
+    box-shadow: 0 -2px 18px -9px #6d74c267;
+  }
+
+  footer a {
+    color: #5E60CE;
+    text-decoration: underline;
+    font-weight: 800;
+    transition: color 0.18s;
+  }
+
+  footer a:hover {
+    color: #B5179E;
+  }
+
+  .underline-svg {
+    rotate: -0.7deg;
+  }
+
+  #mockupdemo {
+    width: 100%;
+  }
+
+
+
+
+
+
+  /* CSS: Add this to your stylesheet or inside a <style> tag */
+  #page-loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #ffffff;
+    /* White background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+
+  .loader-circle {
+    border: 6px solid #e0e0e0;
+    /* Light grey circle background */
+    border-top: 6px solid rgb(223, 86, 223);
+    /* Violet colored front for spinner */
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+
+  /* Floating Create button, hidden by default */
+  #createFloatingBtn {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 30px;
+    background-image: linear-gradient(90deg, #F72585 0%, #B5179E 100%);
+    color: #fff;
+    padding: 18px 52px;
+    border-radius: 99px;
+    font-size: 1.28rem;
+    font-weight: 700;
+    border: none;
+    letter-spacing: 0.04em;
+    box-shadow: 0 2px 16px -3px #b5179e67;
+    cursor: pointer;
+    z-index: 10000;
+    text-align: center;
+    text-decoration: none;
+    transition: background 0.22s, box-shadow 0.21s;
+  }
+
+  #createFloatingBtn:hover {
+    background-image: linear-gradient(90deg, #b5179e 0%, #7209b7 100%);
+    box-shadow: 0 4px 20px -2px #b5179e55;
+    color: #fff;
+    text-decoration: none;
+  }
+
+
+  #linkDescription {
+    text-align: center;
+    margin-left: 1in;
+    margin-right: 1in;
+    margin-top: 0.45in;
+    margin-bottom: 0.35in;
+    font-size: 40px;
+    font-weight: 600;
+    color: #560574;
+  }
+
+
+
+  .example-image,
+  .example-image picture,
+  .example-image img {
+    height: auto;
+    display: block;
+    box-sizing: border-box;
+    max-width: 100%;
+  }
+
+
+
+
+
+  /* Phone view: width 100% (less than 600px) */
+  @media (max-width: 599px) {
+
+    .example-image picture,
+    .example-image img {
+      width: 100%;
+    }
+
+    #createFloatingBtn {
+      bottom: 20px;
+      right: 50%;
+      transform: translateX(50%);
+    }
+
+    #linkDescription {
+      color: #560574;
+      text-align: center;
+      margin-left: 0.15in;
+      margin-right: 0.15in;
+      margin-top: 0.45in;
+      margin-bottom: 0.35in;
+      font-size: 30px;
+      font-weight: 700;
+    }
+
+    #mockupdemo {
+      width: 100%;
+    }
+
+  }
+
+  /* Tablet view: width 95% (600px to 1199px) */
+  @media (min-width: 600px) and (max-width: 1199px) {
+
+    .example-image picture,
+    .example-image img {
+      width: 95%;
+    }
+
+    #linkDescription {
+      color: #560574;
+      text-align: center;
+      margin-left: 0.15in;
+      margin-right: 0.15in;
+      margin-top: 0.45in;
+      margin-bottom: 0.35in;
+      font-size: 30px;
+      font-weight: 700;
+    }
+
+    #mockupdemo {
+      width: 100%;
+    }
+
+  }
+
+  /* Desktop view: width 90% (1200px and above) */
+  @media (min-width: 1200px) {
+
+    .example-image picture,
+    .example-image img {
+      width: 90%;
+    }
+
+    #mockupdemo {
+      width: 70%;
+    }
+  }
+</style>
+</head>
+
+<body>
+  <!-- HTML: Place this inside your <body> at the very top -->
+  <div id="page-loader">
+    <div class="loader-circle"></div>
+  </div>
+
+  <a href="create.html" id="createFloatingBtn" aria-label="Create your custom wall art preview">Create</a>
+
+  <header>MOCKOVERFLOW</header>
+  <nav>
+    <a href="index.html" class="selected">Wall Art</a>
+    <a href="sticker.html">Stickers</a>
+  </nav>
+  <main class="container-fluid">
+    <div class="introdiv row">
+      <div class="col-lg-6 col-md-6 col-12">
+
+        <div class="for-wall-art-seller">
+          Made For
+          <span class="for-wall-art-highlight pen-underline">
+            Wall Art Seller
+          </span>
+        </div>
+        <h1>Let people see your wall art on their own wall</h1>
+        <div class="create-cta">
+          <a href="create.html" aria-label="Create your custom wall art preview">Create</a>
+        </div>
+      </div>
+      <div class="col-lg-6 col-md-6 col-12">
+        <div id="phone">
+          <div id="imageContainer">
+            <img id="bedroomImage" src="media/wall-demo.jpg" alt="Bedroom" />
+          </div>
+          <div id="wallArt" style="background-image: url('media/wall-art-demo.png')">
+          </div>
+          <a href="wall-art/demo/index.html" id="openCameraBtn" aria-label="Open camera overlay preview">Open
+            Camera</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="cursive-text-below-phone">
+      If you will create such
+      <span class="cursive-highlight pen-underline">
+        camera preview mockup
+      </span>
+      then
+    </div>
+    <div class="custom-you-will-get">You will Get</div>
+
+    <div class="row justify-content-center mt-4">
+      <div class="col-lg-8 col-md-10 col-12 mx-auto px-0">
+        <div class="output-col">
+          <div class="overview-box">
+            <h2 style="font-size: 35px;">Link</h2>
+
+            <div class="output-linkbox-center mt-4">
+              <div class="link-inner">
+                <input type="text" readonly value="https://mockoverflow.online/wallart/yourid" />
+              </div>
+            </div>
+            <div class="output-text" style=" font-size: 21px; "><span style="font-weight:700; color: #B5179E;">You will get link</span> of your wall art
+            camera preview mockup.</div>
+
+          </div>
+
+
+          <div class="example-box ms-3" style="margin-top: 0.85in;">
+            <h5 class="extext" style="font-weight:600;color:#3c3a50; font-size: 25px;" >Example</h5>
+            <div class="example-image">
+              <h4 class="pt-3 pb-4" style="font-size: 18px; ">You can place link into your product description.</span>
+              </h4>
+
+              <p>Image here</p>
+
+            </div>
+            <div class="example-image">
+              <h4 class="pt-3 pb-4" style="font-size: 18px; ">You can place link into your Social Media.
+              </h4>
+
+              <p>Pinterest Pin Link & YouTube video description link - image for demo here</p>
+
+            </div>
+          </div>
+
+
+          <div id="linkDescription">
+            <hr style="padding-top: 15px;">
+            <span>"Potential customers can click the link to see how your wall art looks on their own
+              wall."</span>
+          </div>
+
+
+        </div>
+      </div>
+
+      <div class="col-lg-8 col-md-10 col-12 mx-auto px-0">
+        <div class="output-col">
+          <div class="overview-box">
+            <h2 style="font-size: 35px;">QR Code</h2> <br />
+            <div class="littleside">
+              <img class="qr-img" src="media/wallart-mockupdemo-qr.jpg" alt="Preview QR Code" />
+              <div class="output-text" style=" font-size: 21px; "><span style="font-weight:600; color: #B5179E;">Create your own QR code using the link</span> to
+                provide a live camera preview.</div>
+            </div>
+          </div>
+          <div class="example-box ms-3" style="margin-top: 0.85in;">
+            <h5 class="extext" style="font-weight:600;color:#3c3a50; font-size: 25px;" >Example</h5>
+            <div class="example-image">
+              <h4 class="pt-3 pb-4" style=" font-size: 18px; ">You can place QR code into your product mockup images.
+              </h4>
+
+              <picture>
+                <!-- Desktop view: 1200px and wider -->
+                <source media="(min-width: 1200px)" srcset="media/wallart-mockupdemo-desktop.jpg"
+                  alt="Scan QR to see wall art on your wall">
+
+                <!-- Tablet view: 600px to 1199px -->
+                <source media="(min-width: 600px)" srcset="media/wallart-mockupdemo-tablet.jpg"
+                  alt="Scan QR to see wall art on your wall">
+
+                <!-- Phone view: less than 600px -->
+                <img src="media/wallart-mockupdemo-phone.jpg" alt="Scan QR to see wall art on your wall">
+              </picture>
+
+            </div>
+            <div class="example-image mt-5">
+              <h4 class="pt-3 pb-4" style=" font-size: 18px; ">You can place QR code into your Social Media.
+              </h4>
+
+                 <img style="width: 100%;" src="media/Pinterest.jpg" alt="Scan QR to see wall art on your wall">
+
+            </div>
+
+          </div>
+
+          <div id="linkDescription">
+            <hr style="padding-top: 15px;">
+            <span>"Potential customers can scan QR code to see how your wall art looks on their own
+              wall."</span>
+          </div>
+        </div>
+      </div>
+
+
+
+    </div>
+  </main>
+  <footer class="container-fluid mt-5">
+    <ul class="nav justify-content-center" style="font-size: 15px;">
+      <li class="nav-item">
+        <a class="nav-link" href="privacy.html">Privacy</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="terms.html">Terms & Conditions</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="cookies.html">Cookies</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="contact.html">Contact</a>
+      </li>
+
+    </ul>
+    <br>
+    <p>&copy; 2025 MOCKOVERFLOW</p>
+  </footer>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const imageContainer = document.getElementById('imageContainer');
+      const wallArtDiv = document.getElementById('wallArt');
+      let toLeft = true;
+      let step = 0;
+      let slideInterval, wallArtInterval;
+
+
+      function slideImage() {
+        switch (step) {
+          case 0:
+            imageContainer.style.transform = "translateX(-40px) translateY(0px)";
+            break;
+          case 1:
+            imageContainer.style.transform = "translateX(-30px) translateY(0px)";
+            break;
+          case 2:
+            imageContainer.style.transform = "translateX(-40px) translateY(0px)";
+            break;
+          case 3:
+            imageContainer.style.transform = "translateX(-25px) translateY(0px)";
+            break;
+          case 4:
+            imageContainer.style.transform = "translateX(0) translateY(0)";
+            break;
+        }
+        step = (step + 1) % 6;
+      }
+
+
+
+      function animateWallArt() {
+        switch (step) {
+
+          case 0:
+            wallArtDiv.style.transform = "scale(0.6) translateY(-40%) ";
+            break;
+          case 1:
+            wallArtDiv.style.transform = "scale(0.4) translateY(-30%) ";
+            break;
+          case 2:
+            wallArtDiv.style.transform = "scale(0.55) translateY(-42%) ";
+            break;
+          case 3:
+            wallArtDiv.style.transform = "scale(0.6) translateY(-28%) ";
+            break;
+          case 4:
+            wallArtDiv.style.transform = "scale(0.45) translateY(-20%) ";
+            break;
+          case 5:
+            wallArtDiv.style.transform = "scale(0.38) translateY(-28%) ";
+            break;
+          case 6:
+            wallArtDiv.style.transform = "scale(0.5) translateY(-18%) ";
+            break;
+          case 7:
+            wallArtDiv.style.transform = "scale(0.4) translateY(-23%) ";
+            break;
+          case 8:
+            wallArtDiv.style.transform = "scale(0.55) translateY(-19%) ";
+            break;
+          case 9:
+            wallArtDiv.style.transform = "scale(0.4) translateY(-25%) ";
+            break;
+
+        }
+        step = (step + 1) % 10;
+      }
+      function startAnimations() {
+        slideInterval = setInterval(slideImage, 5000);
+        wallArtInterval = setInterval(animateWallArt, 5000);
+        slideImage();
+        animateWallArt();
+      }
+      setTimeout(startAnimations, 2500);
+      document.getElementById('openCameraBtn').addEventListener('click', () => {
+        window.location.href = '/camera-overlay.html';
+      });
+
+
+
+
+      //For Create button stick bottom during scroll
+      const topCreateBtn = document.querySelector('.create-cta a');
+      const floatingCreateBtn = document.getElementById('createFloatingBtn');
+
+      function checkCreateBtnVisibility() {
+        const rect = topCreateBtn.getBoundingClientRect();
+        if (rect.bottom < 0) {
+          // Top button out of view - show floating button
+          floatingCreateBtn.style.display = 'inline-block';
+        } else {
+          // Top button visible - hide floating button
+          floatingCreateBtn.style.display = 'none';
+        }
+      }
+
+      window.addEventListener('scroll', checkCreateBtnVisibility);
+      checkCreateBtnVisibility();
+
+
+    });
+
+    // JavaScript: Place this just before closing </body> or inside a script tag
+    window.addEventListener('load', function () {
+      var loader = document.getElementById('page-loader');
+      if (loader) {
+        loader.style.display = 'none'; // Hide loader after full page load
+      }
+    });
+
+
+  </script>
+</body>
+
+
+</html>
