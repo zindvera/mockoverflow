@@ -190,17 +190,12 @@
     margin-top: 0.5in;
   }
 
-  .overview-box {
+  .standard-padding {
     padding: 25px 15px 0px 15px;
     font-size: 1.05rem;
     line-height: 1.5;
   }
 
-  .example-box {
-    padding: 0px 8px 18px 8px;
-    font-size: 1.05rem;
-    line-height: 1.5;
-  }
 
   .custom-you-will-get {
     font-weight: 900;
@@ -505,7 +500,7 @@
     text-align: center;
     margin-left: 1in;
     margin-right: 1in;
-    margin-top: 0.45in;
+    margin-top: 1.1in;
     margin-bottom: 0.35in;
     font-size: 40px;
     font-weight: 600;
@@ -513,30 +508,48 @@
   }
 
 
-
-  .example-image,
-.example-image picture,
-.example-image img {
-  height: auto;
-  display: block;
-  box-sizing: border-box;
-  max-width: 100%;
-}
-
-/* Phone view: width 100% (less than 600px) */
-@media (max-width: 599px) {
-  .example-image picture,
-  .example-image img {
-    width: 100%;
+  .example-image-1,
+  .example-image-1 picture,
+  .example-image-1 img {
+    height: auto;
+    display: block;
+    box-sizing: border-box;
+    max-width: 100%;
   }
 
-      #createFloatingBtn {
+
+  .example-image-2,
+  .example-image-2 picture,
+  .example-image-2 img {
+    height: auto;
+    display: block;
+    box-sizing: border-box;
+    max-width: 100%;
+  }
+
+
+
+
+  /* Phone view: width 100% (less than 600px) */
+  @media (max-width: 599px) {
+
+    .example-image-2 picture,
+    .example-image-2 img {
+      width: 100%;
+    }
+
+    .example-image-1 picture,
+    .example-image-1 img {
+      width: 100%;
+    }
+
+    #createFloatingBtn {
       bottom: 20px;
       right: 50%;
       transform: translateX(50%);
     }
 
-      #linkDescription {
+    #linkDescription {
       color: #560574;
       text-align: center;
       margin-left: 0.15in;
@@ -547,20 +560,26 @@
       font-weight: 700;
     }
 
-      #mockupdemo {
+    #mockupdemo {
       width: 100%;
     }
 
-}
-
-/* Tablet view: width 95% (600px to 1199px) */
-@media (min-width: 600px) and (max-width: 1199px) {
-  .example-image picture,
-  .example-image img {
-    width: 95%;
   }
 
-      #linkDescription {
+  /* Tablet view: width 95% (600px to 1199px) */
+  @media (min-width: 600px) and (max-width: 1199px) {
+
+    .example-image-1 picture,
+    .example-image-1 img {
+      width: 95%;
+    }
+
+    .example-image-2 picture,
+    .example-image-2 img {
+      width: 95%;
+    }
+
+    #linkDescription {
       color: #560574;
       text-align: center;
       margin-left: 0.15in;
@@ -571,24 +590,29 @@
       font-weight: 700;
     }
 
-      #mockupdemo {
+    #mockupdemo {
       width: 100%;
     }
 
-}
-
-/* Desktop view: width 90% (1200px and above) */
-@media (min-width: 1200px) {
-  .example-image picture,
-  .example-image img {
-    width: 90%;
   }
 
-      #mockupdemo {
+  /* Desktop view: width 90% (1200px and above) */
+  @media (min-width: 1200px) {
+
+    .example-image-1 picture,
+    .example-image-1 img {
+      width: 93%;
+    }
+
+    .example-image-2 picture,
+    .example-image-2 img {
+      width: 90%;
+    }
+
+    #mockupdemo {
       width: 70%;
     }
-}
-
+  }
 </style>
 </head>
 
@@ -643,65 +667,114 @@
     <div class="custom-you-will-get">You will Get</div>
 
     <div class="row justify-content-center mt-4">
-      <div class="col-lg-8 col-md-10 col-12 mx-auto px-0">
-        <div class="output-col">
-          <div class="overview-box">
-            <h2 style="font-size: 25px;">QR Code</h2> <br />
-            <div class="littleside">
-              <img class="qr-img"
-                src="media/wallart-mockupdemo-qr.jpg"
-                alt="Preview QR Code" />
-              <div class="output-text" style=" font-size: 21px; " >You can place QR code into your product mockup images.</div>
-            </div>
-          </div>
-          <div class="example-box">
-            <h5 class="mb-4 mt-5 ms-2" style="font-weight:600;color:#3c3a50">Example</h5>
-            <div class="example-image">
-              
-              <picture>
-  <!-- Desktop view: 1200px and wider -->
-  <source media="(min-width: 1200px)" srcset="media/wallart-mockupdemo-desktop.jpg" alt="Scan QR to see wall art on your wall" >
-
-  <!-- Tablet view: 600px to 1199px -->
-  <source media="(min-width: 600px)" srcset="media/wallart-mockupdemo-tablet.jpg" alt="Scan QR to see wall art on your wall" >
-
-  <!-- Phone view: less than 600px -->
-  <img src="media/wallart-mockupdemo-phone.jpg" alt="Scan QR to see wall art on your wall">
-</picture>
-
-            </div>
-          </div>
-
-          <div id="linkDescription">
-            <hr style="padding-top: 15px;">
-            <span>"Potential customers can scan QR code to see how your wall art looks on their own
-                wall."</span>
-          </div>
-        </div>
-      </div>
 
 
       <div class="col-lg-8 col-md-10 col-12 mx-auto px-0">
         <div class="output-col">
-          <div class="overview-box">
-            <h2 style="font-size: 25px;">Link</h2>
+          <div class="standard-padding">
+            <h2 style="font-size: 35px;">Link</h2>
 
             <div class="output-linkbox-center mt-4">
               <div class="link-inner">
-                <input type="text" readonly value="https://mockoverflow.online/wallart/yourid" />
+                <input type="text" readonly value="https://mockoverflow.online/wallart/1" />
               </div>
             </div>
-            <div class="output-text" style=" font-size: 21px; ">You can use link in your product description or
-              anywhere.</div>
-            <div id="linkDescription">
-              <hr style="padding-top: 15px;">
-              <span>"Potential customers can click the link to see how your wall art looks on their own
-                wall."</span>
+
+            <div class="output-text" style=" font-size: 21px; "><span style="font-weight:700; color: #B5179E;">You will
+                get link</span> of your wall art
+              camera preview mockup.</div>
+
+
+          </div>
+
+
+          <div class="example-box">
+            <div class="standard-padding">
+              <h5 style="padding-bottom: 0.25in; padding-top: 0.25in; font-weight:600;color:#3c3a50; font-size: 25px;">
+                Example</h5>
+
+              <div style=" font-size: 21px; margin-bottom: 0.4in;">You can use link in your website, blog or
+                anywhere.</div>
             </div>
+
+
+            <div class="example-image-1">
+
+              <picture>
+                <!-- Desktop view: 1200px and wider -->
+                <source media="(min-width: 1200px)" srcset="media/description-wall-art-link-desktop.jpg"
+                  alt="Scan QR to see wall art on your wall">
+
+                <!-- Tablet view: 600px to 1199px -->
+                <source media="(min-width: 600px)" srcset="media/description-wall-art-link-tablet.jpg"
+                  alt="Scan QR to see wall art on your wall">
+
+                <!-- Phone view: less than 600px -->
+                <img src="media/description-wall-art-link-phone.jpg" alt="Scan QR to see wall art on your wall">
+              </picture>
+
+            </div>
+          </div>
+
+          <div id="linkDescription" class="standard-padding">
+            <hr style="padding-top: 15px;">
+            <span>"Potential customers can click the link to see how your wall art looks on their own
+              wall."</span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-8 col-md-10 col-12 mx-auto px-0" style="margin-top: 1in;">
+      <div class="output-col">
+        <div class="standard-padding">
+          <h2 style="font-size: 35px;">QR Code</h2> <br />
+          <div class="littleside">
+            <img class="qr-img" src="media/wallart-mockupdemo-qr.jpg" alt="Preview QR Code" />
+
+            <div class="output-text" style=" font-size: 21px; "><span style="font-weight:600; color: #B5179E;">Create
+                your own QR code using the link</span> to
+              provide a live camera preview.</div>
+
+
 
           </div>
         </div>
+        <div class="example-box mt-5 ms-2">
+          <div class="standard-padding">
+            <h5 style="padding-bottom: 0.25in; padding-top: 0.25in; font-weight:600;color:#3c3a50; font-size: 25px;">
+              Example</h5>
+            <div style=" font-size: 21px; margin-bottom: 0.4in;">You can place QR code into your product mockup images.
+            </div>
+          </div>
+
+          <div class="example-image-2">
+            <picture>
+              <!-- Desktop view: 1200px and wider -->
+              <source media="(min-width: 1200px)" srcset="media/wallart-mockupdemo-desktop.jpg"
+                alt="Scan QR to see wall art on your wall">
+
+              <!-- Tablet view: 600px to 1199px -->
+              <source media="(min-width: 600px)" srcset="media/wallart-mockupdemo-tablet.jpg"
+                alt="Scan QR to see wall art on your wall">
+
+              <!-- Phone view: less than 600px -->
+              <img src="media/wallart-mockupdemo-phone.jpg" alt="Scan QR to see wall art on your wall">
+            </picture>
+
+          </div>
+        </div>
+
+        <div id="linkDescription" class="standard-padding">
+          <hr style="padding-top: 15px;">
+          <span>"Potential customers can scan QR code to see how your wall art looks on their own
+            wall."</span>
+        </div>
       </div>
+    </div>
+
+
     </div>
   </main>
   <footer class="container-fluid mt-5">
@@ -712,7 +785,7 @@
       <li class="nav-item">
         <a class="nav-link" href="terms.html">Terms & Conditions</a>
       </li>
-       <li class="nav-item">
+      <li class="nav-item">
         <a class="nav-link" href="cookies.html">Cookies</a>
       </li>
       <li class="nav-item">
@@ -841,27 +914,3 @@
 
 
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>MOCKOVERFLOW - See Your Sticker Product Live</title>
+  <title>MOCKOVERFLOW - See Your Wall Art Live</title>
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
@@ -183,24 +183,19 @@
   }
 
   .output-text {
-    font-size: 1.05rem;
+    font-size: 1.1rem;
     line-height: 1.6;
     color: #3a3a6a;
     margin-bottom: 0.3in;
     margin-top: 0.5in;
   }
 
-  .overview-box {
+  .standard-padding {
     padding: 25px 15px 0px 15px;
     font-size: 1.05rem;
     line-height: 1.5;
   }
 
-  .example-box {
-    padding: 0px 8px 18px 8px;
-    font-size: 1.05rem;
-    line-height: 1.5;
-  }
 
   .custom-you-will-get {
     font-weight: 900;
@@ -402,8 +397,8 @@
   }
 
   footer {
-    background: linear-gradient(90deg, #d0d5ed 0%, #e9eaff 100%);
-    color: #6d74c2;
+    background: linear-gradient(90deg, #dfe3f5 0%, #f7f7ff 100%);
+    color: #414683;
     font-size: 1.13rem;
     font-weight: 600;
     border-radius: 18px 18px 0 0;
@@ -436,30 +431,6 @@
 
 
 
-
-  footer {
-    background: linear-gradient(90deg, #dfe3f5 0%, #f7f7ff 100%);
-    color: #414683;
-    font-size: 1.13rem;
-    font-weight: 600;
-    border-radius: 18px 18px 0 0;
-    text-align: center;
-    margin: 48px auto 0 auto;
-    padding: 28px 10px 22px 10px;
-    letter-spacing: 0.02em;
-    box-shadow: 0 -2px 18px -9px #6d74c267;
-  }
-
-  footer a {
-    color: #5E60CE;
-    text-decoration: underline;
-    font-weight: 800;
-    transition: color 0.18s;
-  }
-
-  footer a:hover {
-    color: #B5179E;
-  }
 
 
   /* CSS: Add this to your stylesheet or inside a <style> tag */
@@ -525,12 +496,11 @@
   }
 
 
-
   #linkDescription {
     text-align: center;
     margin-left: 1in;
     margin-right: 1in;
-    margin-top: 0.45in;
+    margin-top: 1.1in;
     margin-bottom: 0.35in;
     font-size: 40px;
     font-weight: 600;
@@ -538,30 +508,48 @@
   }
 
 
-
-  .example-image,
-.example-image picture,
-.example-image img {
-  height: auto;
-  display: block;
-  box-sizing: border-box;
-  max-width: 100%;
-}
-
-/* Phone view: width 100% (less than 600px) */
-@media (max-width: 599px) {
-  .example-image picture,
-  .example-image img {
-    width: 100%;
+  .example-image-1,
+  .example-image-1 picture,
+  .example-image-1 img {
+    height: auto;
+    display: block;
+    box-sizing: border-box;
+    max-width: 100%;
   }
 
-      #createFloatingBtn {
+
+  .example-image-2,
+  .example-image-2 picture,
+  .example-image-2 img {
+    height: auto;
+    display: block;
+    box-sizing: border-box;
+    max-width: 100%;
+  }
+
+
+
+
+  /* Phone view: width 100% (less than 600px) */
+  @media (max-width: 599px) {
+
+    .example-image-2 picture,
+    .example-image-2 img {
+      width: 100%;
+    }
+
+    .example-image-1 picture,
+    .example-image-1 img {
+      width: 100%;
+    }
+
+    #createFloatingBtn {
       bottom: 20px;
       right: 50%;
       transform: translateX(50%);
     }
 
-      #linkDescription {
+    #linkDescription {
       color: #560574;
       text-align: center;
       margin-left: 0.15in;
@@ -572,20 +560,26 @@
       font-weight: 700;
     }
 
-      #mockupdemo {
+    #mockupdemo {
       width: 100%;
     }
 
-}
-
-/* Tablet view: width 95% (600px to 1199px) */
-@media (min-width: 600px) and (max-width: 1199px) {
-  .example-image picture,
-  .example-image img {
-    width: 95%;
   }
 
-      #linkDescription {
+  /* Tablet view: width 95% (600px to 1199px) */
+  @media (min-width: 600px) and (max-width: 1199px) {
+
+    .example-image-1 picture,
+    .example-image-1 img {
+      width: 95%;
+    }
+
+    .example-image-2 picture,
+    .example-image-2 img {
+      width: 95%;
+    }
+
+    #linkDescription {
       color: #560574;
       text-align: center;
       margin-left: 0.15in;
@@ -596,25 +590,29 @@
       font-weight: 700;
     }
 
-      #mockupdemo {
+    #mockupdemo {
       width: 100%;
     }
 
-}
-
-/* Desktop view: width 90% (1200px and above) */
-@media (min-width: 1200px) {
-  .example-image picture,
-  .example-image img {
-    width: 90%;
   }
 
-      #mockupdemo {
+  /* Desktop view: width 90% (1200px and above) */
+  @media (min-width: 1200px) {
+
+    .example-image-1 picture,
+    .example-image-1 img {
+      width: 93%;
+    }
+
+    .example-image-2 picture,
+    .example-image-2 img {
+      width: 90%;
+    }
+
+    #mockupdemo {
       width: 70%;
     }
-}
-
-
+  }
 </style>
 </head>
 
@@ -624,13 +622,12 @@
     <div class="loader-circle"></div>
   </div>
 
-  <a href="mockoverflow/create.html?for=sticker" id="createFloatingBtn" aria-label="Create your custom wall art preview">Create</a>
-
+  <a href="create.html" id="createFloatingBtn" aria-label="Create your custom wall art preview">Create</a>
 
   <header>MOCKOVERFLOW</header>
   <nav>
-    <a href="../../">Wall Art</a>
-    <a href=../../sticker.html" class="selected">Stickers</a>
+    <a href="index.html" >Wall Art</a>
+    <a href="sticker.html" class="selected" >Stickers</a>
   </nav>
   <main class="container-fluid">
     <div class="introdiv row">
@@ -639,7 +636,7 @@
         <div class="for-wall-art-seller">
           Made For
           <span class="for-wall-art-highlight pen-underline">
-            Sticker Seller
+            Sticker Sellers
           </span>
         </div>
         <h1>Let people see your sticker product on their object</h1>
@@ -670,80 +667,135 @@
     <div class="custom-you-will-get">You will Get</div>
 
     <div class="row justify-content-center mt-4">
-      <div class="col-lg-8 col-md-10 col-12 mx-auto px-0">
-        <div class="output-col">
-          <div class="overview-box">
-            <h2 style="font-size: 25px;">QR Code</h2> <br />
-            <div class="littleside">
-              <img class="qr-img"
-                src="media/sticker-mockupdemo-qr.jpg"
-                alt="Preview QR Code" />
-              <div class="output-text" style=" font-size: 21px; " >You can place QR code into your product mockup images.</div>
-            </div>
-          </div>
-          <div class="example-box">
-            <h5 class="mb-4 mt-5 ms-2" style="font-weight:600;color:#3c3a50">Example</h5>
-            <div class="example-image">
-             <picture>
-  <!-- Desktop view: 1200px and wider -->
-  <source media="(min-width: 1200px)" srcset="media/sticker-mockupdemo-desktop.jpg">
-
-  <!-- Tablet view: 600px to 1199px -->
-  <source media="(min-width: 600px)" srcset="media/sticker-mockupdemo-tablet.jpg">
-
-  <!-- Phone view: less than 600px -->
-  <img src="media/sticker-mockupdemo-phone.jpg" alt="Responsive Image">
-</picture>
-
-            </div>
-          </div>
-                <div id="linkDescription">
-              <hr style="padding-top: 15px;">
-              <span>"Potential customers can scan QR code to see how your sticker looks on their laptop, phone, etc."</span>
-            </div>
-
-        </div>
-      </div>
 
 
       <div class="col-lg-8 col-md-10 col-12 mx-auto px-0">
         <div class="output-col">
-          <div class="overview-box">
-            <h2 style="font-size: 25px;">Link</h2>
+          <div class="standard-padding">
+            <h2 style="font-size: 35px;">Link</h2>
 
             <div class="output-linkbox-center mt-4">
               <div class="link-inner">
-                <input type="text" readonly value="https://mockoverflow.online/sticker/yourid" />
+                <input type="text" readonly value="https://mockoverflow.online/sticker/1" />
               </div>
             </div>
-            <div style=" font-size: 21px; " class="output-text">You can add this link in your product description or anywhere.</div>
-            <div id="linkDescription">
-              <hr style="padding-top: 15px;">
-              <span>"Potential customers can click the link to see how your sticker looks on their laptop, phone, etc."</span>
+
+            <div class="output-text" style=" font-size: 21px; "><span style="font-weight:700; color: #B5179E;">You will
+                get link</span> of your sticker
+              camera preview mockup.</div>
+
+
+          </div>
+
+
+          <div class="example-box ">
+            <div class="standard-padding">
+              <h5 style="padding-bottom: 0.25in; padding-top: 0.25in; font-weight:600;color:#3c3a50; font-size: 25px;">
+                Example</h5>
+
+              <div style=" font-size: 21px; margin-bottom: 0.4in;">You can use link in your website, blog or
+                anywhere.</div>
+            </div>
+
+
+            <div class="example-image-1">
+
+              <picture>
+                <!-- Desktop view: 1200px and wider -->
+                <source media="(min-width: 1200px)" srcset="media/description-sticker-link-desktop.jpg"
+                  alt="Scan QR to see wall art on your wall">
+
+                <!-- Tablet view: 600px to 1199px -->
+                <source media="(min-width: 600px)" srcset="media/description-sticker-link-tablet.jpg"
+                  alt="Scan QR to see wall art on your wall">
+
+                <!-- Phone view: less than 600px -->
+                <img src="media/description-sticker-link-phone.jpg" alt="Scan QR to see wall art on your wall">
+              </picture>
+
             </div>
           </div>
+
+          <div id="linkDescription" class="standard-padding">
+            <hr style="padding-top: 15px;">
+            <span>"Potential customers can click the link to see how your sticker looks on their laptop, phone,
+              etc."</span>
+          </div>
+
         </div>
       </div>
+    </div>
+
+    <div class="col-lg-8 col-md-10 col-12 mx-auto px-0" style="margin-top: 1in;">
+      <div class="output-col">
+        <div class="standard-padding">
+          <h2 style="font-size: 35px;">QR Code</h2> <br />
+          <div class="littleside">
+            <img class="qr-img" src="media/sticker-mockupdemo-qr.jpg" alt="Preview QR Code" />
+
+            <div class="output-text" style=" font-size: 21px; "><span style="font-weight:600; color: #B5179E;">Create
+                your own QR code using the link</span> to
+              provide a live camera preview.</div>
+
+
+
+          </div>
+        </div>
+        <div class="example-box mt-5 ms-2">
+          <div class="standard-padding">
+            <h5 style="padding-bottom: 0.25in; padding-top: 0.25in; font-weight:600;color:#3c3a50; font-size: 25px;">
+              Example</h5>
+            <div style=" font-size: 21px; margin-bottom: 0.4in;">You can place QR code into your product mockup images.
+            </div>
+          </div>
+
+          <div class="example-image-2">
+            <picture>
+              <!-- Desktop view: 1200px and wider -->
+              <source media="(min-width: 1200px)" srcset="media/sticker-mockupdemo-desktop.jpg">
+
+              <!-- Tablet view: 600px to 1199px -->
+              <source media="(min-width: 600px)" srcset="media/sticker-mockupdemo-tablet.jpg">
+
+              <!-- Phone view: less than 600px -->
+              <img src="media/sticker-mockupdemo-phone.jpg" alt="Responsive Image">
+            </picture>
+
+          </div>
+        </div>
+
+        <div id="linkDescription" class="standard-padding">
+          <hr style="padding-top: 15px;">
+          <span>"Potential customers can scan QR code to see how your sticker looks on their laptop, phone, etc."</span>
+
+        </div>
+      </div>
+    </div>
+
+
     </div>
   </main>
   <footer class="container-fluid mt-5">
     <ul class="nav justify-content-center" style="font-size: 15px;">
-          <li class="nav-item">
-                <a class="nav-link" href="privacy.html">Privacy</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="terms.html">Terms & Conditions</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="cookies.html">Cookies</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="contact.html">Contact</a>
-            </li>
+      <li class="nav-item">
+        <a class="nav-link" href="privacy.html">Privacy</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="terms.html">Terms & Conditions</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="cookies.html">Cookies</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="contact.html">Contact</a>
+      </li>
+
     </ul>
     <br>
     <p>&copy; 2025 MOCKOVERFLOW</p>
   </footer>
+
+
   <script>
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -859,25 +911,8 @@
 
 
   </script>
+
 </body>
 
 
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
