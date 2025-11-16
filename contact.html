@@ -31,16 +31,19 @@
             margin-bottom: 20px;
         }
 
-        header {
-            color: #9b30bb;
-            font-size: 36px;
-            letter-spacing: 0.07em;
-            font-weight: 700;
-            text-align: center;
-            border-radius: 0 0 32px 32px;
-            box-shadow: 0 4px 18px -2px rgba(60, 20, 200, 0.12);
-            margin-bottom: 0;
-        }
+   
+  header {
+    color: #9b30bb;
+    font-size: 30px;
+    letter-spacing: 0.07em;
+    font-weight: 700;
+    text-align: center;
+    border-radius: 0 0 32px 32px;
+    box-shadow: 0 4px 18px -2px rgba(60, 20, 200, 0.12);
+    margin-bottom: 0;
+    padding-bottom: 7px;
+    padding-top: 5px;
+  }
 
         nav {
             margin-top: 20px;
@@ -127,7 +130,21 @@
 
 <body>
 
-    <header>MOCKOVERFLOW</header>
+        <header>
+    <picture>
+      <!-- Desktop view: 1200px and wider -->
+      <source width="260" media="(min-width: 1200px)" srcset="media/mockoverflow-desktop.png"
+        alt="Scan QR to see wall art on your wall">
+
+      <!-- Tablet view: 600px to 1199px -->
+      <source width="240" media="(min-width: 600px)" srcset="media/mockoverflow-tablet.png"
+        alt="Scan QR to see wall art on your wall">
+
+      <!-- Phone view: less than 600px -->
+      <img width="220" src="media/mockoverflow-phone.png" alt="Scan QR to see wall art on your wall">
+    </picture>
+  </header>
+    
     <nav>
         <a href="index.html">Wall Art</a>
         <a href="sticker.html">Stickers</a>
