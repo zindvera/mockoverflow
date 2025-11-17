@@ -3,6 +3,16 @@
     "name": "Mukesh Khanna",
     "products": [
         {
+            "id": 9,
+            "url": "https:\/\/mockoverflow\/wall-art\/9\/",
+            "product_type": "wall art",
+            "package_name": "free trial",
+            "creation_date": "2025-11-17",
+            "last_payment_date": "2025-11-17",
+            "payment_amount": "",
+            "expiry_date": "2025-11-24"
+        },
+        {
             "id": 8,
             "url": "https:\/\/mockoverflow\/wall art\/8\/",
             "product_type": "wall art",
