@@ -494,7 +494,7 @@
      <script src="../../qrcode.min.js"></script>
     <script>
 
-       
+         const currentTime = new Date().getTime();
 
         // Device check: mobile/tablet if <= 1024px width, else desktop
         function getDeviceType() {
@@ -816,6 +816,17 @@
         }
 
 
+          // Get the image element
+  const overlayImageImg = document.getElementById('overlayImage');
+
+  // Generate current timestamp
+
+
+  // Update the src attribute with ?t=currentTime
+  overlayImageImg.src = 'asset.png?t=' + currentTime;
+
+        
+
  function generateQRCode(url) {
     const loader = document.getElementById('loader');
     const qrImage = document.getElementById('qrCodeImage');
@@ -854,7 +865,7 @@
              generateQRCode('https://mockoverflow.online/wall-art/2');
         
             const bedroomSrc = "https://zindvera.github.io/mockoverflow/media/wall-demo.jpg";
-            const wallArtSrc = "asset.png";
+            const wallArtSrc = "asset.png?t=" + currentTime;;
 
             const bedroomImage = document.getElementById('bedroomImage');
             const wallArtDiv = document.getElementById('wallArt');
@@ -941,6 +952,7 @@
 </body>
 
 </html>
+
 
 
 
