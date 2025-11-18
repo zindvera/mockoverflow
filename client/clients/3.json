@@ -3,16 +3,6 @@
     "name": "Ravi Kumar Das",
     "products": [
         {
-            "id": 3,
-            "url": "https:\/\/mockoverflow.online\/wall-art\/3\/",
-            "product_type": "wall art",
-            "package_name": "free trial",
-            "creation_date": "2025-11-18",
-            "last_payment_date": "2025-11-18",
-            "payment_amount": "",
-            "expiry_date": "2025-11-25"
-        },
-        {
             "id": 2,
             "url": "https:\/\/mockoverflow.online\/wall-art\/2\/",
             "product_type": "wall art",
