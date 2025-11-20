@@ -72,6 +72,36 @@
     font-weight: 700;
   }
 
+
+  .scroll-nav {
+    margin-top: 0px;
+    padding-bottom: 0px;
+    display: flex;
+    justify-content: center;
+    gap: 56px;
+    font-weight: 500;
+    font-size: 16px;
+    background: transparent;
+  }
+
+  .scroll-nav a {
+    color: #252533;
+    text-decoration: none;
+    position: relative;
+    padding-bottom: 9px;
+    border-bottom: 2px solid transparent;
+    transition: border-color 0.2s, color 0.18s;
+    font-weight: 400;
+  }
+
+  .scroll-nav a.selected,
+  .scroll-nav a:hover {
+    color: #3335a5;
+    border-bottom: 2.5px solid #5557e6;
+    font-weight: 400;
+  }
+
+
   .create-cta {
     margin: 40px 0 24px 0;
     text-align: center;
@@ -606,6 +636,98 @@
   }
 
 
+  #sticky-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: #fff;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    /* Initial hidden state */
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+
+    /* Smooth transition */
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+
+    font-family: 'Inter', sans-serif;
+  }
+
+
+
+  /* Default stick-header layout: Centered logo and nav for phone view (less than 600px) */
+  #sticky-header>div:first-child {
+    text-align: center;
+    margin-bottom: 6px;
+  }
+
+  /* Nav centered below logo by default */
+  #sticky-header .scroll-nav {
+    text-align: center;
+    justify-content: center;
+    gap: 56px;
+  }
+
+  /* Tablet and desktop: logo left, nav right of logo */
+  @media (min-width: 600px) {
+    #sticky-header {
+      padding: 10px 24px;
+    }
+
+    /* Flex container for sticky header children */
+    #sticky-header>div:first-child,
+    #sticky-header .scroll-nav {
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    /* Wrap the logo and nav in a flex container */
+    #sticky-header>div:first-child {
+      text-align: left;
+      margin-bottom: 0;
+    }
+
+    #sticky-header .scroll-nav {
+      display: flex;
+      gap: 40px;
+      justify-content: flex-start;
+      margin-left: 20px;
+    }
+
+    #sticky-header {
+      display: flex !important;
+      /* force flex to override inline display:none/block */
+      align-items: center;
+      justify-content: flex-start;
+    }
+  }
+
+  /* Optional: adjust link styles in sticky nav, to match your site colors */
+  #sticky-header .scroll-nav a.selected {
+    color: #3335a5;
+    border-bottom: 2.5px solid #5557e6;
+    font-weight: 700;
+  }
+
+  #sticky-header .scroll-nav a {
+    color: #252533;
+    font-weight: 400;
+    text-decoration: none;
+    padding-bottom: 9px;
+    border-bottom: 2px solid transparent;
+    transition: border-color 0.2s, color 0.18s;
+  }
+
+  #sticky-header .scroll-nav a:hover {
+    color: #3335a5;
+    border-bottom: 2.5px solid #5557e6;
+    font-weight: 400;
+  }
+
+
 
   /* Phone view: width 100% (less than 600px) */
   @media (max-width: 599px) {
@@ -726,6 +848,37 @@
     <a href="index.html" class="selected">Wall Art</a>
     <a href="sticker.html">Stickers</a>
   </nav>
+
+
+  <!-- Sticky header, hidden by default -->
+  <div id="sticky-header">
+
+    <!-- Centered logo / text -->
+    <div style="text-align: center; font-weight: 700; font-size: 1.5rem; color: #9b30bb; margin-bottom: 6px;">
+      <picture>
+        <!-- Desktop view: 1200px and wider -->
+        <source width="220" media="(min-width: 1200px)" srcset="media/mockoverflow-desktop.png"
+          alt="Scan QR to see wall art on your wall">
+
+        <!-- Tablet view: 600px to 1199px -->
+        <source width="200" media="(min-width: 600px)" srcset="media/mockoverflow-tablet.png"
+          alt="Scan QR to see wall art on your wall">
+
+        <!-- Phone view: less than 600px -->
+        <img width="180" src="media/mockoverflow-phone.png" alt="Scan QR to see wall art on your wall">
+      </picture>
+    </div>
+
+    <!-- Nav links centered below logo -->
+    <div class="scroll-nav">
+      <a href="index.html" class="selected">Wall Art</a>
+      <a href="sticker.html">Stickers</a>
+    </div>
+
+  </div>
+
+
+
   <main>
     <div class="container-fluid">
       <div class="introdiv row">
@@ -1139,6 +1292,31 @@
         loader.style.display = 'none'; // Hide loader after full page load
       }
     });
+
+
+    document.addEventListener('scroll', function () {
+      const originalHeader = document.querySelector('header');
+      const originalNav = document.querySelector('nav');
+      const stickyHeader = document.getElementById('sticky-header');
+
+      if (!originalHeader || !originalNav || !stickyHeader) return;
+
+      // Get bottom of original header+nav relative to viewport
+      const headerRect = originalHeader.getBoundingClientRect();
+      const navRect = originalNav.getBoundingClientRect();
+
+      // Show sticky if both header and nav are above viewport (out of view)
+      if (headerRect.bottom < 0 && navRect.bottom < 0) {
+        stickyHeader.style.visibility = 'visible';
+        stickyHeader.style.opacity = '1';
+        stickyHeader.style.pointerEvents = 'auto';
+      } else {
+        stickyHeader.style.visibility = 'hidden';
+        stickyHeader.style.opacity = '0';
+        stickyHeader.style.pointerEvents = 'none';
+      }
+    });
+
 
 
   </script>
