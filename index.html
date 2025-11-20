@@ -541,6 +541,71 @@
 
 
 
+  /* FAQ Styling - aligned with your site colors */
+  .faq-container {
+    max-width: 700px;
+    margin: 40px auto;
+    background-color: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 18px -2px #b5179e33;
+    padding-top: 32px;
+    padding-bottom: 32px;
+    padding-left: 32px;
+    padding-right: 32px;
+    font-family: 'Inter', Segoe UI, Helvetica Neue, Arial, sans-serif;
+    color: #2a2a4d;
+  }
+
+  .faq-container h2 {
+    text-align: center;
+    color: #313131;
+    margin-bottom: 30px;
+    font-size: 2.1em;
+    font-weight: 700;
+  }
+
+  .faq-item {
+    margin-bottom: 18px;
+  }
+
+  .faq-question {
+    background: #fcf4ff;
+    color: #313131;
+    padding: 14px 22px;
+    font-size: 1.12rem;
+    font-weight: 600;
+    width: 100%;
+    text-align: left;
+    border: none;
+    border-radius: 9px;
+    cursor: pointer;
+    outline: none;
+    transition: background 0.3s;
+    margin-bottom: 15px;
+  }
+
+  .faq-question:hover {
+    background: #f2dcfa;
+  }
+
+  .faq-question.active {
+    background: #f2dcfa;
+  }
+
+  .faq-answer {
+    display: none;
+    background: #ffffff;
+    padding: 16px 22px;
+    border-radius: 8px;
+    font-size: 1rem;
+    color: #2a2a4d;
+    margin-bottom: 8px;
+    margin-top: 0;
+    box-shadow: 0 1px 7px -3px #b5179e22;
+    line-height: 1.6;
+  }
+
+
 
   /* Phone view: width 100% (less than 600px) */
   @media (max-width: 599px) {
@@ -574,6 +639,13 @@
 
     #mockupdemo {
       width: 100%;
+    }
+
+    /* FAQ Styling - aligned with your site colors */
+    .faq-container {
+      padding-left: 0px;
+      padding-right: 0px;
+
     }
 
   }
@@ -654,159 +726,268 @@
     <a href="index.html" class="selected">Wall Art</a>
     <a href="sticker.html">Stickers</a>
   </nav>
-  <main class="container-fluid">
-    <div class="introdiv row">
-      <div class="col-lg-6 col-md-6 col-12">
+  <main>
+    <div class="container-fluid">
+      <div class="introdiv row">
+        <div class="col-lg-6 col-md-6 col-12">
 
-        <div class="for-wall-art-seller">
-          Made For
-          <span class="for-wall-art-highlight pen-underline">
-            Wall Art Seller
-          </span>
+          <div class="for-wall-art-seller">
+            Made For
+            <span class="for-wall-art-highlight pen-underline">
+              Wall Art Seller
+            </span>
+          </div>
+          <h1>Let people see your wall art on their own wall</h1>
+          <div class="create-cta">
+            <a href="create.html" aria-label="Create your custom wall art preview">Create</a>
+          </div>
         </div>
-        <h1>Let people see your wall art on their own wall</h1>
-        <div class="create-cta">
-          <a href="create.html" aria-label="Create your custom wall art preview">Create</a>
+        <div class="col-lg-6 col-md-6 col-12">
+          <div id="phone">
+            <div id="imageContainer">
+              <img id="bedroomImage" src="media/wall-demo.jpg" alt="Bedroom" />
+            </div>
+            <div id="wallArt" style="background-image: url('media/wall-art-demo.png')">
+            </div>
+            <a href="wall-art/demo/index.html" id="openCameraBtn" aria-label="Open camera overlay preview">Open
+              Camera</a>
+          </div>
         </div>
       </div>
-      <div class="col-lg-6 col-md-6 col-12">
-        <div id="phone">
-          <div id="imageContainer">
-            <img id="bedroomImage" src="media/wall-demo.jpg" alt="Bedroom" />
-          </div>
-          <div id="wallArt" style="background-image: url('media/wall-art-demo.png')">
-          </div>
-          <a href="wall-art/demo/index.html" id="openCameraBtn" aria-label="Open camera overlay preview">Open
-            Camera</a>
-        </div>
+
+      <div class="cursive-text-below-phone">
+        If you will create such
+        <span class="cursive-highlight pen-underline">
+          camera preview mockup
+        </span>
+        then
       </div>
-    </div>
+      <div class="custom-you-will-get">You will Get</div>
 
-    <div class="cursive-text-below-phone">
-      If you will create such
-      <span class="cursive-highlight pen-underline">
-        camera preview mockup
-      </span>
-      then
-    </div>
-    <div class="custom-you-will-get">You will Get</div>
-
-    <div class="row justify-content-center mt-4">
+      <div class="row justify-content-center mt-4">
 
 
-      <div class="col-lg-8 col-md-10 col-12 mx-auto px-0">
-        <div class="output-col">
-          <div class="standard-padding">
-            <h2 style="font-size: 35px;">Link</h2>
+        <div class="col-lg-8 col-md-10 col-12 mx-auto px-0">
+          <div class="output-col">
+            <div class="standard-padding">
+              <h2 style="font-size: 35px;">Link</h2>
 
-            <div class="output-linkbox-center mt-4">
-              <div class="link-inner">
-                <input type="text" readonly value="https://mockoverflow.online/wallart/1" />
+              <div class="output-linkbox-center mt-4">
+                <div class="link-inner">
+                  <input type="text" readonly value="https://mockoverflow.online/wallart/1" />
+                </div>
+              </div>
+
+              <div class="output-text" style=" font-size: 21px; "><span style="font-weight:700; color: #B5179E;">You
+                  will
+                  get link</span> of your wall art
+                camera preview mockup.</div>
+
+
+            </div>
+
+
+            <div class="example-box">
+              <div class="standard-padding">
+                <h5
+                  style="padding-bottom: 0.25in; padding-top: 0.25in; font-weight:600;color:#3c3a50; font-size: 25px;">
+                  Example</h5>
+
+                <div style=" font-size: 21px; margin-bottom: 0.4in;">You can use link in your website, blog or
+                  anywhere.</div>
+              </div>
+
+
+              <div class="example-image-1">
+
+                <picture>
+                  <!-- Desktop view: 1200px and wider -->
+                  <source media="(min-width: 1200px)" srcset="media/description-wall-art-link-desktop.jpg"
+                    alt="Scan QR to see wall art on your wall">
+
+                  <!-- Tablet view: 600px to 1199px -->
+                  <source media="(min-width: 600px)" srcset="media/description-wall-art-link-tablet.jpg"
+                    alt="Scan QR to see wall art on your wall">
+
+                  <!-- Phone view: less than 600px -->
+                  <img src="media/description-wall-art-link-phone.jpg" alt="Scan QR to see wall art on your wall">
+                </picture>
+
               </div>
             </div>
 
-            <div class="output-text" style=" font-size: 21px; "><span style="font-weight:700; color: #B5179E;">You will
-                get link</span> of your wall art
-              camera preview mockup.</div>
-
-
-          </div>
-
-
-          <div class="example-box">
-            <div class="standard-padding">
-              <h5 style="padding-bottom: 0.25in; padding-top: 0.25in; font-weight:600;color:#3c3a50; font-size: 25px;">
-                Example</h5>
-
-              <div style=" font-size: 21px; margin-bottom: 0.4in;">You can use link in your website, blog or
-                anywhere.</div>
+            <div id="linkDescription" class="standard-padding">
+              <hr style="padding-top: 15px;">
+              <span>"Potential customers can click the link to see how your wall art looks on their own
+                wall."</span>
             </div>
 
-
-            <div class="example-image-1">
-
-              <picture>
-                <!-- Desktop view: 1200px and wider -->
-                <source media="(min-width: 1200px)" srcset="media/description-wall-art-link-desktop.jpg"
-                  alt="Scan QR to see wall art on your wall">
-
-                <!-- Tablet view: 600px to 1199px -->
-                <source media="(min-width: 600px)" srcset="media/description-wall-art-link-tablet.jpg"
-                  alt="Scan QR to see wall art on your wall">
-
-                <!-- Phone view: less than 600px -->
-                <img src="media/description-wall-art-link-phone.jpg" alt="Scan QR to see wall art on your wall">
-              </picture>
-
-            </div>
           </div>
-
-          <div id="linkDescription" class="standard-padding">
-            <hr style="padding-top: 15px;">
-            <span>"Potential customers can click the link to see how your wall art looks on their own
-              wall."</span>
-          </div>
-
         </div>
-      </div>
 
 
-      <div class="col-lg-8 col-md-10 col-12 mx-auto px-0" style="margin-top: 1in;">
-        <div class="output-col">
-          <div class="standard-padding">
-            <h2 style="font-size: 35px;">QR Code</h2> <br />
-            <div class="littleside">
-              <img class="qr-img" src="media/wallart-mockupdemo-qr.jpg" alt="Preview QR Code" />
-
-              <div class="output-text" style=" font-size: 21px; "><span style="font-weight:600; color: #B5179E;">Create
-                  your own QR code using the link</span> to
-                provide a live camera preview.</div>
-
-
-
-            </div>
-          </div>
-          <div class="example-box mt-5">
+        <div class="col-lg-8 col-md-10 col-12 mx-auto px-0" style="margin-top: 1in;">
+          <div class="output-col">
             <div class="standard-padding">
-              <h5 style="padding-bottom: 0.25in; padding-top: 0.25in; font-weight:600;color:#3c3a50; font-size: 25px;">
-                Example</h5>
-              <div style=" font-size: 21px; margin-bottom: 0.4in;">You can place QR code into your product mockup
-                images.
+              <h2 style="font-size: 35px;">QR Code</h2> <br />
+              <div class="littleside">
+                <img class="qr-img" src="media/wallart-mockupdemo-qr.jpg" alt="Preview QR Code" />
+
+                <div class="output-text" style=" font-size: 21px; "><span
+                    style="font-weight:600; color: #B5179E;">Create
+                    your own QR code using the link</span> to
+                  provide a live camera preview.</div>
+
+
+
+              </div>
+            </div>
+            <div class="example-box mt-5">
+              <div class="standard-padding">
+                <h5
+                  style="padding-bottom: 0.25in; padding-top: 0.25in; font-weight:600;color:#3c3a50; font-size: 25px;">
+                  Example</h5>
+                <div style=" font-size: 21px; margin-bottom: 0.4in;">You can place QR code into your product mockup
+                  images.
+                </div>
+              </div>
+
+              <div class="example-image-2">
+                <picture>
+                  <!-- Desktop view: 1200px and wider -->
+                  <source media="(min-width: 1200px)" srcset="media/wallart-mockupdemo-desktop.jpg"
+                    alt="Scan QR to see wall art on your wall">
+
+                  <!-- Tablet view: 600px to 1199px -->
+                  <source media="(min-width: 600px)" srcset="media/wallart-mockupdemo-tablet.jpg"
+                    alt="Scan QR to see wall art on your wall">
+
+                  <!-- Phone view: less than 600px -->
+                  <img src="media/wallart-mockupdemo-phone.jpg" alt="Scan QR to see wall art on your wall">
+                </picture>
+
               </div>
             </div>
 
-            <div class="example-image-2">
-              <picture>
-                <!-- Desktop view: 1200px and wider -->
-                <source media="(min-width: 1200px)" srcset="media/wallart-mockupdemo-desktop.jpg"
-                  alt="Scan QR to see wall art on your wall">
-
-                <!-- Tablet view: 600px to 1199px -->
-                <source media="(min-width: 600px)" srcset="media/wallart-mockupdemo-tablet.jpg"
-                  alt="Scan QR to see wall art on your wall">
-
-                <!-- Phone view: less than 600px -->
-                <img src="media/wallart-mockupdemo-phone.jpg" alt="Scan QR to see wall art on your wall">
-              </picture>
-
+            <div id="linkDescription" class="standard-padding">
+              <hr style="padding-top: 15px;">
+              <span>"Potential customers can scan QR code to see how your wall art looks on their own
+                wall."</span>
             </div>
           </div>
+        </div>
 
-          <div id="linkDescription" class="standard-padding">
-            <hr style="padding-top: 15px;">
-            <span>"Potential customers can scan QR code to see how your wall art looks on their own
-              wall."</span>
-          </div>
+
+      </div>
+
+    </div>
+
+
+
+
+    <div class="faq-container">
+      <h2>Frequently Asked Questions</h2>
+      <br>
+      <div class="faq-item">
+        <button class="faq-question">What is MOCKOVERFLOW and how does it work for wall art?</button>
+        <div class="faq-answer">
+          <p>
+            MOCKOVERFLOW allows you to upload your wall art as PNG or JPEG files. You will receive a unique preview link
+            or QR code, which customers can scan with their phone or tablet camera to see how the wall art looks on
+            their own wall in their environment.
+          </p>
         </div>
       </div>
 
+      <div class="faq-item">
+        <button class="faq-question">What is MOCKOVERFLOW and how does it work for stickers?</button>
+        <div class="faq-answer">
+          <p>
+            MOCKOVERFLOW accepts only PNG files for stickers. You get a preview link or QR code that customers can scan
+            with their phone or tablet to view the sticker on objects like laptops, phone backsides, cars, and more,
+            using a live camera preview.
+          </p>
+        </div>
+      </div>
 
+      <div class="faq-item">
+        <button class="faq-question">How do I create a camera preview mockup?</button>
+        <div class="faq-answer">
+          <p>
+            Send your design file via WhatsApp using the provided button on the site. You will receive a preview link to
+            share on your website, product listings, or social media.
+          </p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">Is it free to create and test a preview mockup?</button>
+        <div class="faq-answer">
+          <p>
+            Yes, new users can create and test their camera preview mockups free for up to 7 days. No payment is
+            required during this trial period to evaluate how the preview works.
+          </p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">How can my customers use the preview link or QR code?</button>
+        <div class="faq-answer">
+          <p>
+            Customers scan the QR code or tap the preview link using their phone or tablet camera to visualize the
+            design on their wall or personal objects in real time.
+          </p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">What file formats are accepted?</button>
+        <div class="faq-answer">
+          <p><strong>Wall art:</strong> PNG or JPEG files are accepted.</p>
+          <p><strong>Stickers:</strong> Only PNG files are accepted.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">How do I pay and keep my preview link active?</button>
+        <div class="faq-answer">
+          <p>
+            After testing the link, a one-time payment of $1 USD keeps the preview active for one year. Without payment,
+            the link expires after 7 days.
+          </p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">Where can I use my preview link or QR code?</button>
+        <div class="faq-answer">
+          <p>
+            The link or QR code can be added to your product pages, website, blog, or social media platforms to showcase
+            the interactive preview.
+          </p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">Is the preview compatible with desktop, tablet, and mobile devices?</button>
+        <div class="faq-answer">
+          <p>
+            The live camera preview works only on phone and tablet cameras, not on desktop devices.
+          </p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">What happens if I don’t pay after 7 days?</button>
+        <div class="faq-answer">
+          <p>
+            The preview link will expire or become inactive unless renewed with a $1 payment for a full year.
+          </p>
+        </div>
+      </div>
     </div>
 
 
-
-
-    </div>
   </main>
   <footer class="container-fluid mt-5">
     <ul class="nav justify-content-center" style="font-size: 15px;">
@@ -829,6 +1010,26 @@
   </footer>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
+
+
+      const faqQuestions = document.querySelectorAll('.faq-question');
+      faqQuestions.forEach(q => {
+        q.addEventListener('click', function () {
+          // Close all other answers
+          faqQuestions.forEach(btn => {
+            if (btn !== this) {
+              btn.classList.remove('active');
+              btn.nextElementSibling.style.display = 'none';
+            }
+          });
+          // Toggle current answer
+          this.classList.toggle('active');
+          const answer = this.nextElementSibling;
+          answer.style.display = this.classList.contains('active') ? 'block' : 'none';
+        });
+      });
+
+
       const imageContainer = document.getElementById('imageContainer');
       const wallArtDiv = document.getElementById('wallArt');
       let toLeft = true;
@@ -946,4 +1147,3 @@
 
 
 </html>
-
