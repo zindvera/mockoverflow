@@ -671,6 +671,29 @@
     gap: 56px;
   }
 
+
+    /* Optional: adjust link styles in sticky nav, to match your site colors */
+  #sticky-header .scroll-nav a.selected {
+    color: #3335a5;
+    border-bottom: 2.5px solid #5557e6;
+    font-weight: 700;
+  }
+
+  #sticky-header .scroll-nav a {
+    color: #252533;
+    font-weight: 400;
+    text-decoration: none;
+    padding-bottom: 9px;
+    border-bottom: 2px solid transparent;
+    transition: border-color 0.2s, color 0.18s;
+  }
+
+  #sticky-header .scroll-nav a:hover {
+    color: #3335a5;
+    border-bottom: 2.5px solid #5557e6;
+    font-weight: 400;
+  }
+
   /* Tablet and desktop: logo left, nav right of logo */
   @media (min-width: 600px) {
     #sticky-header {
@@ -705,27 +728,7 @@
     }
   }
 
-  /* Optional: adjust link styles in sticky nav, to match your site colors */
-  #sticky-header .scroll-nav a.selected {
-    color: #3335a5;
-    border-bottom: 2.5px solid #5557e6;
-    font-weight: 700;
-  }
 
-  #sticky-header .scroll-nav a {
-    color: #252533;
-    font-weight: 400;
-    text-decoration: none;
-    padding-bottom: 9px;
-    border-bottom: 2px solid transparent;
-    transition: border-color 0.2s, color 0.18s;
-  }
-
-  #sticky-header .scroll-nav a:hover {
-    color: #3335a5;
-    border-bottom: 2.5px solid #5557e6;
-    font-weight: 400;
-  }
 
 
 
@@ -1052,24 +1055,16 @@
         </div>
       </div>
 
-      <div class="faq-item">
-        <button class="faq-question">What is MOCKOVERFLOW and how does it work for stickers?</button>
-        <div class="faq-answer">
-          <p>
-            MOCKOVERFLOW accepts only PNG files for stickers. You get a preview link or QR code that customers can scan
-            with their phone or tablet to view the sticker on objects like laptops, phone backsides, cars, and more,
-            using a live camera preview.
-          </p>
-        </div>
-      </div>
 
       <div class="faq-item">
         <button class="faq-question">How do I create a camera preview mockup?</button>
         <div class="faq-answer">
-          <p>
-            Send your design file via WhatsApp using the provided button on the site. You will receive a preview link to
-            share on your website, product listings, or social media.
-          </p>
+          <ul>
+            <li style="margin-bottom: 20px;">Click the <strong>Create</strong> button.</li>
+            <li style="margin-bottom: 20px;">Send your design file via WhatsApp.</li>
+            <li style="margin-bottom: 20px;">You will receive a camera preview mockup link to share on your website,
+              product listings, or social media.</li>
+          </ul>
         </div>
       </div>
 
@@ -1087,8 +1082,8 @@
         <button class="faq-question">How can my customers use the preview link or QR code?</button>
         <div class="faq-answer">
           <p>
-            Customers scan the QR code or tap the preview link using their phone or tablet camera to visualize the
-            design on their wall or personal objects in real time.
+            Customers scan the QR code or tap the preview link using their phone or tablet camera to visualize your wall art
+            on their wall.
           </p>
         </div>
       </div>
@@ -1096,8 +1091,8 @@
       <div class="faq-item">
         <button class="faq-question">What file formats are accepted?</button>
         <div class="faq-answer">
-          <p><strong>Wall art:</strong> PNG or JPEG files are accepted.</p>
-          <p><strong>Stickers:</strong> Only PNG files are accepted.</p>
+          <p>PNG or JPEG file is accepted.</p>
+
         </div>
       </div>
 
