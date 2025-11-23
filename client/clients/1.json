@@ -4,6 +4,16 @@
     "products": [
         {
             "id": 2,
+            "url": "https:\/\/mockoverflow.online\/sticker\/2\/",
+            "product_type": "sticker",
+            "package_name": "free trial",
+            "creation_date": "2025-11-23",
+            "last_payment_date": "2025-11-23",
+            "payment_amount": "",
+            "expiry_date": "2025-11-30"
+        },
+        {
+            "id": 2,
             "url": "https:\/\/mockoverflow.online\/wall-art\/2\/",
             "product_type": "wall art",
             "package_name": "free trial",
