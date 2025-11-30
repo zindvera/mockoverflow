@@ -1,4 +1,0 @@
-RewriteEngine On
-
-# If the requested URL is a digit (client id), rewrite internally to index.html with query string client-id
-RewriteRule ^([0-9]+)/?$ index.html?client-id=$1 [L,QSA]
