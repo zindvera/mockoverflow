@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Client and Product Details with Filters and Search</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="../media/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../media/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../media/favicon-180x180.png">
+
+  <style>
+    /* Minimalist reset and base */ 
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #fff;
+      color: #333;
+      margin: 20px auto;
+      width: 90%;
+      padding: 0 15px;
+    }
+
+     header {
+    color: #9b30bb;
+    font-size: 30px;
+    letter-spacing: 0.07em;
+    font-weight: 700;
+    text-align: center;
+    border-radius: 0 0 32px 32px;
+    box-shadow: 0 4px 18px -2px rgba(60, 20, 200, 0.12);
+    margin-bottom: 12px;
+  }
+
+  nav {
+    margin-top: 20px;
+    padding-bottom: 10px;
+    display: flex;
+    justify-content: center;
+    gap: 56px;
+    font-weight: 600;
+    font-size: 1.18rem;
+    background: transparent;
+    border-bottom: 1px solid #ececff;
+  }
+
+  nav a {
+    color: #252533;
+    text-decoration: none;
+    position: relative;
+    padding-bottom: 9px;
+    border-bottom: 2px solid transparent;
+    transition: border-color 0.2s, color 0.18s;
+    font-weight: 500;
+  }
+
+  nav a.selected,
+  nav a:hover {
+    color: #3335a5;
+    border-bottom: 2.5px solid #5557e6;
+    font-weight: 700;
+  }
+
+    
+    h2 {
+      font-weight: 600;
+      color: #222;
+      margin-top: 40px;
+      margin-bottom: 15px;
+      letter-spacing: 0.03em;
+      border-bottom: 2px solid #ddd;
+      padding-bottom: 5px;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-bottom: 15px;
+    }
+
+    th,
+    td {
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+      font-size: 0.95rem;
+      vertical-align: middle;
+    }
+
+    thead {
+      background: none;
+      border-bottom: 2px solid #ccc;
+    }
+
+    tbody tr:nth-child(even) {
+      background-color: #fafafa;
+    }
+
+    a {
+      color: #3a86ff;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    a:hover {
+      text-decoration: underline;
+      color: #1f4fa3;
+    }
+
+    #pagination {
+      margin-top: 20px;
+      text-align: right;
+    }
+
+    #pagination button {
+      background-color: transparent;
+      border: 1px solid #aaa;
+      border-radius: 3px;
+      color: #666;
+      font-weight: 500;
+      cursor: pointer;
+      padding: 6px 14px;
+      margin-left: 8px;
+      transition: all 0.2s ease;
+    }
+
+    #pagination button:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+
+    #pagination button:not(:disabled):hover {
+      background-color: #e7e7e7;
+      border-color: #888;
+      color: #333;
+    }
+
+    .filter-inputs {
+      margin-bottom: 15px;
+      display: flex;
+      flex-wrap: nowrap; /* Prevent wrapping to enable horizontal scroll */
+      gap: 15px;
+      overflow-x: auto; /* Add horizontal scrolling */
+      padding-bottom: 8px;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      min-width: 140px;
+      max-width: 160px;
+      font-size: 0.9rem;
+      color: #444;
+      flex-shrink: 0; /* Prevent shrinking so groups stay visible horizontally */
+    }
+
+    .filter-group label {
+      font-weight: 600;
+      margin-bottom: 6px;
+      user-select: none;
+    }
+
+    .filter-group input {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 5px 8px;
+      font-size: 0.9rem;
+      outline-offset: 2px;
+      outline-color: transparent;
+      transition: outline-color 0.2s ease;
+    }
+
+    .filter-group input:focus {
+      outline-color: #3a86ff;
+      border-color: #3a86ff;
+    }
+
+    .filter-group-date input {
+      max-width: 120px;
+    }
+
+    #buttonsContainer {
+      text-align: right;
+      margin-top: 0.2in;
+      margin-bottom: 20px;
+    }
+
+    #searchFiltersBtn {
+      background-color: rgb(179, 35, 179);
+      color: white;
+      font-weight: 600;
+      border: none;
+      border-radius: 3px;
+      padding: 10px 19px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      margin-right: 10px;
+    }
+
+    #searchFiltersBtn:hover {
+      background-color: #9400d3;
+    }
+
+    #resetFiltersBtn {
+      background-color: lightgrey;
+      color: #333;
+      font-weight: 600;
+      border: none;
+      border-radius: 3px;
+      padding: 10px 19px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    #resetFiltersBtn:hover {
+      background-color: #a9a9a9;
+    }
+
+    /* Wrapper div for tables to enable horizontal scrolling */
+    .table-wrapper {
+      overflow-x: auto;
+      margin-bottom: 15px;
+    }
+
+  </style>
+</head>
+
+<body>
+
+  
+  <header>MOCKOVERFLOW</header>
+
+  <br>
+  <h2>Client Details</h2>
+  <div class="table-wrapper">
+    <table id="clients-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>WhatsApp</th>
+          <th>Email</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <h2>Filter Products</h2>
+  <div class="filter-inputs">
+    <div class="filter-group">
+      <label for="filterUrl">URL</label>
+      <input type="text" id="filterUrl" placeholder="Filter by URL" />
+    </div>
+    <div class="filter-group">
+      <label for="filterType">Product Type</label>
+      <input type="text" id="filterType" placeholder="Filter by Product Type" />
+    </div>
+    <div class="filter-group">
+      <label for="filterPackage">Package</label>
+      <input type="text" id="filterPackage" placeholder="Filter by Package" />
+    </div>
+    <div class="filter-group filter-group-date">
+      <label>Creation Date</label>
+      <input style="margin-bottom: 0.1in;" type="date" id="filterCreationFrom" title="From" />
+      <input type="date" id="filterCreationTo" title="To" />
+    </div>
+    <div class="filter-group filter-group-date">
+      <label>Last Payment Date</label>
+      <input style="margin-bottom: 0.1in;" type="date" id="filterPaymentFrom" title="From" />
+      <input type="date" id="filterPaymentTo" title="To" />
+    </div>
+    <div class="filter-group">
+      <label for="filterPaymentAmount">Payment Amount</label>
+      <input type="text" id="filterPaymentAmount" placeholder="Filter by Payment Amount" />
+    </div>
+    <div class="filter-group filter-group-date">
+      <label>Expiry Date</label>
+      <input style="margin-bottom: 0.1in;" type="date" id="filterExpiryFrom" title="From" />
+      <input type="date" id="filterExpiryTo" title="To" />
+    </div>
+  </div>
+
+  <div id="buttonsContainer">
+    <button id="searchFiltersBtn">Search</button>
+    <button id="resetFiltersBtn">Reset</button>
+  </div>
+
+  <h2>Product List</h2>
+  <div class="table-wrapper" id="products-table-wrapper">
+    <table id="products-table">
+      <thead>
+        <tr>
+          <th>URL</th>
+          <th>Type</th>
+          <th>Package</th>
+          <th>Creation Date</th>
+          <th>Last Payment Date</th>
+          <th>Payment Amount</th>
+          <th>Expiry Date</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div id="pagination">
+    <button id="prevBtn" disabled>Previous</button>
+    <span id="pageInfo">Page 1</span>
+    <button id="nextBtn" disabled>Next</button>
+  </div>
+
+  <script>
+    let currentPage = 1;
+    let clientIdParam = null;
+    let cachedClients = [];
+    let cachedProducts = [];
+
+    function getQueryParam(param) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(param);
+    }
+
+    function updateURLParam(param, value) {
+      const url = new URL(window.location);
+      url.searchParams.set(param, value);
+      window.history.replaceState({}, '', url);
+    }
+
+    // Updated fetchJSON function with cache-buster
+    async function fetchJSON(url) {
+      const cacheBuster = new Date().getTime();
+      const delimiter = url.includes('?') ? '&' : '?';
+      const urlWithCacheBuster = `${url}${delimiter}v=${cacheBuster}`;
+      const response = await fetch(urlWithCacheBuster);
+      if (!response.ok) throw new Error(`Failed to fetch: ${urlWithCacheBuster}`);
+      return response.json();
+    }
+
+    function parseDate(input) {
+      if (!input) return null;
+      const d = new Date(input);
+      return isNaN(d) ? null : d;
+    }
+
+    function matchesFilter(product, filter) {
+      if (filter.url && !product.url.toLowerCase().includes(filter.url.toLowerCase())) return false;
+      if (filter.product_type && !product.product_type.toLowerCase().includes(filter.product_type.toLowerCase())) return false;
+      if (filter.package_name && !product.package_name.toLowerCase().includes(filter.package_name.toLowerCase())) return false;
+
+      const creationDate = parseDate(product.creation_date);
+      const lastPaymentDate = parseDate(product.last_payment_date);
+      const expiryDate = parseDate(product.expiry_date);
+
+      if (filter.creation_from && (!creationDate || creationDate < filter.creation_from)) return false;
+      if (filter.creation_to && (!creationDate || creationDate > filter.creation_to)) return false;
+
+      if (filter.payment_from && (!lastPaymentDate || lastPaymentDate < filter.payment_from)) return false;
+      if (filter.payment_to && (!lastPaymentDate || lastPaymentDate > filter.payment_to)) return false;
+
+      if (filter.payment_amount && !product.payment_amount.toLowerCase().includes(filter.payment_amount.toLowerCase())) return false;
+
+      if (filter.expiry_from && (!expiryDate || expiryDate < filter.expiry_from)) return false;
+      if (filter.expiry_to && (!expiryDate || expiryDate > filter.expiry_to)) return false;
+
+      return true;
+    }
+
+    function renderClients(clients) {
+      const tbody = document.querySelector('#clients-table tbody');
+      tbody.innerHTML = '';
+      clients.forEach(client => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${client.id}</td>
+          <td>${client.name}</td>
+          <td>${client.whatsapp}</td>
+          <td>${client.email}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderProducts(clientName, products, page, itemsPerPage) {
+      const tbody = document.querySelector('#products-table tbody');
+      tbody.innerHTML = '';
+
+      const totalItems = products.length;
+      const totalPages = Math.ceil(totalItems / itemsPerPage);
+      if (page > totalPages) page = totalPages || 1;
+
+      const start = (page - 1) * itemsPerPage;
+      const end = start + itemsPerPage;
+      const pageItems = products.slice(start, end);
+
+      const fragment = document.createDocumentFragment();
+
+      if (pageItems.length === 0) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td colspan="7">No products found on this page.</td>`;
+        fragment.appendChild(tr);
+      } else {
+        pageItems.forEach(product => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><a href="${product.url}" target="_blank" rel="noopener noreferrer">${product.url}</a></td>
+            <td>${product.product_type}</td>
+            <td>${product.package_name}</td>
+            <td>${product.creation_date}</td>
+            <td>${product.last_payment_date}</td>
+            <td>${product.payment_amount}</td>
+            <td>${product.expiry_date}</td>
+          `;
+          fragment.appendChild(tr);
+        });
+      }
+      tbody.appendChild(fragment);
+
+      document.getElementById('pageInfo').textContent = `Page ${page} of ${totalPages}`;
+      document.getElementById('prevBtn').disabled = page <= 1;
+      document.getElementById('nextBtn').disabled = page >= totalPages;
+
+      // Update current page
+      currentPage = page;
+    }
+
+    async function loadInitialData() {
+      clientIdParam = getQueryParam('client-id');
+      currentPage = parseInt(getQueryParam('page')) || 1;
+
+      cachedClients = await fetchJSON('clients.json');
+
+      let clientsToShow = cachedClients;
+      if (clientIdParam) {
+        clientsToShow = cachedClients.filter(c => String(c.id) === String(clientIdParam));
+      }
+
+      if (clientsToShow.length === 0) {
+        document.querySelector('#clients-table tbody').innerHTML = `<tr><td colspan="4">No client found for ID ${clientIdParam}</td></tr>`;
+        document.querySelector('#products-table tbody').innerHTML = '<tr><td colspan="7">No products to show.</td></tr>';
+        return;
+      }
+
+      renderClients(clientsToShow);
+
+      if (clientsToShow.length === 1) {
+        cachedProducts = (await fetchJSON(`clients/${clientsToShow[0].id}.json`)).products || [];
+      } else {
+        cachedProducts = [];
+      }
+
+      filterAndRenderProducts();
+    }
+
+    function getFilters() {
+      return {
+        url: document.getElementById('filterUrl').value.trim(),
+        product_type: document.getElementById('filterType').value.trim(),
+        package_name: document.getElementById('filterPackage').value.trim(),
+        creation_from: parseDate(document.getElementById('filterCreationFrom').value),
+        creation_to: parseDate(document.getElementById('filterCreationTo').value),
+        payment_from: parseDate(document.getElementById('filterPaymentFrom').value),
+        payment_to: parseDate(document.getElementById('filterPaymentTo').value),
+        payment_amount: document.getElementById('filterPaymentAmount').value.trim(),
+        expiry_from: parseDate(document.getElementById('filterExpiryFrom').value),
+        expiry_to: parseDate(document.getElementById('filterExpiryTo').value)
+      };
+    }
+
+    function filterAndRenderProducts(page = 1) {
+      const filter = getFilters();
+      const filtered = cachedProducts.filter(p => matchesFilter(p, filter));
+      renderProducts(filtered.length ? cachedClients.find(c => String(c.id) === String(clientIdParam)).name : '', filtered, page, 15);
+    }
+
+    // Navigation buttons
+    document.getElementById('prevBtn').addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        updateURLParam('page', currentPage);
+        filterAndRenderProducts(currentPage);
+      }
+    });
+
+    document.getElementById('nextBtn').addEventListener('click', () => {
+      currentPage++;
+      updateURLParam('page', currentPage);
+      filterAndRenderProducts(currentPage);
+    });
+
+    // Search button click triggers filter
+    document.getElementById('searchFiltersBtn').addEventListener('click', () => {
+      currentPage = 1;
+      updateURLParam('page', currentPage);
+      filterAndRenderProducts(currentPage);
+    });
+
+    // Reset button clears filters and reloads data
+    document.getElementById('resetFiltersBtn').addEventListener('click', () => {
+      document.querySelectorAll('.filter-inputs input').forEach(input => {
+        input.value = '';
+      });
+      currentPage = 1;
+      updateURLParam('page', currentPage);
+      filterAndRenderProducts(currentPage);
+    });
+
+    // Load initial data on page load
+    loadInitialData();
+  </script>
+
+</body>
+
+</html>
