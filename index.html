@@ -194,32 +194,33 @@
   <script>
     const stickerData = {
       baseImages: {
-        laptopPalm: "files/stickers/laptop-palm.jpg",
-        laptopBack: "files/stickers/laptop-back.jpg",
-        tablet: "files/stickers/tablet.jpg",
-        phone: "files/stickers/phone.jpg"
+        laptopPalm: "https://mockoverflow.online/files/stickers/laptop-palm.jpg",
+        laptopBack: "https://mockoverflow.online/files/stickers/laptop-back.jpg",
+        tablet: "https://mockoverflow.online/files/stickers/tablet.jpg",
+        phone: "https://mockoverflow.online/files/stickers/phone.jpg"
       },
       stickers: [
-        { url: "https://mockoverflow.online/media/sticker-demo.png?t=8", compatibleBgs: ["laptopPalm", "laptopBack", "tablet", "phone"] },
-        { url: "https://mockoverflow.online/sticker/1/asset.png", compatibleBgs: ["laptopPalm", "laptopBack", "tablet", "phone"] },
-        { url: "https://png.pngtree.com/png-clipart/20230916/original/pngtree-die-cut-sticker-of-a-little-girl-with-long-hair-clipart-png-image_12247691.png", compatibleBgs: ["laptopPalm", "laptopBack", "tablet", "phone"] },
-        { url: "https://png.pngtree.com/png-vector/20240628/ourmid/pngtree-cute-boba-kawaii-cartoon-simple-die-cut-sticker-png-image_12730541.png", compatibleBgs: ["laptopPalm", "laptopBack", "tablet", "phone"] },
-        { url: "https://mockoverflow.online/media/sticker-demo.png?t=8", compatibleBgs: ["laptopPalm", "laptopBack", "tablet", "phone"] },
-        { url: "https://mockoverflow.online/sticker/1/asset.png", compatibleBgs: ["laptopPalm", "laptopBack", "tablet", "phone"] }
+        { id: 1, url: "https://mockoverflow.online/media/sticker-demo.png?t=8", compatibleBgs: ["laptopPalm", "laptopBack", "tablet", "phone"] },
+        { id: 2, url: "https://mockoverflow.online/sticker/1/asset.png", compatibleBgs: ["laptopPalm", "laptopBack", "tablet", "phone"] },
+        { id: 3, url: "https://png.pngtree.com/png-clipart/20230916/original/pngtree-die-cut-sticker-of-a-little-girl-with-long-hair-clipart-png-image_12247691.png", compatibleBgs: ["laptopPalm", "laptopBack", "tablet", "phone"] },
+        { id: 4, url: "https://png.pngtree.com/png-vector/20240628/ourmid/pngtree-cute-boba-kawaii-cartoon-simple-die-cut-sticker-png-image_12730541.png", compatibleBgs: ["laptopPalm", "laptopBack", "tablet", "phone"] },
       ]
     };
+
+    // Reverse stickers so last entry shows first
+    stickerData.stickers.reverse();
 
     let loadedIndex = -1;
     const list = document.getElementById('segmentsList');
     const observerOptions = { root: null, threshold: 0.05, rootMargin: "200px" };
     
-    // Observer for segment lazy loading
+    // Observer for segment lazy loading and pagination
     const segmentObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           const index = parseInt(entry.target.dataset.index);
+          // Preload logic: maintain +2 segment margin
           loadUntil(index + 2);
-          // When a segment is in view, ensure its active slider items load their actual images
           loadSliderImages(entry.target);
         }
       });
@@ -240,7 +241,6 @@
 
       sticker.compatibleBgs.forEach(bgKey => {
         const bgUrl = stickerData.baseImages[bgKey];
-        // Strategy: Use a 1px transparent data URI as placeholder to avoid early loading
         sliderHtml += `
           <div class="phone-item">
             <div class="phone-view">
@@ -248,7 +248,7 @@
                 <img data-src="${bgUrl}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Loading...">
               </div>
               <div class="wall-art-overlay" style="background-image: url('${sticker.url}')"></div>
-              <a href="https://mockoverflow.online/camera-overlay.html" class="open-camera-btn">Open Camera</a>
+              <a href="show/sticker/?id=${sticker.id}" class="open-camera-btn">Open Camera</a>
             </div>
           </div>
         `;
@@ -323,14 +323,15 @@
         initSliderLogic(segmentNode);
         segmentObserver.observe(segmentNode);
         
-        // Preload images for the first 2 segments immediately
-        if (loadedIndex <= 1) {
+        // Ensure initial loaded segments have their images prepped
+        if (loadedIndex <= 2) {
           loadSliderImages(segmentNode);
         }
       }
     }
 
     document.addEventListener('DOMContentLoaded', function () {
+      // Pagination: Load initial 3 segments (max 3 at load)
       loadUntil(2);
 
       let step = 0;
@@ -351,11 +352,9 @@
               const wallArt = view.querySelector('.wall-art-overlay');
               const img = imageContainer.querySelector('img');
 
-              // Optimization: Only animate if the image is actually loaded and visible
               const isHorizontallyVisible = itemRect.left < (window.innerWidth / 2 + 150) && itemRect.right > (window.innerWidth / 2 - 150);
 
               if (isHorizontallyVisible && img.classList.contains('loaded')) {
-                // Background Animation
                 switch (step % 5) {
                   case 0: imageContainer.style.transform = "translateX(-20px) translateY(0)"; break;
                   case 1: imageContainer.style.transform = "translateX(-10px) translateY(0)"; break;
@@ -364,7 +363,6 @@
                   case 4: imageContainer.style.transform = "translateX(0) translateY(0)"; break;
                 }
 
-                // Overlay Animation
                 switch (step % 10) {
                   case 0: wallArt.style.transform = "scale(0.6) translateY(-20%) rotate(50deg)"; break;
                   case 1: wallArt.style.transform = "scale(0.4) translateY(-30%) rotate(40deg)"; break;
