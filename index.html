@@ -17,6 +17,33 @@
       overflow-x: hidden;
     }
 
+    /* Fixed Top Nav - Stays visible regardless of scroll direction */
+    .fixed-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      transform: translateY(-100%);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .fixed-nav.visible {
+      transform: translateY(0);
+    }
+
+    .fixed-nav img {
+      height: 24px;
+      width: auto;
+    }
+
     .logo-container {
       margin-bottom: 40px;
       text-align: center;
@@ -25,7 +52,7 @@
     .segments-list {
       display: flex;
       flex-direction: column;
-      gap: 60px;
+      gap: 80px;
       width: 100%;
       max-width: 1200px;
       padding: 0 20px;
@@ -34,10 +61,11 @@
     .segment {
       width: 100%;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
       position: relative;
-      min-height: 600px;
+      min-height: 700px;
     }
 
     .slider-wrapper {
@@ -158,7 +186,69 @@
       transform-origin: center center;
       transition: transform 2s cubic-bezier(0.56, 0.1, 0.92, 0.9);
       will-change: transform;
-      filter: brightness(0.97);
+      filter: brightness(0.95);
+    }
+
+    /* Tooltip Styling */
+    .cam-tooltip {
+      position: absolute;
+      bottom: 22%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #F3E8FF;
+      color: #374151;
+      padding: 10px 14px 10px 14px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      white-space: nowrap;
+      z-index: 15;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      animation: bounce 2s infinite;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .cam-tooltip.cookie-hidden {
+      display: none !important;
+    }
+
+    .tooltip-close {
+      position: absolute;
+      top: 2px;
+      right: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      color: #9CA3AF;
+      line-height: 1;
+      font-weight: bold;
+      transition: color 0.2s;
+    }
+
+    .tooltip-close:hover {
+      color: #4B5563;
+    }
+
+    .tooltip-text {
+      margin-top: 6px;
+    }
+
+    .cam-tooltip::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      margin-left: -8px;
+      border-width: 8px;
+      border-style: solid;
+      border-color: #F3E8FF transparent transparent transparent;
+    }
+
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% {transform: translateX(-50%) translateY(0);}
+      40% {transform: translateX(-50%) translateY(-6px);}
+      60% {transform: translateX(-50%) translateY(-3px);}
     }
 
     .open-camera-btn {
@@ -179,11 +269,55 @@
       text-align: center;
       letter-spacing: 0.04em;
     }
+
+    /* Get This Sticker Button - Refined subtle corners with thin violet border */
+    .get-sticker-btn {
+      margin-top: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      width: 90%; 
+      max-width: 420px;
+      height: 48px;
+      background: linear-gradient(135deg, 
+        #f7f2ff 0%,     /* Subtle violet TL */
+        #fafafb 12%,    /* Transition to offwhite */
+        #fafafb 88%,    /* Majority offwhite */
+        #fff2f2 100%    /* Subtle red BR */
+      );
+      border: 1px solid #5E60CE; /* Thin violet border */
+      border-radius: 14px;
+      text-decoration: none;
+      color: #4a4a6d;
+      font-weight: 700;
+      font-size: 1rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+      transition: all 0.2s ease;
+    }
+
+    .get-sticker-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+      border-color: #4a4cb3;
+      background: linear-gradient(135deg, #f3ebff 0%, #fafafb 15%, #fafafb 85%, #ffeded 100%);
+    }
+
+    .get-sticker-btn img {
+      width: 26px;
+      height: 26px;
+      object-fit: contain;
+    }
   </style>
 </head>
 <body>
 
-  <div class="logo-container">
+  <!-- Sticky Nav -->
+  <nav class="fixed-nav" id="stickyNav">
+    <img src="https://mockoverflow.online/media/mockoverflow-phone.png" alt="MockOverflow Logo">
+  </nav>
+
+  <div class="logo-container" id="mainLogoContainer">
     <img width="220" src="https://mockoverflow.online/media/mockoverflow-phone.png" alt="MockOverflow Logo">
   </div>
 
@@ -200,12 +334,36 @@
         phone: "https://mockoverflow.online/files/stickers/phone.jpg"
       },
       stickers: [
-        { id: 1, url: "https://mockoverflow.online/media/sticker-demo.png?t=8", compatibleBgs: ["laptopPalm", "laptopBack", "tablet", "phone"] },
-        { id: 2, url: "https://mockoverflow.online/sticker/1/asset.png", compatibleBgs: ["laptopPalm", "laptopBack", "tablet", "phone"] },
-        { id: 3, url: "https://png.pngtree.com/png-clipart/20230916/original/pngtree-die-cut-sticker-of-a-little-girl-with-long-hair-clipart-png-image_12247691.png", compatibleBgs: ["laptopPalm", "laptopBack", "tablet", "phone"] },
-        { id: 4, url: "https://png.pngtree.com/png-vector/20240628/ourmid/pngtree-cute-boba-kawaii-cartoon-simple-die-cut-sticker-png-image_12730541.png", compatibleBgs: ["laptopPalm", "laptopBack", "tablet", "phone"] },
+        { id: 1, url: "https://mockoverflow.online/media/sticker-demo.png?t=8", buyUrl: "https://mockoverflow.online/buy/1", compatibleBgs: ["laptopPalm", "laptopBack", "tablet", "phone"] },
+        { id: 2, url: "https://mockoverflow.online/sticker/1/asset.png", buyUrl: "https://mockoverflow.online/buy/2", compatibleBgs: ["laptopPalm", "laptopBack", "tablet", "phone"] },
+        { id: 3, url: "https://png.pngtree.com/png-clipart/20230916/original/pngtree-die-cut-sticker-of-a-little-girl-with-long-hair-clipart-png-image_12247691.png", buyUrl: "https://mockoverflow.online/buy/3", compatibleBgs: ["laptopPalm", "laptopBack", "tablet", "phone"] },
+        { id: 4, url: "https://png.pngtree.com/png-vector/20240628/ourmid/pngtree-cute-boba-kawaii-cartoon-simple-die-cut-sticker-png-image_12730541.png", buyUrl: "https://mockoverflow.online/buy/4", compatibleBgs: ["laptopPalm", "laptopBack", "tablet", "phone"] },
+        { id: 5, url: "https://mockoverflow.online/media/sticker-demo.png?t=8", buyUrl: "https://mockoverflow.online/buy/5", compatibleBgs: ["laptopPalm", "laptopBack", "tablet", "phone"] },
+        { id: 6, url: "https://mockoverflow.online/sticker/1/asset.png", buyUrl: "https://mockoverflow.online/buy/6", compatibleBgs: ["laptopPalm", "laptopBack", "tablet", "phone"] }
       ]
     };
+
+    // Cookie helpers
+    function setCookie(name, value, days) {
+      let expires = "";
+      if (days) {
+        let date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toUTCString();
+      }
+      document.cookie = name + "=" + (value || "") + expires + "; path=/";
+    }
+
+    function getCookie(name) {
+      let nameEQ = name + "=";
+      let ca = document.cookie.split(';');
+      for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+      }
+      return null;
+    }
 
     // Reverse stickers so last entry shows first
     stickerData.stickers.reverse();
@@ -214,23 +372,39 @@
     const list = document.getElementById('segmentsList');
     const observerOptions = { root: null, threshold: 0.05, rootMargin: "200px" };
     
-    // Observer for segment lazy loading and pagination
     const segmentObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           const index = parseInt(entry.target.dataset.index);
-          // Preload logic: maintain +2 segment margin
           loadUntil(index + 2);
           loadSliderImages(entry.target);
         }
       });
     }, observerOptions);
 
+    // Simple Fixed Nav Logic: Constant visibility once past the main logo
+    const mainLogoContainer = document.getElementById('mainLogoContainer');
+    const stickyNav = document.getElementById('stickyNav');
+
+    window.addEventListener('scroll', () => {
+      const logoRect = mainLogoContainer.getBoundingClientRect();
+      const isPastLogo = logoRect.bottom < 0;
+
+      if (isPastLogo) {
+        stickyNav.classList.add('visible');
+      } else {
+        stickyNav.classList.remove('visible');
+      }
+    }, { passive: true });
+
     function createSegmentHtml(sticker, index) {
       const segment = document.createElement('div');
       segment.className = 'segment';
       segment.dataset.index = index;
       
+      const tooltipSeen = getCookie('cam_tooltip_seen') === 'true';
+      const tooltipClass = tooltipSeen ? 'cam-tooltip cookie-hidden' : 'cam-tooltip';
+
       let sliderHtml = `
         <div class="slider-wrapper">
           <button class="nav-arrow prev-btn hidden" aria-label="Previous">
@@ -248,6 +422,10 @@
                 <img data-src="${bgUrl}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Loading...">
               </div>
               <div class="wall-art-overlay" style="background-image: url('${sticker.url}')"></div>
+              <div class="${tooltipClass}">
+                <span class="tooltip-close" onclick="dismissTooltip(event)">&times;</span>
+                <div class="tooltip-text">See this sticker on your object</div>
+              </div>
               <a href="show/sticker/?id=${sticker.id}" class="open-camera-btn">Open Camera</a>
             </div>
           </div>
@@ -261,11 +439,23 @@
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </button>
         </div>
+        <a href="${sticker.buyUrl}" target="_blank" class="get-sticker-btn">
+          <img src="${sticker.url}" alt="sticker">
+          <span>Get This Sticker</span>
+        </a>
       `;
       
       segment.innerHTML = sliderHtml;
       return segment;
     }
+
+    window.dismissTooltip = function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      setCookie('cam_tooltip_seen', 'true', 30);
+      const tooltips = document.querySelectorAll('.cam-tooltip');
+      tooltips.forEach(t => t.classList.add('cookie-hidden'));
+    };
 
     function loadSliderImages(segment) {
       const images = segment.querySelectorAll('.image-container img[data-src]');
@@ -323,7 +513,6 @@
         initSliderLogic(segmentNode);
         segmentObserver.observe(segmentNode);
         
-        // Ensure initial loaded segments have their images prepped
         if (loadedIndex <= 2) {
           loadSliderImages(segmentNode);
         }
@@ -331,7 +520,6 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () {
-      // Pagination: Load initial 3 segments (max 3 at load)
       loadUntil(2);
 
       let step = 0;
