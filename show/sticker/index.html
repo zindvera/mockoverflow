@@ -52,7 +52,8 @@
             max-height: 80%;
             transform-origin: center center;
             cursor: grab;
-            display: none; /* Initially hidden until validated */
+            display: none;
+            /* Initially hidden until validated */
             filter: brightness(0.97);
         }
 
@@ -69,16 +70,42 @@
 
         #controls {
             width: 100%;
-            justify-content: center;
             position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
+            bottom: 30px;
+            left: 0;
             display: flex;
-            gap: 15px;
-            z-index: 10;
-            padding: 10px 20px;
-            border-radius: 12px;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 35px;
+            box-sizing: border-box;
+            z-index: 60;
+            pointer-events: none;
+        }
+
+        #controls>* {
+            pointer-events: auto;
+        }
+
+        #getStickerBtn {
+            background: #f4f2f8;
+            /* Offwhite light violet greyish */
+            color: #333;
+            border: 1px solid #dcd6eb;
+            padding: 12px 22px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 15px;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #getStickerBtn:active {
+            transform: scale(0.98);
+            background: #eceaf1;
         }
 
         #phonecontrols {
@@ -136,6 +163,7 @@
             justify-content: center;
             padding: 0;
             transition: border-color 0.3s ease;
+            flex-shrink: 0;
         }
 
         #captureBtn::before {
@@ -400,7 +428,10 @@
             text-align: center;
         }
 
-        #notFoundOverlay h1 { color: #7209b7; font-weight: 800; }
+        #notFoundOverlay h1 {
+            color: #7209b7;
+            font-weight: 800;
+        }
 
         /* Gesture Tooltip Style - Responsive Updates */
         #gestureTooltip {
@@ -409,14 +440,17 @@
             top: 25%;
             left: 50%;
             transform: translateX(-50%);
-            background: #f8f4ff; /* Light violet offwhite */
-            color: #333; /* Normal dark grey text */
+            background: #f8f4ff;
+            /* Light violet offwhite */
+            color: #333;
+            /* Normal dark grey text */
             padding: 24px;
             border-radius: 20px;
             z-index: 100;
             width: 85%;
             max-width: 320px;
-            text-align: left; /* Changed from center to start */
+            text-align: left;
+            /* Align text from start */
             box-shadow: 0 12px 40px rgba(114, 9, 183, 0.2);
             border: 2px solid #e0d4ff;
         }
@@ -425,63 +459,103 @@
         #placementTooltip {
             display: none;
             position: absolute;
-            bottom: 25%; /* Slight bottom from middle */
+            bottom: 25%;
+            /* Slight bottom from middle */
             left: 50%;
             transform: translateX(-50%);
-            background: #fff4f4; /* Reddish offwhite */
-            color: #333; /* Normal dark grey text */
+            background: #fff4f4;
+            /* Reddish offwhite */
+            color: #333;
+            /* Normal dark grey text */
             padding: 24px;
             border-radius: 20px;
             z-index: 101;
             width: 85%;
             max-width: 320px;
-            text-align: left; /* Changed from center to start */
+            text-align: left;
+            /* Align text from start */
             box-shadow: 0 12px 40px rgba(183, 9, 72, 0.15);
             border: 2px solid #ffe4e4;
         }
 
-        #gestureTooltip p, #placementTooltip p {
+        #gestureTooltip p,
+        #placementTooltip p {
             margin: 0;
-            margin-top: 15px; /* Added top margin to sit below the close button */
+            margin-top: 12px;
+            /* Add margin-top for clearing close button */
             font-weight: 600;
             line-height: 1.5;
         }
 
         /* Responsive Tooltip: Phone */
         @media (max-width: 767px) {
-            #gestureTooltip, #placementTooltip {
+
+            #gestureTooltip,
+            #placementTooltip {
                 width: 85%;
                 padding: 20px;
             }
-            #gestureTooltip p, #placementTooltip p {
+
+            #gestureTooltip p,
+            #placementTooltip p {
                 font-size: 18px;
             }
         }
 
         /* Responsive Tooltip: Tablet */
         @media (min-width: 768px) and (max-width: 1024px) {
-            #gestureTooltip, #placementTooltip {
+
+            #controls {
+                padding: 0 85px;
+            }
+
+            #gestureTooltip,
+            #placementTooltip {
                 width: 70%;
                 max-width: 500px;
                 padding: 40px;
             }
-            #gestureTooltip p, #placementTooltip p {
-                font-size: 23px;
+
+            #gestureTooltip p,
+            #placementTooltip p {
+                font-size: 26px;
+                margin-top: 18px;
+                /* More margin for larger tablet button */
+            }
+
+            #getStickerBtn {
+                font-size: 20px;
+                padding: 16px 30px;
+            }
+
+            #captureBtn {
+                width: 85px;
+                height: 85px;
+            }
+
+            #captureBtn::before {
+                width: 50px;
+                height: 50px;
             }
         }
 
         .tooltipClose {
             position: absolute;
-            top: 4px; /* Adjusted top */
-            right: 12px; /* Adjusted right */
+            top: 4px;
+            /* Position at the top */
+            right: 12px;
+            /* Position at the right */
             cursor: pointer;
-            font-size: 36px; /* Increased size */
+            font-size: 34px;
+            /* Increased size */
+            line-height: 1;
             font-weight: bold;
             color: #7209b7;
             opacity: 0.6;
-            line-height: 1; /* Ensure tight bounding box for the icon */
+            z-index: 102;
+            /* Ensure it is on top */
         }
-        
+
         .tooltipClose:hover {
             opacity: 1;
         }
@@ -527,8 +601,9 @@
             Drag, Pinch, or Double-Tap to Reset
         </div>
 
-        <!-- Capture Button -->
+        <!-- Capture Button & Get Button -->
         <div id="controls">
+            <a href="#" id="getStickerBtn">Get This Sticker</a>
             <button id="captureBtn" aria-label="Capture Picture"></button>
         </div>
 
@@ -545,18 +620,21 @@
                 <h2 class="highlighted-text">For better experience, open it in phone or tablet</h2>
                 <p class="light-text">Scan QR code to open this in phone or tablet</p>
 
-                <div id="qrCodeWrapper" class="qr-code" style="margin:auto; position: relative; width: 180px; height: 180px;">
+                <div id="qrCodeWrapper" class="qr-code"
+                    style="margin:auto; position: relative; width: 180px; height: 180px;">
                     <div id="loader" style="
                         position: absolute; top: 50%; left: 50%; 
                         transform: translate(-50%, -50%); 
                         color: #555; font-weight: bold;
                         user-select: none;
                     ">Loading QR Code...</div>
-                    <img id="qrCodeImage" alt="Generated QR Code" style="width: 100%; height: 100%; display: none; border-radius: 12px; box-shadow: 0 4px 15px rgba(245, 245, 245, 0.3);" />
+                    <img id="qrCodeImage" alt="Generated QR Code"
+                        style="width: 100%; height: 100%; display: none; border-radius: 12px; box-shadow: 0 4px 15px rgba(245, 245, 245, 0.3);" />
                 </div>
 
                 <p class="link-text">or you can use this link</p>
-                <input type="text" id="shareLinkInput" readonly value="https://mockoverflow.online/show/sticker/?id={n}" class="link-box" />
+                <input type="text" id="shareLinkInput" readonly value="https://mockoverflow.online/show/sticker/?id={n}"
+                    class="link-box" />
             </div>
             <!-- Right Column: Phone Demo -->
             <div class="col-6">
@@ -581,7 +659,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const productId = urlParams.get('id');
         const currentTime = new Date().getTime();
-        
+
         // Target Path: products/n/asset.png
         const assetUrl = productId ? `products/${productId}/asset.png?t=${currentTime}` : null;
         const shareLink = productId ? `https://mockoverflow.online/show/sticker/?id=${productId}` : `https://mockoverflow.online/show/sticker/?id={n}`;
@@ -597,11 +675,11 @@
             showNotFound();
         } else {
             const checkImg = new Image();
-            checkImg.onload = function() {
+            checkImg.onload = function () {
                 // Success - start app
                 initApp();
             };
-            checkImg.onerror = function() {
+            checkImg.onerror = function () {
                 // Not Found - show message
                 showNotFound();
             };
@@ -613,6 +691,13 @@
             const linkInput = document.getElementById('shareLinkInput');
             if (linkInput) linkInput.value = shareLink;
 
+            // Update Get Sticker Button Link
+            const getStickerBtn = document.getElementById('getStickerBtn');
+            if (getStickerBtn) {
+                // Point this to whatever landing page or product page you prefer
+                getStickerBtn.href = shareLink;
+            }
+
             // Device check
             const deviceType = (window.innerWidth <= 1024) ? 'mobile' : 'desktop';
 
@@ -623,7 +708,7 @@
             } else {
                 const desktop = document.getElementById('desktopAlert');
                 if (desktop) desktop.remove();
-                
+
                 const overlay = document.getElementById('overlayImage');
                 if (overlay) {
                     overlay.src = assetUrl;
@@ -647,7 +732,7 @@
             // Close logic for first tooltip
             const closeGestureBtn = document.getElementById('closeGestureTooltip');
             if (closeGestureBtn) {
-                closeGestureBtn.onclick = function() {
+                closeGestureBtn.onclick = function () {
                     document.getElementById('gestureTooltip').style.display = 'none';
                     // Trigger second tooltip after 3.5 seconds
                     setTimeout(() => {
@@ -660,7 +745,7 @@
             // Close logic for second tooltip
             const closePlacementBtn = document.getElementById('closePlacementTooltip');
             if (closePlacementBtn) {
-                closePlacementBtn.onclick = function() {
+                closePlacementBtn.onclick = function () {
                     document.getElementById('placementTooltip').style.display = 'none';
                     // Final cookie set when sequence completes/second is closed
                     document.cookie = "tooltipSeen=true; path=/; max-age=31536000";
