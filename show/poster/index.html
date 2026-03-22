@@ -53,8 +53,8 @@
             max-height: 80%;
             transform-origin: center center;
             display: none; /* Initially hidden until validated */
-            /* Subtle right and bottom drop-shadow applied to non-transparent pixels */
-            filter: brightness(0.97) drop-shadow(5px 5px 5px rgba(0, 0, 0, 0.07));
+            /* Adjusted brightness to 0.95 and applied drop-shadow for wall depth */
+            filter: brightness(0.95) drop-shadow(12px 12px 15px rgba(0, 0, 0, 0.4));
         }
 
         #previewCanvas {
@@ -284,7 +284,7 @@
             transform: scale(0.6) translateY(-20%);
             transform-origin: center center;
             transition: transform 2s ease-in-out;
-            filter: brightness(0.97);
+            filter: brightness(0.95);
         }
 
         #leftColumn {
@@ -568,13 +568,13 @@
         <!-- Gesture Tooltip (First) -->
         <div id="gestureTooltip">
             <span class="tooltipClose" id="closeGestureTooltip" aria-label="Close Tooltip">&times;</span>
-            <p>Move, Rotate & Zoom this poster to see how it fits your wall.</p>
+            <p>Move & zoom this poster using finger touch.</p>
         </div>
 
         <!-- Placement Tooltip (Second) -->
         <div id="placementTooltip">
             <span class="tooltipClose" id="closePlacementTooltip" aria-label="Close Tooltip">&times;</span>
-            <p>Visualize this poster in your living room, bedroom, or workspace.</p>
+            <p>Point your camera directly at the wall to see how this poster will look.</p>
         </div>
 
         <!-- Hidden Tip/Reset Indicator -->
@@ -638,7 +638,8 @@
 
         // 1. Parameter and ID logic
         const urlParams = new URLSearchParams(window.location.search);
-        const productId = urlParams.get('id');
+        // Temporary fallback to ID 1 if not passed
+        const productId = urlParams.get('id') || '1';
         const currentTime = new Date().getTime();
         
         // Target Path: products/n/asset.png
@@ -749,16 +750,16 @@
             const ctx = captureCanvas.getContext('2d');
 
             let state = {
-                x: 0, y: 0, scale: 1, rotation: 0,
-                startX: 0, startY: 0, baseX: 0, baseY: 0, baseScale: 1, baseRotation: 0,
+                x: 0, y: 0, scale: 1,
+                startX: 0, startY: 0, baseX: 0, baseY: 0, baseScale: 1,
             };
 
             const activePointers = new Map();
             let initialDistance = null;
-            let initialAngle = null;
 
             const updateOverlay = () => {
-                overlay.style.transform = `translateX(${state.x}px) translateY(${state.y}px) scale(${state.scale}) rotate(${state.rotation}deg)`;
+                // Rotation removed
+                overlay.style.transform = `translateX(${state.x}px) translateY(${state.y}px) scale(${state.scale})`;
             };
             updateOverlay();
 
@@ -793,8 +794,7 @@
                 const dx = p1.clientX - p2.clientX;
                 const dy = p1.clientY - p2.clientY;
                 const distance = Math.sqrt(dx * dx + dy * dy);
-                const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-                return { distance, angle };
+                return { distance };
             }
 
             // Movement logic now on the whole Viewport Container
@@ -813,9 +813,7 @@
                     const details = getPinchDetails();
                     if (details) {
                         initialDistance = details.distance;
-                        initialAngle = details.angle;
                         state.baseScale = state.scale;
-                        state.baseRotation = state.rotation;
                     }
                 }
             });
@@ -831,11 +829,9 @@
                     state.y = state.baseY + (e.clientY - state.startY);
                 } else if (activePointers.size >= 2) {
                     const currentDetails = getPinchDetails();
-                    if (currentDetails && initialDistance && initialAngle) {
+                    if (currentDetails && initialDistance) {
                         const scaleFactor = currentDetails.distance / initialDistance;
                         state.scale = Math.min(2.5, Math.max(0.1, state.baseScale * scaleFactor));
-                        const rotationDelta = currentDetails.angle - initialAngle;
-                        state.rotation = state.baseRotation + rotationDelta;
                     }
                 }
                 updateOverlay();
@@ -844,7 +840,7 @@
             function pointerEnd(e) {
                 if (!activePointers.has(e.pointerId)) return;
                 activePointers.delete(e.pointerId);
-                if (activePointers.size < 2) { initialDistance = null; initialAngle = null; }
+                if (activePointers.size < 2) { initialDistance = null; }
                 if (activePointers.size === 1) {
                     const rem = Array.from(activePointers.values())[0];
                     state.startX = rem.clientX; state.startY = rem.clientY;
@@ -864,7 +860,7 @@
 
                 const now = new Date().getTime();
                 if ((now - lastTap < 300) && (now - lastTap > 0)) {
-                    state = { x: 0, y: 0, scale: 1, rotation: 0, startX: 0, startY: 0, baseX: 0, baseY: 0, baseScale: 1, baseRotation: 0 };
+                    state = { x: 0, y: 0, scale: 1, startX: 0, startY: 0, baseX: 0, baseY: 0, baseScale: 1 };
                     updateOverlay();
                     resetTip.textContent = "RESET!";
                     resetTip.style.display = 'block';
@@ -889,7 +885,7 @@
 
                 ctx.save();
                 ctx.translate(iW / 2 + state.x * sX, iH / 2 + state.y * sY);
-                ctx.rotate(state.rotation * Math.PI / 180);
+                // Rotation removed from capture
                 ctx.scale(state.scale, state.scale);
                 ctx.drawImage(overlay, -oW / 2, -oH / 2, oW, oH);
                 ctx.restore();
@@ -918,7 +914,6 @@
 
             let toLeft = true;
             let step = 0;
-            let rotated = false;
             let paused = false;
 
             function slideImage() {
@@ -929,13 +924,13 @@
 
             function animateWallArt() {
                 if (paused) return;
-                // Subtle adjustments for poster visualization (less rotation than stickers)
+                // Subtle scale/position adjustments for poster visualization (rotation removed)
                 switch (step) {
-                    case 0: wallArtDiv.style.transform = "scale(0.65) translateY(-20%) rotate(1deg)"; break;
-                    case 1: wallArtDiv.style.transform = "scale(0.6) translateY(-22%) rotate(-1deg)"; break;
-                    case 2: wallArtDiv.style.transform = "scale(0.62) translateY(-19%) rotate(0deg)"; break;
-                    case 3: wallArtDiv.style.transform = "scale(0.6) translateY(-20%) rotate(0deg)"; break;
-                    default: wallArtDiv.style.transform = "scale(0.61) translateY(-20%) rotate(0.5deg)";
+                    case 0: wallArtDiv.style.transform = "scale(0.65) translateY(-20%)"; break;
+                    case 1: wallArtDiv.style.transform = "scale(0.6) translateY(-22%)"; break;
+                    case 2: wallArtDiv.style.transform = "scale(0.62) translateY(-19%)"; break;
+                    case 3: wallArtDiv.style.transform = "scale(0.6) translateY(-20%)"; break;
+                    default: wallArtDiv.style.transform = "scale(0.61) translateY(-20.5%)";
                 }
                 step = (step + 1) % 5;
             }
