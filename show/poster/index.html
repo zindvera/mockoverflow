@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MockOverflow - Poster AR Preview</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+        xintegrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+
+    <style>
+        /* Custom styles for a clean, full-screen mobile experience */
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            /* Prevent body scrolling */
+            touch-action: none;
+            /* Disable default touch actions like pull-to-refresh */
+        }
+
+        #viewportContainer {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #1f2937;
+            /* Dark background */
+            touch-action: none;
+        }
+
+        #cameraFeed {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* Ensures video covers the entire viewport */
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 10;
+        }
+
+        #overlayImage {
+            position: absolute;
+            z-index: 20;
+            touch-action: none;
+            pointer-events: none; /* Let touches pass through to the container */
+            transition: opacity 0.3s ease;
+            max-width: 80%;
+            /* Limit size relative to screen */
+            max-height: 80%;
+            transform-origin: center center;
+            display: none; /* Initially hidden until validated */
+            /* Subtle right and bottom drop-shadow applied to non-transparent pixels */
+            filter: brightness(0.97) drop-shadow(5px 5px 5px rgba(0, 0, 0, 0.07));
+        }
+
+        #previewCanvas {
+            background: #1f1f1f;
+            cursor: grab;
+            touch-action: none;
+            display: block;
+        }
+
+        #controls {
+            width: 100%;
+            position: fixed;
+            bottom: 30px;
+            left: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 35px; /* Phone view padding */
+            box-sizing: border-box;
+            z-index: 60;
+            pointer-events: none;
+        }
+
+        #controls > * {
+            pointer-events: auto;
+        }
+
+        #getStickerBtn {
+            background: #f4f2f8; /* Offwhite light violet greyish */
+            color: #333;
+            border: 1px solid #dcd6eb;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 15px;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #getStickerBtn img {
+            width: 28px;
+            height: 28px;
+            object-fit: contain;
+            margin-right: 10px;
+            border-radius: 4px;
+            filter: brightness(0.97);
+        }
+
+        #getStickerBtn:active {
+            transform: scale(0.98);
+            background: #eceaf1;
+        }
+
+        #phonecontrols {
+            width: 100%;
+            justify-content: center;
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 10;
+            border-radius: 12px;
+        }
+
+        #democaptureBtn {
+            width: 55px;
+            height: 55px;
+            background-color: transparent;
+            border-radius: 50%;
+            border: 4px solid white;
+            /* outer white border */
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            transition: border-color 0.3s ease;
+        }
+
+        #democaptureBtn::before {
+            content: "";
+            width: 35px;
+            height: 35px;
+            background-color: white;
+            /* inner circle */
+            border-radius: 50%;
+            display: block;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+            transition: opacity 0.3s ease;
+        }
+
+        #captureBtn {
+            width: 70px;
+            height: 70px;
+            background-color: transparent;
+            border-radius: 50%;
+            border: 4px solid white;
+            /* outer white border */
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            transition: border-color 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        #captureBtn::before {
+            content: "";
+            width: 40px;
+            height: 40px;
+            background-color: white;
+            /* inner circle */
+            border-radius: 50%;
+            display: block;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+            transition: opacity 0.3s ease;
+        }
+
+        #captureBtn.loader {
+            border-color: transparent;
+            background-color: transparent;
+            position: relative;
+            pointer-events: none;
+            /* disable clicks while loading */
+        }
+
+        #captureBtn.loader::before {
+            content: "";
+            box-sizing: border-box;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 40px;
+            height: 40px;
+            margin-top: -20px;
+            margin-left: -20px;
+            border-radius: 50%;
+            border: 4px solid white;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+            background: transparent;
+            box-shadow: none;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        #switchCameraBtn {
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            color: rgb(0, 0, 0);
+            background: linear-gradient(90deg, #f8f8f8, #fcf9ff);
+            user-select: none;
+            transition: background 0.3s ease;
+        }
+
+        #loadingText {
+            position: fixed;
+            top: 48%;
+            color: white;
+            font-size: 16px;
+            padding: 6px 12px;
+            z-index: 10;
+            user-select: none;
+            display: none;
+        }
+
+        #phone {
+            width: 300px;
+            height: 600px;
+            border: 15px solid #333;
+            border-radius: 40px;
+            overflow: hidden;
+            position: relative;
+            margin: 50px auto;
+            margin-top: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            background: #000;
+            transition: transform 3s ease-in-out;
+            transform-origin: center center;
+        }
+
+        #imageContainer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 110vh;
+            width: 100%;
+            transition: transform 8s ease-in-out;
+        }
+
+        #imageContainer img {
+            height: 100%;
+            width: 130%;
+            object-fit: cover;
+            display: block;
+            transition: transform 3s ease-in-out;
+            transform-origin: center center;
+        }
+
+        #wallArt {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background-position: center;
+            background-size: contain;
+            background-repeat: no-repeat;
+            transform: scale(0.6) translateY(-20%);
+            transform-origin: center center;
+            transition: transform 2s ease-in-out;
+            filter: brightness(0.97);
+        }
+
+        #leftColumn {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: black;
+            padding: 20px;
+        }
+
+        .highlighted-text {
+            font-weight: 900;
+            font-size: 1.8rem;
+            color: #7209b7;
+            /* deep violet */
+            background: linear-gradient(90deg, #f72585, #7209b7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+            margin-top: 0.4in;
+        }
+
+        .light-text {
+            font-weight: 500;
+            font-size: 1rem;
+            color: #181818;
+            /* lighter grey */
+            margin-bottom: 0.25in;
+            margin-top: 0.3in;
+        }
+
+        .qr-code {
+            width: 180px;
+            height: 180px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(245, 245, 245, 0.3);
+            /* pink shadow */
+            margin-bottom: 20px;
+        }
+
+        .link-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: #0e46ad;
+            margin-bottom: 8px;
+            margin-top: 10px;
+        }
+
+        .link-box {
+            width: 100%;
+            max-width: 450px;
+            padding: 10px 15px;
+            font-size: 1rem;
+            font-weight: 500;
+            border: 1px solid #0e46ad;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            color: #0e46ad;
+        }
+
+        /* Desktop overrides */
+        @media (min-width: 1025px) {
+            body {
+                background: #f6f4f7;
+                overflow-x: auto;
+                overflow-y: auto;
+            }
+        }
+
+        #page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #ffffff;
+            /* White background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .loader-circle {
+            border: 6px solid #e0e0e0;
+            /* Light grey circle background */
+            border-top: 6px solid rgb(223, 86, 223);
+            /* Violet colored front for spinner */
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+        #resetTip {
+            position: absolute;
+            top: 120px;
+            padding: 0.5rem;
+            /* 8px */
+            background-color: rgba(31, 41, 55, 0.7);
+            /* gray-800/70 */
+            color: white;
+            font-size: 0.75rem;
+            /* text-xs */
+            border-radius: 9999px;
+            /* fully rounded */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+                0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            /* shadow-lg */
+            z-index: 30;
+            opacity: 0.7;
+            display: none;
+        }
+
+        #message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            /* center horizontally and vertically */
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            /* 16px */
+            background-color: rgba(127, 28, 185, 0.8);
+            /* violet/purple background */
+            border-radius: 0.5rem;
+            /* rounded-lg */
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            /* shadow-2xl */
+            z-index: 50;
+            display: none;
+        }
+
+        #notFoundOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: white;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            text-align: center;
+        }
+
+        #notFoundOverlay h1 { color: #7209b7; font-weight: 800; }
+
+        /* Gesture Tooltip Style - Responsive Updates */
+        #gestureTooltip {
+            display: none;
+            position: absolute;
+            top: 25%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #f8f4ff; /* Light violet offwhite */
+            color: #333; /* Normal dark grey text */
+            padding: 24px;
+            border-radius: 20px;
+            z-index: 100;
+            width: 85%;
+            max-width: 320px;
+            text-align: left; /* Align text from start */
+            box-shadow: 0 12px 40px rgba(114, 9, 183, 0.2);
+            border: 2px solid #e0d4ff;
+            pointer-events: auto;
+        }
+
+        /* Placement Tooltip Style - Responsive Updates */
+        #placementTooltip {
+            display: none;
+            position: absolute;
+            bottom: 25%; /* Slight bottom from middle */
+            left: 50%;
+            transform: translateX(-50%);
+            background: #fff4f4; /* Reddish offwhite */
+            color: #333; /* Normal dark grey text */
+            padding: 24px;
+            border-radius: 20px;
+            z-index: 101;
+            width: 85%;
+            max-width: 320px;
+            text-align: left; /* Align text from start */
+            box-shadow: 0 12px 40px rgba(183, 9, 72, 0.15);
+            border: 2px solid #ffe4e4;
+            pointer-events: auto;
+        }
+
+        #gestureTooltip p, #placementTooltip p {
+            margin: 0;
+            margin-top: 12px; /* Add margin-top for clearing close button */
+            font-weight: 600;
+            line-height: 1.5;
+        }
+
+        /* Responsive Tooltip: Phone */
+        @media (max-width: 767px) {
+            #gestureTooltip, #placementTooltip {
+                width: 85%;
+                padding: 20px;
+            }
+            #gestureTooltip p, #placementTooltip p {
+                font-size: 18px;
+            }
+        }
+
+        /* Responsive Tooltip: Tablet */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            #gestureTooltip, #placementTooltip {
+                width: 70%;
+                max-width: 500px;
+                padding: 40px;
+            }
+            #gestureTooltip p, #placementTooltip p {
+                font-size: 26px;
+                margin-top: 18px; /* More margin for larger tablet button */
+            }
+            #getStickerBtn {
+                font-size: 20px;
+                padding: 16px 30px;
+            }
+            #getStickerBtn img {
+                width: 36px;
+                height: 36px;
+            }
+            #captureBtn {
+                width: 85px;
+                height: 85px;
+            }
+            #captureBtn::before {
+                width: 50px;
+                height: 50px;
+            }
+            #controls {
+                padding: 0 85px; /* Tablet view padding */
+            }
+        }
+
+        .tooltipClose {
+            position: absolute;
+            top: 4px; /* Position at the top */
+            right: 12px; /* Position at the right */
+            cursor: pointer;
+            font-size: 34px; /* Increased size */
+            line-height: 1;
+            font-weight: bold;
+            color: #7209b7;
+            opacity: 0.6;
+            z-index: 102; /* Ensure it is on top */
+        }
+        
+        .tooltipClose:hover {
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Not Found State -->
+    <div id="notFoundOverlay">
+        <h1>404 Not Found</h1>
+        <p>The poster you're looking for doesn't exist.</p>
+    </div>
+
+    <div id="viewportContainer">
+
+        <!-- Camera Feed Element -->
+        <video id="cameraFeed" autoplay playsinline muted></video>
+
+        <!-- Image Overlay -->
+        <img id="overlayImage" crossorigin="anonymous" src="" alt="Poster Overlay"
+            class="w-72 h-auto rounded-xl" draggable="false">
+
+        <!-- Message/Error Display -->
+        <div id="message">
+            Awaiting camera permission...
+        </div>
+
+        <!-- Gesture Tooltip (First) -->
+        <div id="gestureTooltip">
+            <span class="tooltipClose" id="closeGestureTooltip" aria-label="Close Tooltip">&times;</span>
+            <p>Move, Rotate & Zoom this poster to see how it fits your wall.</p>
+        </div>
+
+        <!-- Placement Tooltip (Second) -->
+        <div id="placementTooltip">
+            <span class="tooltipClose" id="closePlacementTooltip" aria-label="Close Tooltip">&times;</span>
+            <p>Visualize this poster in your living room, bedroom, or workspace.</p>
+        </div>
+
+        <!-- Hidden Tip/Reset Indicator -->
+        <div id="resetTip">
+            Drag, Pinch, or Double-Tap to Reset
+        </div>
+
+        <!-- Capture Button & Get Button -->
+        <div id="controls">
+            <a href="#" id="getStickerBtn">
+                <img id="btnStickerPreview" src="" alt="" style="display:none;">
+                Get This Poster
+            </a>
+            <button id="captureBtn" aria-label="Capture Picture"></button>
+        </div>
+
+    </div>
+
+    <!-- Hidden Canvas for Image Processing/Capture -->
+    <canvas id="captureCanvas" style="display:none;"></canvas>
+
+    <div class="container mt-3" id="desktopAlert">
+
+        <div class="row" style="padding:15px; background:#fff;">
+            <!-- Left Column: QR code instructions -->
+            <div class="col-6 text-center" id="leftColumn">
+                <h2 class="highlighted-text">For better experience, open it in phone or tablet</h2>
+                <p class="light-text">Scan QR code to see this poster on your wall</p>
+
+                <div id="qrCodeWrapper" class="qr-code" style="margin:auto; position: relative; width: 180px; height: 180px;">
+                    <div id="loader" style="
+                        position: absolute; top: 50%; left: 50%; 
+                        transform: translate(-50%, -50%); 
+                        color: #555; font-weight: bold;
+                        user-select: none;
+                    ">Loading QR Code...</div>
+                    <img id="qrCodeImage" alt="Generated QR Code" style="width: 100%; height: 100%; display: none; border-radius: 12px; box-shadow: 0 4px 15px rgba(245, 245, 245, 0.3);" />
+                </div>
+
+                <p class="link-text">or you can use this link</p>
+                <input type="text" id="shareLinkInput" readonly value="https://mockoverflow.online/show/poster/?id={n}" class="link-box" />
+            </div>
+            <!-- Right Column: Phone Demo -->
+            <div class="col-6">
+                <div id="phone">
+                    <div id="imageContainer">
+                        <img id="laptopDemoImage" src="" alt="Bedroom" />
+                    </div>
+                    <div id="wallArt"></div>
+                    <div id="phonecontrols">
+                        <div id="democaptureBtn"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+
+        // 1. Parameter and ID logic
+        const urlParams = new URLSearchParams(window.location.search);
+        const productId = urlParams.get('id');
+        const currentTime = new Date().getTime();
+        
+        // Target Path: products/n/asset.png
+        const assetUrl = productId ? `/show/poster/products/${productId}/asset.png?t=${currentTime}` : null;
+        const shareLink = productId ? `https://mockoverflow.online/show/poster/?id=${productId}` : `https://mockoverflow.online/show/poster/?id={n}`;
+
+        function showNotFound() {
+            document.getElementById('notFoundOverlay').style.display = 'flex';
+            if (document.getElementById('viewportContainer')) document.getElementById('viewportContainer').style.display = 'none';
+            if (document.getElementById('desktopAlert')) document.getElementById('desktopAlert').style.display = 'none';
+        }
+
+        // Validate Asset before starting
+        if (!productId) {
+            showNotFound();
+        } else {
+            const checkImg = new Image();
+            checkImg.onload = function() {
+                // Success - start app
+                initApp();
+            };
+            checkImg.onerror = function() {
+                // Not Found - show message
+                showNotFound();
+            };
+            checkImg.src = assetUrl;
+        }
+
+        function initApp() {
+            // Update Share Link
+            const linkInput = document.getElementById('shareLinkInput');
+            if (linkInput) linkInput.value = shareLink;
+            
+            // Update Get Button Link & Image Preview
+            const getStickerBtn = document.getElementById('getStickerBtn');
+            const btnImg = document.getElementById('btnStickerPreview');
+            if (getStickerBtn) {
+                getStickerBtn.href = `/buy/poster/${productId}`; 
+            }
+            if (btnImg) {
+                btnImg.src = assetUrl;
+                btnImg.style.display = 'inline-block';
+            }
+
+            // Device check
+            const deviceType = (window.innerWidth <= 1024) ? 'mobile' : 'desktop';
+
+            if (deviceType === 'desktop') {
+                const viewport = document.getElementById('viewportContainer');
+                if (viewport) viewport.remove();
+                setupDesktopExperience();
+            } else {
+                const desktop = document.getElementById('desktopAlert');
+                if (desktop) desktop.remove();
+                
+                const overlay = document.getElementById('overlayImage');
+                if (overlay) {
+                    overlay.src = assetUrl;
+                    overlay.style.display = 'block';
+                }
+                openCamera();
+                setupGestureTooltip();
+            }
+        }
+
+        function setupGestureTooltip() {
+            const tooltipSeen = document.cookie.split('; ').find(row => row.startsWith('posterTooltipSeen='));
+            if (!tooltipSeen) {
+                // First Tooltip
+                setTimeout(() => {
+                    const tooltip = document.getElementById('gestureTooltip');
+                    if (tooltip) tooltip.style.display = 'block';
+                }, 3000);
+            }
+
+            // Close logic for first tooltip
+            const closeGestureBtn = document.getElementById('closeGestureTooltip');
+            if (closeGestureBtn) {
+                closeGestureBtn.onclick = function() {
+                    document.getElementById('gestureTooltip').style.display = 'none';
+                    // Trigger second tooltip after 3.5 seconds
+                    setTimeout(() => {
+                        const placementTooltip = document.getElementById('placementTooltip');
+                        if (placementTooltip) placementTooltip.style.display = 'block';
+                    }, 3500);
+                };
+            }
+
+            // Close logic for second tooltip
+            const closePlacementBtn = document.getElementById('closePlacementTooltip');
+            if (closePlacementBtn) {
+                closePlacementBtn.onclick = function() {
+                    document.getElementById('placementTooltip').style.display = 'none';
+                    // Final cookie set when sequence completes/second is closed
+                    document.cookie = "posterTooltipSeen=true; path=/; max-age=31536000";
+                };
+            }
+        }
+
+        function openCamera() {
+            const viewport = document.getElementById('viewportContainer');
+            const video = document.getElementById('cameraFeed');
+            const overlay = document.getElementById('overlayImage');
+            const message = document.getElementById('message');
+            const resetTip = document.getElementById('resetTip');
+            const captureBtn = document.getElementById('captureBtn');
+            const captureCanvas = document.getElementById('captureCanvas');
+            const ctx = captureCanvas.getContext('2d');
+
+            let state = {
+                x: 0, y: 0, scale: 1, rotation: 0,
+                startX: 0, startY: 0, baseX: 0, baseY: 0, baseScale: 1, baseRotation: 0,
+            };
+
+            const activePointers = new Map();
+            let initialDistance = null;
+            let initialAngle = null;
+
+            const updateOverlay = () => {
+                overlay.style.transform = `translateX(${state.x}px) translateY(${state.y}px) scale(${state.scale}) rotate(${state.rotation}deg)`;
+            };
+            updateOverlay();
+
+            async function startCamera() {
+                message.style.display = 'block';
+                message.textContent = 'Awaiting camera permission...';
+
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({
+                        video: {
+                            facingMode: 'environment',
+                            width: { ideal: 4096 },
+                            height: { ideal: 2160 }
+                        }
+                    });
+                    video.srcObject = stream;
+                    message.style.display = 'none';
+                    video.play().catch(e => console.error("Video play failed:", e));
+                } catch (err) {
+                    console.error("Error accessing camera: ", err);
+                    message.style.display = 'block';
+                    message.textContent = 'Camera access denied or unavailable.';
+                    video.style.display = 'none';
+                }
+            }
+
+            function getPinchDetails() {
+                const pointers = Array.from(activePointers.values());
+                if (pointers.length < 2) return null;
+                const p1 = pointers[0];
+                const p2 = pointers[1];
+                const dx = p1.clientX - p2.clientX;
+                const dy = p1.clientY - p2.clientY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+                return { distance, angle };
+            }
+
+            // Movement logic now on the whole Viewport Container
+            viewport.addEventListener('pointerdown', (e) => {
+                // If clicking buttons, don't start moving the sticker
+                if (e.target.closest('#controls') || e.target.closest('.tooltipClose') || e.target.closest('#gestureTooltip') || e.target.closest('#placementTooltip')) return;
+
+                e.preventDefault();
+                viewport.setPointerCapture(e.pointerId);
+                activePointers.set(e.pointerId, { id: e.pointerId, clientX: e.clientX, clientY: e.clientY });
+
+                if (activePointers.size === 1) {
+                    state.startX = e.clientX; state.startY = e.clientY;
+                    state.baseX = state.x; state.baseY = state.y;
+                } else if (activePointers.size === 2) {
+                    const details = getPinchDetails();
+                    if (details) {
+                        initialDistance = details.distance;
+                        initialAngle = details.angle;
+                        state.baseScale = state.scale;
+                        state.baseRotation = state.rotation;
+                    }
+                }
+            });
+
+            viewport.addEventListener('pointermove', (e) => {
+                if (!activePointers.has(e.pointerId)) return;
+                e.preventDefault();
+                activePointers.get(e.pointerId).clientX = e.clientX;
+                activePointers.get(e.pointerId).clientY = e.clientY;
+
+                if (activePointers.size === 1) {
+                    state.x = state.baseX + (e.clientX - state.startX);
+                    state.y = state.baseY + (e.clientY - state.startY);
+                } else if (activePointers.size >= 2) {
+                    const currentDetails = getPinchDetails();
+                    if (currentDetails && initialDistance && initialAngle) {
+                        const scaleFactor = currentDetails.distance / initialDistance;
+                        state.scale = Math.min(2.5, Math.max(0.1, state.baseScale * scaleFactor));
+                        const rotationDelta = currentDetails.angle - initialAngle;
+                        state.rotation = state.baseRotation + rotationDelta;
+                    }
+                }
+                updateOverlay();
+            });
+
+            function pointerEnd(e) {
+                if (!activePointers.has(e.pointerId)) return;
+                activePointers.delete(e.pointerId);
+                if (activePointers.size < 2) { initialDistance = null; initialAngle = null; }
+                if (activePointers.size === 1) {
+                    const rem = Array.from(activePointers.values())[0];
+                    state.startX = rem.clientX; state.startY = rem.clientY;
+                    state.baseX = state.x; state.baseY = state.y;
+                }
+            }
+
+            viewport.addEventListener('pointerup', pointerEnd);
+            viewport.addEventListener('pointercancel', pointerEnd);
+            viewport.addEventListener('pointerleave', pointerEnd);
+
+            // Double tap to reset
+            let lastTap = 0;
+            viewport.addEventListener('click', (e) => {
+                // Guard buttons
+                if (e.target.closest('#controls') || e.target.closest('.tooltipClose')) return;
+
+                const now = new Date().getTime();
+                if ((now - lastTap < 300) && (now - lastTap > 0)) {
+                    state = { x: 0, y: 0, scale: 1, rotation: 0, startX: 0, startY: 0, baseX: 0, baseY: 0, baseScale: 1, baseRotation: 0 };
+                    updateOverlay();
+                    resetTip.textContent = "RESET!";
+                    resetTip.style.display = 'block';
+                    setTimeout(() => { resetTip.style.display = 'none'; resetTip.textContent = "Drag, Pinch, or Double-Tap to Reset"; }, 1000);
+                }
+                lastTap = now;
+            });
+
+            captureBtn.addEventListener('click', () => {
+                captureBtn.classList.add('loader');
+                const iW = video.videoWidth;
+                const iH = video.videoHeight;
+                captureCanvas.width = iW;
+                captureCanvas.height = iH;
+                ctx.clearRect(0, 0, iW, iH);
+                ctx.drawImage(video, 0, 0, iW, iH);
+
+                const sX = iW / video.clientWidth;
+                const sY = iH / video.clientHeight;
+                const oW = overlay.offsetWidth * sX;
+                const oH = overlay.offsetHeight * sY;
+
+                ctx.save();
+                ctx.translate(iW / 2 + state.x * sX, iH / 2 + state.y * sY);
+                ctx.rotate(state.rotation * Math.PI / 180);
+                ctx.scale(state.scale, state.scale);
+                ctx.drawImage(overlay, -oW / 2, -oH / 2, oW, oH);
+                ctx.restore();
+
+                captureCanvas.toBlob(blob => {
+                    captureBtn.classList.remove('loader');
+                    if (blob) {
+                        const url = URL.createObjectURL(blob);
+                        window.open(url);
+                    }
+                }, 'image/png');
+            });
+
+            startCamera();
+        }
+
+        function setupDesktopExperience() {
+            generateQRCode(shareLink);
+
+            const laptopDemoImage = document.getElementById('laptopDemoImage');
+            const wallArtDiv = document.getElementById('wallArt');
+            const imageContainer = document.getElementById('imageContainer');
+
+            laptopDemoImage.src = "/files/posters/sofa.jpg";
+            wallArtDiv.style.backgroundImage = `url(${assetUrl})`;
+
+            let toLeft = true;
+            let step = 0;
+            let rotated = false;
+            let paused = false;
+
+            function slideImage() {
+                if (paused) return;
+                imageContainer.style.transform = toLeft ? "translateX(-70px)" : "translateX(0)";
+                toLeft = !toLeft;
+            }
+
+            function animateWallArt() {
+                if (paused) return;
+                // Subtle adjustments for poster visualization (less rotation than stickers)
+                switch (step) {
+                    case 0: wallArtDiv.style.transform = "scale(0.65) translateY(-20%) rotate(1deg)"; break;
+                    case 1: wallArtDiv.style.transform = "scale(0.6) translateY(-22%) rotate(-1deg)"; break;
+                    case 2: wallArtDiv.style.transform = "scale(0.62) translateY(-19%) rotate(0deg)"; break;
+                    case 3: wallArtDiv.style.transform = "scale(0.6) translateY(-20%) rotate(0deg)"; break;
+                    default: wallArtDiv.style.transform = "scale(0.61) translateY(-20%) rotate(0.5deg)";
+                }
+                step = (step + 1) % 5;
+            }
+
+            setInterval(slideImage, 5000);
+            setInterval(animateWallArt, 5000);
+            slideImage();
+            animateWallArt();
+        }
+
+        function generateQRCode(url) {
+            const loader = document.getElementById('loader');
+            const qrImage = document.getElementById('qrCodeImage');
+            const tempDiv = document.createElement('div');
+            new QRCode(tempDiv, {
+                text: url, width: 180, height: 180,
+                colorDark: "#000000", colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            setTimeout(() => {
+                const canvas = tempDiv.querySelector('canvas');
+                if (canvas) {
+                    qrImage.src = canvas.toDataURL("image/png");
+                    qrImage.style.display = 'block';
+                    loader.style.display = 'none';
+                } else {
+                    loader.textContent = 'Failed to generate QR';
+                }
+            }, 300);
+        }
+
+    </script>
+</body>
+
+</html>

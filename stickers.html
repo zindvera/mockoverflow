@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MockOverflow - Stickers</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(120deg, #f6f8fa 0%, #eaf2fb 100%);
+      margin: 0;
+      padding: 20px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
+    }
+
+    /* Fixed Top Nav */
+    .fixed-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 90px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      transform: translateY(-100%);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      padding: 0 20px;
+      box-sizing: border-box;
+    }
+
+    .fixed-nav.visible {
+      transform: translateY(0);
+    }
+
+    .fixed-nav img {
+      height: 20px;
+      width: auto;
+      margin-bottom: 14px;
+    }
+
+    /* Logo Container (Main Header) */
+    .logo-container {
+      margin-bottom: 40px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 0 20px;
+    }
+
+    .logo-container img {
+      margin-bottom: 24px;
+    }
+
+    /* Desktop/Tablet adjustment for Navs */
+    @media (min-width: 768px) {
+      .fixed-nav, .logo-container {
+        flex-direction: row;
+        justify-content: flex-start; /* Align everything to the left */
+        padding: 0 10%;
+      }
+      .fixed-nav {
+        height: 70px;
+      }
+      .logo-container {
+        margin-top: 20px;
+      }
+      .fixed-nav img, .logo-container img {
+        margin-bottom: 0;
+        margin-right: 40px; /* Margin after logo */
+      }
+    }
+
+    /* Segment Navigation Links */
+    .nav-links {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .nav-link {
+      text-decoration: none;
+      color: #636e72;
+      font-weight: 700;
+      font-size: 14px;
+      padding-bottom: 4px;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s ease;
+      letter-spacing: 0.02em;
+    }
+
+    .nav-link.active {
+      color: #5E60CE;
+      border-bottom: 2px solid #5E60CE;
+    }
+
+    .segments-list {
+      display: flex;
+      flex-direction: column;
+      gap: 80px;
+      width: 100%;
+      max-width: 1200px;
+      padding: 0 20px;
+    }
+
+    .segment {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      min-height: 700px;
+    }
+
+    .slider-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      position: relative;
+      max-width: 400px;
+    }
+
+    .nav-arrow {
+      display: none;
+      background: #e0e7ff;
+      border: none;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      color: #5E60CE;
+      box-shadow: 0 4px 12px rgba(94, 96, 206, 0.15);
+      transition: background 0.2s, transform 0.2s, opacity 0.3s;
+      z-index: 20;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .nav-arrow:hover {
+      background: #c7d2fe;
+      transform: translateY(-50%) scale(1.05);
+    }
+
+    .nav-arrow.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    footer {
+      background: #ffffff;
+      padding: 40px 20px;
+      text-align: center;
+      border-top: 1px solid #eee;
+      width:100%;
+      margin-top:1in;
+    }
+    .footer-links {
+      margin-bottom: 20px;
+    }
+    .footer-links a {
+      text-decoration: none;
+      color: #636e72;
+      margin: 0 15px;
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: #4e2ecf; }
+    .copyright { font-size: 13px; color: #b2bec3; }
+
+    .prev-btn { left: -40px; }
+    .next-btn { right: -40px; }
+
+    @media (min-width: 1024px) {
+      .nav-arrow {
+        display: flex;
+      }
+    }
+
+    .phone-slider {
+      display: flex;
+      width: 100%;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .phone-slider::-webkit-scrollbar {
+      display: none;
+    }
+
+    .phone-item {
+      flex: 0 0 100%; 
+      scroll-snap-align: center;
+      scroll-snap-stop: always;
+      display: flex;
+      justify-content: center;
+      will-change: transform;
+    }
+
+    .phone-view {
+      width: 280px;
+      height: 560px;
+      border: 12px solid #424242;
+      border-radius: 40px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      background: #000;
+    }
+
+    .image-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 110vh;
+      width: 100%;
+      transition: transform 8s cubic-bezier(0.62, 0.21, 0.38, 0.95);
+      will-change: transform;
+    }
+
+    .image-container img {
+      height: 100%;
+      width: 130%;
+      object-fit: cover;
+      display: block;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    .image-container img.loaded {
+      opacity: 1;
+    }
+
+    .wall-art-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      background-position: center;
+      background-size: contain;
+      background-repeat: no-repeat;
+      transform: scale(0.4) translateY(-20%);
+      transform-origin: center center;
+      transition: transform 2s cubic-bezier(0.56, 0.1, 0.92, 0.9);
+      will-change: transform;
+      filter: brightness(0.95);
+    }
+
+    .cam-tooltip {
+      position: absolute;
+      bottom: 22%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #F3E8FF;
+      color: #374151;
+      padding: 10px 14px 10px 14px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      white-space: nowrap;
+      z-index: 15;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      animation: bounce 2s infinite;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .cam-tooltip.cookie-hidden {
+      display: none !important;
+    }
+
+    .tooltip-close {
+      position: absolute;
+      top: 2px;
+      right: 6px;
+      font-size: 20px;
+      cursor: pointer;
+      color: #8d929b;
+      line-height: 1;
+      font-weight: bold;
+      transition: color 0.2s;
+    }
+
+    .tooltip-close:hover {
+      color: #4B5563;
+    }
+
+    .tooltip-text {
+      margin-top: 9px;
+    }
+
+    .cam-tooltip::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      margin-left: -8px;
+      border-width: 8px;
+      border-style: solid;
+      border-color: #F3E8FF transparent transparent transparent;
+    }
+
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% {transform: translateX(-50%) translateY(0);}
+      40% {transform: translateX(-50%) translateY(-6px);}
+      60% {transform: translateX(-50%) translateY(-3px);}
+    }
+
+    .open-camera-btn {
+      position: absolute;
+      text-decoration: none;
+      bottom: 8%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80%;
+      padding: 14px 0;
+      background-image: linear-gradient(90deg, #5E60CE 0%, #3A0CA3 100%);
+      color: #fff;
+      font-weight: 800;
+      font-size: 1rem;
+      border: none;
+      border-radius: 30px;
+      z-index: 10;
+      text-align: center;
+      letter-spacing: 0.04em;
+    }
+
+    .get-sticker-btn {
+      margin-top: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      width: 90%; 
+      max-width: 420px;
+      height: 48px;
+      background: linear-gradient(135deg, #f7f2ff 0%, #fafafb 12%, #fafafb 88%, #fff2f2 100%);
+      border: 1px solid #5E60CE; 
+      border-radius: 14px;
+      text-decoration: none;
+      color: #4a4a6d;
+      font-weight: 700;
+      font-size: 1rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+      transition: all 0.2s ease;
+    }
+
+    .get-sticker-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+      border-color: #4a4cb3;
+      background: linear-gradient(135deg, #f3ebff 0%, #fafafb 15%, #fafafb 85%, #ffeded 100%);
+    }
+
+    .get-sticker-btn img {
+      width: 26px;
+      height: 26px;
+      object-fit: contain;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sticky Nav -->
+  <nav class="fixed-nav" id="stickyNav">
+    <img src="/media/mockoverflow-phone.png" alt="MockOverflow Logo">
+    <div class="nav-links">
+      <a href="index.html" class="nav-link">Posters</a>
+      <a href="stickers.html" class="nav-link active">Stickers</a>
+    </div>
+  </nav>
+
+  <div class="logo-container" id="mainLogoContainer">
+    <img width="220" src="/media/mockoverflow-phone.png" alt="MockOverflow Logo">
+    <div class="nav-links">
+      <a href="index.html" class="nav-link">Posters</a>
+      <a href="stickers.html" class="nav-link active">Stickers</a>
+    </div>
+  </div>
+
+  <div class="segments-list" id="segmentsList">
+    <!-- Dynamic Segments Loaded Here -->
+  </div>
+
+  <footer>
+    <div class="footer-links">
+      <a href="about.html">About</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms of Service</a>
+      <a href="contact.html">Contact</a>
+    </div>
+    <p class="copyright">&copy; 2026 MockOverflow. All rights reserved.</p>
+  </footer>
+
+  <script>
+    const stickerData = {
+      baseImages: {
+        laptopPalm: "/files/stickers/laptop-palm.jpg",
+        laptopBack: "/files/stickers/laptop-back.jpg",
+        tablet: "/files/stickers/tablet.jpg",
+        phone: "/files/stickers/phone.jpg"
+      },
+      stickers: [
+        { id: 1, url: "/media/sticker-demo.png?t=8", buyUrl: "/buy/1", compatibleBgs: ["laptopPalm", "laptopBack", "tablet", "phone"] },
+        { id: 2, url: "/sticker/1/asset.png", buyUrl: "/buy/2", compatibleBgs: ["laptopPalm", "laptopBack", "tablet", "phone"] },
+        { id: 3, url: "https://png.pngtree.com/png-clipart/20230916/original/pngtree-die-cut-sticker-of-a-little-girl-with-long-hair-clipart-png-image_12247691.png", buyUrl: "/buy/3", compatibleBgs: ["laptopPalm", "laptopBack", "tablet", "phone"] },
+        { id: 4, url: "https://png.pngtree.com/png-vector/20240628/ourmid/pngtree-cute-boba-kawaii-cartoon-simple-die-cut-sticker-png-image_12730541.png", buyUrl: "/buy/4", compatibleBgs: ["laptopPalm", "laptopBack", "tablet", "phone"] },
+        { id: 5, url: "/media/sticker-demo.png?t=8", buyUrl: "/buy/5", compatibleBgs: ["laptopPalm", "laptopBack", "tablet", "phone"] },
+        { id: 6, url: "/sticker/1/asset.png", buyUrl: "/buy/6", compatibleBgs: ["laptopPalm", "laptopBack", "tablet", "phone"] }
+      ]
+    };
+
+    function setCookie(name, value, days) {
+      let expires = "";
+      if (days) {
+        let date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toUTCString();
+      }
+      document.cookie = name + "=" + (value || "") + expires + "; path=/";
+    }
+
+    function getCookie(name) {
+      let nameEQ = name + "=";
+      let ca = document.cookie.split(';');
+      for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+      }
+      return null;
+    }
+
+    stickerData.stickers.reverse();
+
+    let loadedIndex = -1;
+    const list = document.getElementById('segmentsList');
+    const observerOptions = { root: null, threshold: 0.05, rootMargin: "200px" };
+    
+    const segmentObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const index = parseInt(entry.target.dataset.index);
+          loadUntil(index + 2);
+          loadSliderImages(entry.target);
+        }
+      });
+    }, observerOptions);
+
+    const mainLogoContainer = document.getElementById('mainLogoContainer');
+    const stickyNav = document.getElementById('stickyNav');
+
+    window.addEventListener('scroll', () => {
+      const logoRect = mainLogoContainer.getBoundingClientRect();
+      const isPastLogo = logoRect.bottom < 0;
+
+      if (isPastLogo) {
+        stickyNav.classList.add('visible');
+      } else {
+        stickyNav.classList.remove('visible');
+      }
+    }, { passive: true });
+
+    function createSegmentHtml(sticker, index) {
+      const segment = document.createElement('div');
+      segment.className = 'segment';
+      segment.dataset.index = index;
+      
+      const tooltipSeen = getCookie('cam_tooltip_seen') === 'true';
+      const tooltipClass = tooltipSeen ? 'cam-tooltip cookie-hidden' : 'cam-tooltip';
+
+      let sliderHtml = `
+        <div class="slider-wrapper">
+          <button class="nav-arrow prev-btn hidden" aria-label="Previous">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          </button>
+          <div class="phone-slider">
+      `;
+
+      sticker.compatibleBgs.forEach(bgKey => {
+        const bgUrl = stickerData.baseImages[bgKey];
+        sliderHtml += `
+          <div class="phone-item">
+            <div class="phone-view">
+              <div class="image-container">
+                <img data-src="${bgUrl}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Loading...">
+              </div>
+              <div class="wall-art-overlay" style="background-image: url('${sticker.url}')"></div>
+              <div class="${tooltipClass}">
+                <span class="tooltip-close" onclick="dismissTooltip(event)">&times;</span>
+                <div class="tooltip-text">See this sticker on your object</div>
+              </div>
+              <a href="show/sticker/?id=${sticker.id}" class="open-camera-btn">Open Camera</a>
+            </div>
+          </div>
+        `;
+      });
+
+      const nextHiddenClass = sticker.compatibleBgs.length <= 1 ? 'hidden' : '';
+      sliderHtml += `
+          </div>
+          <button class="nav-arrow next-btn ${nextHiddenClass}" aria-label="Next">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+        </div>
+        <a href="${sticker.buyUrl}" target="_blank" class="get-sticker-btn">
+          <img src="${sticker.url}" alt="sticker">
+          <span>Get This Sticker</span>
+        </a>
+      `;
+      
+      segment.innerHTML = sliderHtml;
+      return segment;
+    }
+
+    window.dismissTooltip = function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      setCookie('cam_tooltip_seen', 'true', 30);
+      const tooltips = document.querySelectorAll('.cam-tooltip');
+      tooltips.forEach(t => t.classList.add('cookie-hidden'));
+    };
+
+    function loadSliderImages(segment) {
+      const images = segment.querySelectorAll('.image-container img[data-src]');
+      images.forEach(img => {
+        if (img.dataset.src) {
+          img.src = img.dataset.src;
+          img.removeAttribute('data-src');
+          img.onload = () => img.classList.add('loaded');
+        }
+      });
+    }
+
+    function initSliderLogic(segment) {
+      const slider = segment.querySelector('.phone-slider');
+      const prevBtn = segment.querySelector('.prev-btn');
+      const nextBtn = segment.querySelector('.next-btn');
+
+      const updateArrows = () => {
+        const scrollLeft = slider.scrollLeft;
+        const maxScroll = slider.scrollWidth - slider.clientWidth;
+        
+        if (scrollLeft <= 10) {
+          prevBtn.classList.add('hidden');
+        } else {
+          prevBtn.classList.remove('hidden');
+        }
+        
+        if (scrollLeft >= maxScroll - 10) {
+          nextBtn.classList.add('hidden');
+        } else {
+          nextBtn.classList.remove('hidden');
+        }
+      };
+
+      slider.addEventListener('scroll', updateArrows);
+      nextBtn.addEventListener('click', () => {
+        slider.scrollBy({ left: slider.clientWidth, behavior: 'smooth' });
+      });
+      prevBtn.addEventListener('click', () => {
+        slider.scrollBy({ left: -slider.clientWidth, behavior: 'smooth' });
+      });
+      
+      setTimeout(updateArrows, 100);
+    }
+
+    function loadUntil(targetIndex) {
+      const maxIndex = stickerData.stickers.length - 1;
+      const limit = Math.min(targetIndex, maxIndex);
+      
+      while (loadedIndex < limit) {
+        loadedIndex++;
+        const sticker = stickerData.stickers[loadedIndex];
+        const segmentNode = createSegmentHtml(sticker, loadedIndex);
+        list.appendChild(segmentNode);
+        initSliderLogic(segmentNode);
+        segmentObserver.observe(segmentNode);
+        
+        if (loadedIndex <= 2) {
+          loadSliderImages(segmentNode);
+        }
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      loadUntil(2);
+
+      let step = 0;
+      function animateAll() {
+        const segments = document.querySelectorAll('.segment');
+        const viewportHeight = window.innerHeight;
+
+        segments.forEach(segment => {
+          const rect = segment.getBoundingClientRect();
+          
+          if (rect.top < viewportHeight && rect.bottom > 0) {
+            const items = segment.querySelectorAll('.phone-item');
+            
+            items.forEach(item => {
+              const itemRect = item.getBoundingClientRect();
+              const view = item.querySelector('.phone-view');
+              const imageContainer = view.querySelector('.image-container');
+              const wallArt = view.querySelector('.wall-art-overlay');
+              const img = imageContainer.querySelector('img');
+
+              const isHorizontallyVisible = itemRect.left < (window.innerWidth / 2 + 150) && itemRect.right > (window.innerWidth / 2 - 150);
+
+              if (isHorizontallyVisible && img.classList.contains('loaded')) {
+                switch (step % 5) {
+                  case 0: imageContainer.style.transform = "translateX(-20px) translateY(0)"; break;
+                  case 1: imageContainer.style.transform = "translateX(-10px) translateY(0)"; break;
+                  case 2: imageContainer.style.transform = "translateX(-5px) translateY(-15px)"; break;
+                  case 3: imageContainer.style.transform = "translateX(-10px) translateY(15px)"; break;
+                  case 4: imageContainer.style.transform = "translateX(0) translateY(0)"; break;
+                }
+
+                switch (step % 10) {
+                  case 0: wallArt.style.transform = "scale(0.6) translateY(-20%) rotate(50deg)"; break;
+                  case 1: wallArt.style.transform = "scale(0.4) translateY(-30%) rotate(40deg)"; break;
+                  case 2: wallArt.style.transform = "scale(0.55) translateY(-18%) rotate(25deg)"; break;
+                  case 3: wallArt.style.transform = "scale(0.64) translateY(-21%) rotate(30deg)"; break;
+                  case 4: wallArt.style.transform = "scale(0.45) translateY(-20%) rotate(35deg)"; break;
+                  case 5: wallArt.style.transform = "scale(0.38) translateY(-28%) rotate(40deg)"; break;
+                  case 6: wallArt.style.transform = "scale(0.5) translateY(-18%) rotate(6deg)"; break;
+                  case 7: wallArt.style.transform = "scale(0.4) translateY(-23%) rotate(0deg)"; break;
+                  case 8: wallArt.style.transform = "scale(0.55) translateY(-19%) rotate(50deg)"; break;
+                  case 9: wallArt.style.transform = "scale(0.4) translateY(-25%) rotate(40deg)"; break;
+                }
+              }
+            });
+          }
+        });
+        step++;
+      }
+
+      setInterval(animateAll, 5000);
+      animateAll();
+    });
+  </script>
+</body>
+</html>
