@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - MockOverflow</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body { 
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif; 
+            line-height: 1.6; 
+            color: #333; 
+            background: linear-gradient(120deg, #f6f8fa 0%, #eaf2fb 100%); 
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Common Top Nav --- */
+        .navbar {
+            background: #ffffff;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .navbar img { height: 40px; }
+
+        /* --- Main Content --- */
+        .main-content {
+            flex: 1;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .card { 
+            max-width: 750px; 
+            width: 100%;
+            background: #ffffff; 
+            padding: 40px; 
+            border-radius: 20px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); 
+        }
+        
+        h1 { font-size: 28px; color: #4e2ecf; margin-bottom: 20px; text-align: center; }
+        h2 { font-size: 20px; color: #000; margin-top: 30px; margin-bottom: 10px; }
+        p { margin-bottom: 15px; font-size: 16px; color: #444; }
+        
+        .surface-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            background: #fcfcfc;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px dashed #dcdde1;
+            margin: 20px 0;
+        }
+        .surface-item { font-size: 15px; color: #555; }
+
+        .how-to {
+            background: #f8faff;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 25px 0;
+        }
+        .how-to li { margin-bottom: 10px; list-style-position: inside; }
+
+        /* --- Common Footer --- */
+        footer {
+            background: #ffffff;
+            padding: 30px 20px;
+            text-align: center;
+            border-top: 1px solid #eee;
+        }
+        .footer-links a {
+            text-decoration: none;
+            color: #636e72;
+            margin: 0 10px;
+            font-size: 14px;
+        }
+        .footer-links a:hover { color: #4e2ecf; }
+        .copyright { font-size: 12px; color: #999; margin-top: 15px; }
+
+        @media (max-width: 600px) {
+            .surface-list { grid-template-columns: 1fr; }
+            .card { padding: 25px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="/"><img src="https://mockoverflow.online/media/mockoverflow-phone.png" alt="MockOverflow Logo"></a>
+    </nav>
+
+    <div class="main-content">
+        <div class="card">
+            <h1>About MockOverflow</h1>
+
+            <p>MockOverflow is a simple tool that helps you see how a sticker or a poster looks on different objects before you buy it. Sometimes it is hard to imagine if a design will look good on your specific items just by looking at a picture online.</p>
+
+            <h2>What can you do?</h2>
+            <p>You can use your phone's camera to put a digital sticker or poster on any flat surface around you. You can use your fingers to move the sticker, rotate it, and change its size. This helps you see the sticker from different angles and get a general idea of how it fits on your things.</p>
+
+            <p>You can try this on many different surfaces, such as:</p>
+            <div class="surface-list">
+                <div class="surface-item">✓ Laptop (Back or Palm rest)</div>
+                <div class="surface-item">✓ Tablets and iPads</div>
+                <div class="surface-item">✓ Phone cases</div>
+                <div class="surface-item">✓ Journal diaries & notebooks</div>
+                <div class="surface-item">✓ Refrigerator doors</div>
+                <div class="surface-item">✓ Washing machines</div>
+                <div class="surface-item">✓ Walls (for posters)</div>
+                <div class="surface-item">✓ Any other flat/plane surface</div>
+            </div>
+
+            <h2>How to use it</h2>
+            <ol class="how-to">
+                <li>Find a sticker or poster you like on our website.</li>
+                <li>Tap the <strong>"Open Camera"</strong> button.</li>
+                <li>Point your camera at the surface where you want to put the sticker.</li>
+                <li>Use one finger to <strong>drag</strong> and move the sticker.</li>
+                <li>Use two fingers to <strong>pinch and rotate</strong> to change the size and angle.</li>
+                <li>If you like how it looks, click the link to visit the seller's store and buy the real product.</li>
+            </ol>
+
+            <p>Our goal is to give you a helpful preview so you feel more confident about your decorations. We show designs from our own collection and from independent sellers on sites like Etsy and Redbubble.</p>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-links">
+            <a href="about.html">About</a>
+            <a href="privacy.html">Privacy Policy</a>
+            <a href="terms.html">Terms of Service</a>
+            <a href="contact.html">Contact</a>
+        </div>
+        <p class="copyright">&copy; 2026 MockOverflow. All rights reserved.</p>
+    </footer>
+
+</body>
+</html>

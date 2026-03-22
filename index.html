@@ -106,6 +106,28 @@
       pointer-events: none;
     }
 
+            footer {
+            background: #ffffff;
+            padding: 40px 20px;
+            text-align: center;
+            border-top: 1px solid #eee;
+            width:100%;
+            margin-top:1in;
+        }
+        .footer-links {
+            margin-bottom: 20px;
+        }
+        .footer-links a {
+            text-decoration: none;
+            color: #636e72;
+            margin: 0 15px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .footer-links a:hover { color: #4e2ecf; }
+        .copyright { font-size: 13px; color: #b2bec3; }
+
     .prev-btn { left: -40px; }
     .next-btn { right: -40px; }
 
@@ -324,6 +346,17 @@
   <div class="segments-list" id="segmentsList">
     <!-- Dynamic Segments Loaded Here -->
   </div>
+
+  
+    <footer>
+        <div class="footer-links">
+            <a href="about.html">About</a>
+            <a href="privacy.html">Privacy Policy</a>
+            <a href="terms.html">Terms of Service</a>
+            <a href="contact.html">Contact</a>
+        </div>
+        <p class="copyright">&copy; 2026 MockOverflow. All rights reserved.</p>
+    </footer>
 
   <script>
     const stickerData = {
