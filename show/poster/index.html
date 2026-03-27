@@ -42,6 +42,7 @@
             z-index: 10;
         }
 
+
         #overlayImage {
             position: absolute;
             z-index: 20;
@@ -52,11 +53,9 @@
             max-height: 80%;
             transform-origin: center center;
             display: none;
-            /* Removed the 1px solid white border here */
-            filter: drop-shadow(5px 5px 6px rgba(0, 0, 0, 0.45)) brightness(0.95);
-            opacity: 0.98;
+            filter: drop-shadow(10px 5px 4px rgba(0, 0, 0, 0.3)) brightness(0.95);
+            opacity: 0.99;
         }
-
 
         #previewCanvas {
             background: #1f1f1f;
@@ -907,76 +906,73 @@
             });
 
 
-        
+
             captureBtn.addEventListener('click', () => {
-    captureBtn.classList.add('loader');
+                captureBtn.classList.add('loader');
 
-    setTimeout(() => {
-        const captureCanvas = document.getElementById('captureCanvas');
-        const ctx = captureCanvas.getContext('2d');
-        const video = document.getElementById('cameraFeed');
-        const overlay = document.getElementById('overlayImage');
+                setTimeout(() => {
+                    const captureCanvas = document.getElementById('captureCanvas');
+                    const ctx = captureCanvas.getContext('2d');
+                    const video = document.getElementById('cameraFeed');
+                    const overlay = document.getElementById('overlayImage');
 
-        const scaleFactor = 1.5; 
+                    const scaleFactor = 1.9;
 
-        captureCanvas.width = window.innerWidth * scaleFactor;
-        captureCanvas.height = window.innerHeight * scaleFactor;
+                    captureCanvas.width = window.innerWidth * scaleFactor;
+                    captureCanvas.height = window.innerHeight * scaleFactor;
 
-        ctx.scale(scaleFactor, scaleFactor);
+                    ctx.scale(scaleFactor, scaleFactor);
 
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'medium';
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = 'high';
 
-        const videoRatio = video.videoWidth / video.videoHeight;
-        const screenRatio = window.innerWidth / window.innerHeight;
+                    const videoRatio = video.videoWidth / video.videoHeight;
+                    const screenRatio = window.innerWidth / window.innerHeight;
 
-        let drawWidth, drawHeight, startX, startY;
+                    let drawWidth, drawHeight, startX, startY;
 
-        if (screenRatio > videoRatio) {
-            drawWidth = window.innerWidth;
-            drawHeight = window.innerWidth / videoRatio;
-            startX = 0;
-            startY = (window.innerHeight - drawHeight) / 2;
-        } else {
-            drawHeight = window.innerHeight;
-            drawWidth = window.innerHeight * videoRatio;
-            startX = (window.innerWidth - drawWidth) / 2;
-            startY = 0;
-        }
+                    if (screenRatio > videoRatio) {
+                        drawWidth = window.innerWidth;
+                        drawHeight = window.innerWidth / videoRatio;
+                        startX = 0;
+                        startY = (window.innerHeight - drawHeight) / 2;
+                    } else {
+                        drawHeight = window.innerHeight;
+                        drawWidth = window.innerHeight * videoRatio;
+                        startX = (window.innerWidth - drawWidth) / 2;
+                        startY = 0;
+                    }
 
-        ctx.clearRect(0, 0, captureCanvas.width / scaleFactor, captureCanvas.height / scaleFactor);
-        ctx.drawImage(video, startX, startY, drawWidth, drawHeight);
+                    ctx.clearRect(0, 0, captureCanvas.width / scaleFactor, captureCanvas.height / scaleFactor);
+                    ctx.drawImage(video, startX, startY, drawWidth, drawHeight);
 
-        const oW = overlay.offsetWidth;
-        const oH = overlay.offsetHeight;
+                    const oW = overlay.offsetWidth;
+                    const oH = overlay.offsetHeight;
 
-        ctx.save();
-        ctx.translate((window.innerWidth / 2) + state.x, (window.innerHeight / 2) + state.y);
-        ctx.scale(state.scale, state.scale);
-        
-        const shadowOffsetX = 5 * scaleFactor;
-        const shadowOffsetY = 5 * scaleFactor;
-        const shadowBlur = 6 * scaleFactor;
-        
-        ctx.filter = `brightness(0.95) drop-shadow(${shadowOffsetX}px ${shadowOffsetY}px ${shadowBlur}px rgba(0, 0, 0, 0.45))`;
-        ctx.globalAlpha = 0.98; 
-        
-        ctx.drawImage(overlay, -oW / 2, -oH / 2, oW, oH);
-        
-        // Removed the ctx.strokeRect code that drew the white box on the canvas
-        
-        ctx.restore();
+                    ctx.save();
+                    ctx.translate((window.innerWidth / 2) + state.x, (window.innerHeight / 2) + state.y);
+                    ctx.scale(state.scale, state.scale);
 
-        captureCanvas.toBlob(blob => {
-            captureBtn.classList.remove('loader');
-            if (blob) {
-                const url = URL.createObjectURL(blob);
-                window.open(url);
-            }
-        }, 'image/jpeg', 0.75); 
-    }, 50);
-});
+                    const shadowOffsetX = 10 * scaleFactor;
+                    const shadowOffsetY = 5 * scaleFactor;
+                    const shadowBlur = 4 * scaleFactor;
 
+                    ctx.filter = `drop-shadow(${shadowOffsetX}px ${shadowOffsetY}px ${shadowBlur}px rgba(0, 0, 0, 0.3)) brightness(0.95)`;
+                    ctx.globalAlpha = 0.98;
+
+                    ctx.drawImage(overlay, -oW / 2, -oH / 2, oW, oH);
+
+                    ctx.restore();
+
+                    captureCanvas.toBlob(blob => {
+                        captureBtn.classList.remove('loader');
+                        if (blob) {
+                            const url = URL.createObjectURL(blob);
+                            window.open(url);
+                        }
+                    }, 'image/jpeg', 0.90);
+                }, 50);
+            });
 
 
             startCamera();
