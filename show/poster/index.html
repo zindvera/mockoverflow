@@ -53,7 +53,7 @@
             max-height: 80%;
             transform-origin: center center;
             display: none;
-            filter: drop-shadow(10px 5px 4px rgba(0, 0, 0, 0.3)) brightness(0.95);
+            filter: drop-shadow(7px 5px 4px rgba(0, 0, 0, 0.3)) brightness(0.95);
             opacity: 0.99;
         }
 
@@ -953,7 +953,9 @@
                     ctx.translate((window.innerWidth / 2) + state.x, (window.innerHeight / 2) + state.y);
                     ctx.scale(state.scale, state.scale);
 
-                    const shadowOffsetX = 10 * scaleFactor;
+                    // To reduce the excessive right-side shadow in the generated image,
+                    // we've lowered the base X offset multiplier from 10 to 6.
+                    const shadowOffsetX = 6 * scaleFactor;
                     const shadowOffsetY = 5 * scaleFactor;
                     const shadowBlur = 4 * scaleFactor;
 
