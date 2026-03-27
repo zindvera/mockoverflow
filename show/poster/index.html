@@ -53,9 +53,9 @@
             max-height: 80%;
             transform-origin: center center;
             display: none;
-            filter: drop-shadow(7px 5px 4px rgba(0, 0, 0, 0.3)) brightness(0.95);
-            opacity: 0.99;
+    
         }
+
 
         #previewCanvas {
             background: #1f1f1f;
@@ -286,7 +286,7 @@
             transform: scale(0.6) translateY(-20%);
             transform-origin: center center;
             transition: transform 2s ease-in-out;
-            filter: brightness(0.95) drop-shadow(4px 4px 3px rgba(0, 0, 0, 0.28));
+            filter: brightness(0.94) drop-shadow(4px 4px 3px rgba(0, 0, 0, 0.28));
         }
 
         #leftColumn {
@@ -794,9 +794,15 @@
             let initialDistance = null;
 
             const updateOverlay = () => {
-                // Rotation removed
                 overlay.style.transform = `translateX(${state.x}px) translateY(${state.y}px) scale(${state.scale})`;
+
+                // Dynamically scale the live shadow based on zoom level (state.scale)
+                const liveX = 8 * state.scale;
+                const liveY = 5 * state.scale;
+                const liveBlur = 4 * state.scale;
+                overlay.style.filter = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(0, 0, 0, 0.5)) brightness(0.94)`;
             };
+
             updateOverlay();
 
             async function startCamera() {
@@ -953,13 +959,12 @@
                     ctx.translate((window.innerWidth / 2) + state.x, (window.innerHeight / 2) + state.y);
                     ctx.scale(state.scale, state.scale);
 
-                    // To reduce the excessive right-side shadow in the generated image,
-                    // we've lowered the base X offset multiplier from 10 to 6.
-                    const shadowOffsetX = 6 * scaleFactor;
-                    const shadowOffsetY = 5 * scaleFactor;
-                    const shadowBlur = 4 * scaleFactor;
+                    // Mathematically reduce captured shadow size based on both high-res scale and user zoom
+                    const shadowX = 5 * scaleFactor * state.scale;
+                    const shadowY = 4 * scaleFactor * state.scale;
+                    const shadowBlur = 3 * scaleFactor * state.scale;
 
-                    ctx.filter = `drop-shadow(${shadowOffsetX}px ${shadowOffsetY}px ${shadowBlur}px rgba(0, 0, 0, 0.3)) brightness(0.95)`;
+                    ctx.filter = `drop-shadow(${shadowX}px ${shadowY}px ${shadowBlur}px rgba(0, 0, 0, 0.5)) brightness(0.94)`;
                     ctx.globalAlpha = 0.98;
 
                     ctx.drawImage(overlay, -oW / 2, -oH / 2, oW, oH);
