@@ -911,54 +911,66 @@
             captureBtn.addEventListener('click', () => {
                 captureBtn.classList.add('loader');
 
-                const captureCanvas = document.getElementById('captureCanvas');
-                const ctx = captureCanvas.getContext('2d');
-                const video = document.getElementById('cameraFeed');
-                const overlay = document.getElementById('overlayImage');
+                setTimeout(() => {
+                    const captureCanvas = document.getElementById('captureCanvas');
+                    const ctx = captureCanvas.getContext('2d');
+                    const video = document.getElementById('cameraFeed');
+                    const overlay = document.getElementById('overlayImage');
 
-                captureCanvas.width = window.innerWidth;
-                captureCanvas.height = window.innerHeight;
+                    const scaleFactor = 1.5;
 
-                const videoRatio = video.videoWidth / video.videoHeight;
-                const screenRatio = window.innerWidth / window.innerHeight;
+                    captureCanvas.width = window.innerWidth * scaleFactor;
+                    captureCanvas.height = window.innerHeight * scaleFactor;
 
-                let drawWidth, drawHeight, startX, startY;
+                    ctx.scale(scaleFactor, scaleFactor);
 
-                if (screenRatio > videoRatio) {
-                    drawWidth = window.innerWidth;
-                    drawHeight = window.innerWidth / videoRatio;
-                    startX = 0;
-                    startY = (window.innerHeight - drawHeight) / 2;
-                } else {
-                    drawHeight = window.innerHeight;
-                    drawWidth = window.innerHeight * videoRatio;
-                    startX = (window.innerWidth - drawWidth) / 2;
-                    startY = 0;
-                }
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = 'medium';
 
-                ctx.clearRect(0, 0, captureCanvas.width, captureCanvas.height);
-                ctx.drawImage(video, startX, startY, drawWidth, drawHeight);
+                    const videoRatio = video.videoWidth / video.videoHeight;
+                    const screenRatio = window.innerWidth / window.innerHeight;
 
-                const oW = overlay.offsetWidth;
-                const oH = overlay.offsetHeight;
+                    let drawWidth, drawHeight, startX, startY;
 
-                ctx.save();
-                ctx.translate((window.innerWidth / 2) + state.x, (window.innerHeight / 2) + state.y);
-                ctx.scale(state.scale, state.scale);
-
-                ctx.filter = 'brightness(0.95) drop-shadow(4px 4px 3px rgba(0, 0, 0, 0.28))';
-
-                ctx.drawImage(overlay, -oW / 2, -oH / 2, oW, oH);
-                ctx.restore();
-
-                captureCanvas.toBlob(blob => {
-                    captureBtn.classList.remove('loader');
-                    if (blob) {
-                        const url = URL.createObjectURL(blob);
-                        window.open(url);
+                    if (screenRatio > videoRatio) {
+                        drawWidth = window.innerWidth;
+                        drawHeight = window.innerWidth / videoRatio;
+                        startX = 0;
+                        startY = (window.innerHeight - drawHeight) / 2;
+                    } else {
+                        drawHeight = window.innerHeight;
+                        drawWidth = window.innerHeight * videoRatio;
+                        startX = (window.innerWidth - drawWidth) / 2;
+                        startY = 0;
                     }
-                }, 'image/png');
+
+                    ctx.clearRect(0, 0, captureCanvas.width / scaleFactor, captureCanvas.height / scaleFactor);
+                    ctx.drawImage(video, startX, startY, drawWidth, drawHeight);
+
+                    const oW = overlay.offsetWidth;
+                    const oH = overlay.offsetHeight;
+
+                    ctx.save();
+                    ctx.translate((window.innerWidth / 2) + state.x, (window.innerHeight / 2) + state.y);
+                    ctx.scale(state.scale, state.scale);
+
+                    const shadowOffset = 4 * scaleFactor;
+                    const shadowBlur = 3 * scaleFactor;
+                    ctx.filter = `brightness(0.95) drop-shadow(${shadowOffset}px ${shadowOffset}px ${shadowBlur}px rgba(0, 0, 0, 0.28))`;
+
+                    ctx.drawImage(overlay, -oW / 2, -oH / 2, oW, oH);
+                    ctx.restore();
+
+                    captureCanvas.toBlob(blob => {
+                        captureBtn.classList.remove('loader');
+                        if (blob) {
+                            const url = URL.createObjectURL(blob);
+                            window.open(url);
+                        }
+                    }, 'image/jpeg', 0.75);
+                }, 50);
             });
+
 
             startCamera();
         }
