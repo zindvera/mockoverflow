@@ -53,7 +53,7 @@
             max-height: 80%;
             transform-origin: center center;
             display: none;
-    
+
         }
 
 
@@ -796,12 +796,15 @@
             const updateOverlay = () => {
                 overlay.style.transform = `translateX(${state.x}px) translateY(${state.y}px) scale(${state.scale})`;
 
-                // Dynamically scale the live shadow based on zoom level (state.scale)
-                const liveX = 7 * state.scale;
-                const liveY = 4 * state.scale;
-                const liveBlur = 3 * state.scale;
-                overlay.style.filter = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(0, 0, 0, 0.5)) brightness(0.94)`;
+                const shadowScale = Math.max(state.scale, 0.4);
+
+                const liveX = 8 * shadowScale;
+                const liveY = 5 * shadowScale;
+                const liveBlur = 4 * shadowScale;
+
+                overlay.style.filter = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(0, 0, 0, 0.5)) brightness(0.95)`;
             };
+
 
             updateOverlay();
 
@@ -959,12 +962,15 @@
                     ctx.translate((window.innerWidth / 2) + state.x, (window.innerHeight / 2) + state.y);
                     ctx.scale(state.scale, state.scale);
 
-                    // Mathematically reduce captured shadow size based on both high-res scale and user zoom
-                    const shadowX = 7 * scaleFactor * state.scale;
-                    const shadowY = 4 * scaleFactor * state.scale;
-                    const shadowBlur = 3 * scaleFactor * state.scale;
+                    // This prevents the shadow multiplier from dropping below 0.4, 
+                    // ensuring the shadow never disappears entirely on tiny zooms.
+                    const shadowScale = Math.max(state.scale, 0.4);
 
-                    ctx.filter = `drop-shadow(${shadowX}px ${shadowY}px ${shadowBlur}px rgba(0, 0, 0, 0.5)) brightness(0.94)`;
+                    const shadowOffsetX = 8 * scaleFactor * shadowScale;
+                    const shadowOffsetY = 5 * scaleFactor * shadowScale;
+                    const shadowBlur = 4 * scaleFactor * shadowScale;
+
+                    ctx.filter = `drop-shadow(${shadowOffsetX}px ${shadowOffsetY}px ${shadowBlur}px rgba(0, 0, 0, 0.5)) brightness(0.95)`;
                     ctx.globalAlpha = 0.98;
 
                     ctx.drawImage(overlay, -oW / 2, -oH / 2, oW, oH);
