@@ -797,10 +797,10 @@
                 overlay.style.transform = `translateX(${state.x}px) translateY(${state.y}px) scale(${state.scale})`;
 
                 // Dynamically scale the live shadow based on zoom level (state.scale)
-                const liveX = 6 * state.scale;
-                const liveY = 5 * state.scale;
-                const liveBlur = 4 * state.scale;
-                overlay.style.filter = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(0, 0, 0, 0.4)) brightness(0.94)`;
+                const liveX = 7 * state.scale;
+                const liveY = 4 * state.scale;
+                const liveBlur = 3 * state.scale;
+                overlay.style.filter = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(0, 0, 0, 0.5)) brightness(0.94)`;
             };
 
             updateOverlay();
@@ -960,11 +960,11 @@
                     ctx.scale(state.scale, state.scale);
 
                     // Mathematically reduce captured shadow size based on both high-res scale and user zoom
-                    const shadowX = 5 * scaleFactor * state.scale;
+                    const shadowX = 7 * scaleFactor * state.scale;
                     const shadowY = 4 * scaleFactor * state.scale;
                     const shadowBlur = 3 * scaleFactor * state.scale;
 
-                    ctx.filter = `drop-shadow(${shadowX}px ${shadowY}px ${shadowBlur}px rgba(0, 0, 0, 0.4)) brightness(0.94)`;
+                    ctx.filter = `drop-shadow(${shadowX}px ${shadowY}px ${shadowBlur}px rgba(0, 0, 0, 0.5)) brightness(0.94)`;
                     ctx.globalAlpha = 0.98;
 
                     ctx.drawImage(overlay, -oW / 2, -oH / 2, oW, oH);
