@@ -796,7 +796,7 @@
             const updateOverlay = () => {
                 overlay.style.transform = `translateX(${state.x}px) translateY(${state.y}px) scale(${state.scale})`;
 
-                const shadowScale = Math.max(state.scale, 0.65);
+                const shadowScale = Math.max(state.scale, 0.85);
 
                 const liveX = 8 * shadowScale;
                 const liveY = 5 * shadowScale;
