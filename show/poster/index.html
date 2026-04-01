@@ -810,23 +810,22 @@
 
             // 1. LIVE PREVIEW (Centering + Curved Lighting)
             const updateOverlay = () => {
-                // Center-relative positioning
                 overlay.style.transform = `translate(calc(-50% + ${state.x}px), calc(-50% + ${state.y}px)) scale(${state.scale})`;
 
                 const shadowScale = Math.max(state.scale, 0.85);
+                const liveX = 2 * shadowScale; // Tighter
+                const liveY = 3 * shadowScale; // Tighter
+                const liveBlur = 5 * shadowScale;
 
-                // Realistic tight shadow (3, 4, 4)
-                const liveX = 3 * shadowScale;
-                const liveY = 4 * shadowScale;
-                const liveBlur = 4 * shadowScale;
-                const shadowOpacity = 0.5;
-
-                // Apply curved brightness + slight contrast for paper-like realism
-                const filterValue = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(0, 0, 0, ${shadowOpacity})) brightness(${state.envBrightness}) contrast(1.04)`;
+                // Change shadow to a very deep brown-grey (rgba(40, 30, 20, 0.4))
+                // Add contrast(1.02) and a tiny blur(0.3px) to match the wall's texture
+                const filterValue = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(40, 30, 20, 0.4)) brightness(${state.envBrightness}) contrast(1.02) blur(0.3px)`;
 
                 overlay.style.filter = filterValue;
                 overlay.style.webkitFilter = filterValue;
             };
+
+
 
             // 2. NON-LINEAR LIGHT ANALYSIS (Square Root Curve)
             function analyzeLight() {
@@ -838,19 +837,19 @@
                         totalLuminance += (0.2126 * pixels[i] + 0.7152 * pixels[i + 1] + 0.0722 * pixels[i + 2]);
                     }
                     const avgLuminance = totalLuminance / (40 * 40);
-
-                    // Normalized brightness (0 to 1)
                     let n = avgLuminance / 255;
 
-                    // Square root curve keeps "Slight Dark" environments looking bright (0.88-0.91)
-                    // while maintaining 0.70 to 0.96 limits.
+                    // --- NEW DARK-WALL LOGIC ---
+                    // Range: 0.62 to 0.96. 
+                    // This lets the poster get darker when the wall is in shadow.
                     const curve = Math.sqrt(n);
-                    const newBrightness = 0.70 + (curve * 0.26);
+                    const newBrightness = 0.62 + (curve * 0.34);
 
                     state.envBrightness = newBrightness.toFixed(3);
                     updateOverlay();
                 }
             }
+
 
             setInterval(analyzeLight, 400);
 
@@ -939,7 +938,7 @@
             captureBtn.addEventListener('click', () => {
                 captureBtn.classList.add('loader');
                 setTimeout(() => {
-                    const sf = 1.9; // Scale Factor
+                    const sf = 1.9; // Scale Factor for resolution
                     captureCanvas.width = window.innerWidth * sf;
                     captureCanvas.height = window.innerHeight * sf;
                     ctx.scale(sf, sf);
@@ -947,37 +946,48 @@
                     const vr = video.videoWidth / video.videoHeight;
                     const sr = window.innerWidth / window.innerHeight;
                     let dw, dh, sx, sy;
-                    if (sr > vr) { dw = window.innerWidth; dh = dw / vr; sx = 0; sy = (window.innerHeight - dh) / 2; }
-                    else { dh = window.innerHeight; dw = dh * vr; sx = (window.innerWidth - dw) / 2; sy = 0; }
 
+                    if (sr > vr) {
+                        dw = window.innerWidth; dh = dw / vr; sx = 0; sy = (window.innerHeight - dh) / 2;
+                    } else {
+                        dh = window.innerHeight; dw = dh * vr; sx = (window.innerWidth - dw) / 2; sy = 0;
+                    }
+
+                    // 1. Draw the camera background
                     ctx.drawImage(video, sx, sy, dw, dh);
                     ctx.save();
 
-                    // Sync centering: move to center + user offset
+                    // 2. Position the art based on user movement
                     ctx.translate((window.innerWidth / 2) + state.x, (window.innerHeight / 2) + state.y);
                     ctx.scale(state.scale, state.scale);
 
-                    // Sync shadow + brightness curve + contrast
+                    // 3. Realistic Shadow & Lighting Sync
                     const ss = Math.max(state.scale, 0.4);
-                    const capX = 3 * sf * ss;
-                    const capY = 4 * sf * ss;
-                    const capBlur = 4 * sf * ss;
-                    const capOpacity = 0.5;
+                    const capX = 2 * sf * ss;   // Tighter X
+                    const capY = 3 * sf * ss;   // Tighter Y
+                    const capBlur = 5 * sf * ss; // Soft blur
 
-                    ctx.filter = `drop-shadow(${capX}px ${capY}px ${capBlur}px rgba(0, 0, 0, ${capOpacity})) brightness(${state.envBrightness}) contrast(1.04)`;
+                    // Updated Filter: Natural Shadow Color (rgba 40,30,20) + Realism Blur
+                    // This removes the "too sharp/digital" look
+                    ctx.filter = `drop-shadow(${capX}px ${capY}px ${capBlur}px rgba(40, 30, 20, 0.4)) brightness(${state.envBrightness}) contrast(1.02) blur(0.4px)`;
 
                     ctx.globalAlpha = 0.98;
 
-                    // Draw relative to centered anchor
+                    // 4. Draw the art centered on the anchor
                     ctx.drawImage(overlay, -overlay.offsetWidth / 2, -overlay.offsetHeight / 2, overlay.offsetWidth, overlay.offsetHeight);
                     ctx.restore();
 
+                    // 5. Generate and open the image
                     captureCanvas.toBlob(blob => {
                         captureBtn.classList.remove('loader');
-                        if (blob) window.open(URL.createObjectURL(blob));
+                        if (blob) {
+                            const url = URL.createObjectURL(blob);
+                            window.open(url);
+                        }
                     }, 'image/jpeg', 0.90);
                 }, 50);
             });
+
 
             startCamera();
         }
