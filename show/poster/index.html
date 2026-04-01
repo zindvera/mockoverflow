@@ -46,6 +46,10 @@
         #overlayImage {
             position: absolute;
             z-index: 20;
+            top: 50%;
+            left: 50%;
+            /* This ensures state.x = 0 is the exact center */
+            transform: translate(-50%, -50%);
             touch-action: none;
             pointer-events: none;
             max-width: 80%;
@@ -798,9 +802,10 @@
             const activePointers = new Map();
             let initialDistance = null;
 
-            // 1. Live Update Logic (6, 5, 4 Shadow)
+            // 1. Position Logic (Centered)
             const updateOverlay = () => {
-                overlay.style.transform = `translateX(${state.x}px) translateY(${state.y}px) scale(${state.scale})`;
+                // We use translate(calc(-50% + x)) to keep the CSS centering active
+                overlay.style.transform = `translate(calc(-50% + ${state.x}px), calc(-50% + ${state.y}px)) scale(${state.scale})`;
 
                 const shadowScale = Math.max(state.scale, 0.85);
                 const liveX = 6 * shadowScale;
@@ -808,7 +813,6 @@
                 const liveBlur = 4 * shadowScale;
 
                 const filterValue = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(0, 0, 0, 0.5)) brightness(${state.envBrightness})`;
-
                 overlay.style.filter = filterValue;
                 overlay.style.webkitFilter = filterValue;
             };
@@ -830,10 +834,16 @@
 
             setInterval(analyzeLight, 400);
 
+            // 2. High Quality Camera Constraints
             async function startCamera() {
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({
-                        video: { facingMode: 'environment', width: { ideal: 4096 }, height: { ideal: 2160 } }
+                        video: {
+                            facingMode: 'environment',
+                            width: { min: 1280, ideal: 3840 }, // Requests 4K if available
+                            height: { min: 720, ideal: 2160 },
+                            frameRate: { ideal: 30 }
+                        }
                     });
                     video.srcObject = stream;
                     message.style.display = 'none';
@@ -843,7 +853,6 @@
                 }
             }
 
-            // Gesture Handlers
             function getPinchDetails() {
                 const pointers = Array.from(activePointers.values());
                 if (pointers.length < 2) return null;
@@ -884,20 +893,28 @@
             const pointerEnd = (e) => {
                 activePointers.delete(e.pointerId);
                 if (activePointers.size < 2) initialDistance = null;
-                if (activePointers.size === 1) {
-                    const rem = Array.from(activePointers.values())[0];
-                    state.startX = rem.clientX; state.startY = rem.clientY;
-                    state.baseX = state.x; state.baseY = state.y;
-                }
             };
             viewport.addEventListener('pointerup', pointerEnd);
             viewport.addEventListener('pointercancel', pointerEnd);
 
-            // 2. Capture Logic (Synced Shadow)
+            // 3. Double Click / Tap Reset to Middle
+            let lastTap = 0;
+            viewport.addEventListener('pointerdown', (e) => {
+                const now = Date.now();
+                if (now - lastTap < 300) {
+                    // Reset to defaults
+                    state.x = 0;
+                    state.y = 0;
+                    state.scale = 1;
+                    updateOverlay();
+                }
+                lastTap = now;
+            });
+
             captureBtn.addEventListener('click', () => {
                 captureBtn.classList.add('loader');
                 setTimeout(() => {
-                    const sf = 1.9;
+                    const sf = 2.5; // Increased scale factor for higher capture quality
                     captureCanvas.width = window.innerWidth * sf;
                     captureCanvas.height = window.innerHeight * sf;
                     ctx.scale(sf, sf);
@@ -910,12 +927,12 @@
 
                     ctx.drawImage(video, sx, sy, dw, dh);
                     ctx.save();
+
+                    // Translate to center + user movement
                     ctx.translate((window.innerWidth / 2) + state.x, (window.innerHeight / 2) + state.y);
                     ctx.scale(state.scale, state.scale);
 
                     const ss = Math.max(state.scale, 0.4);
-
-                    // Matches 6, 5, 4 Logic
                     const capX = 6 * sf * ss;
                     const capY = 5 * sf * ss;
                     const capBlur = 4 * sf * ss;
@@ -928,7 +945,7 @@
                     captureCanvas.toBlob(blob => {
                         captureBtn.classList.remove('loader');
                         if (blob) window.open(URL.createObjectURL(blob));
-                    }, 'image/jpeg', 0.90);
+                    }, 'image/jpeg', 0.95); // High quality JPEG
                 }, 50);
             });
 
