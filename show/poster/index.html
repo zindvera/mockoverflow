@@ -828,19 +828,28 @@
                     let totalLuminance = 0;
 
                     for (let i = 0; i < pixels.length; i += 4) {
-                        // Standard relative luminance formula
                         const luminance = (0.2126 * pixels[i] + 0.7152 * pixels[i + 1] + 0.0722 * pixels[i + 2]);
                         totalLuminance += luminance;
                     }
 
                     const avgLuminance = totalLuminance / (40 * 40);
 
-                    // Calculation: 0.7 (floor) + (percentage of 0.25 range)
-                    // If avgLuminance is 0 (black), result is 0.70
-                    // If avgLuminance is 255 (white), result is 0.95
-                    const newBrightness = 0.7 + (avgLuminance / 255) * 0.25;
+                    // Normalized light value (0 to 1)
+                    let n = avgLuminance / 255;
+                    let finalB;
 
-                    state.envBrightness = newBrightness.toFixed(3);
+                    if (n > 0.75) {
+                        // VERY BRIGHT LIGHT: Scale from 0.93 to 0.95
+                        finalB = 0.93 + ((n - 0.75) / 0.25) * 0.02;
+                    } else if (n > 0.4) {
+                        // NORMAL/SLIGHTLY LOW LIGHT: Keep it between 0.92 and 0.93
+                        finalB = 0.92 + ((n - 0.4) / 0.35) * 0.01;
+                    } else {
+                        // DIM/LOW LIGHT: Scale down from 0.92 to 0.7
+                        finalB = 0.7 + (n / 0.4) * 0.22;
+                    }
+
+                    state.envBrightness = Math.min(0.95, Math.max(0.7, finalB)).toFixed(3);
                     updateOverlay();
                 }
             }
