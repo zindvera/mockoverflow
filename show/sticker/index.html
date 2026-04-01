@@ -737,7 +737,7 @@
             }
         }
 
-        function openCamera() {
+    function openCamera() {
             const viewport = document.getElementById('viewportContainer');
             const video = document.getElementById('cameraFeed');
             const overlay = document.getElementById('overlayImage');
@@ -747,24 +747,65 @@
             const captureCanvas = document.getElementById('captureCanvas');
             const ctx = captureCanvas.getContext('2d');
 
+            // Light Analysis Setup
+            const analysisCanvas = document.createElement('canvas');
+            const analysisCtx = analysisCanvas.getContext('2d', { willReadFrequently: true });
+            analysisCanvas.width = 40;
+            analysisCanvas.height = 40;
+
             let state = {
                 x: 0, y: 0, scale: 1, rotation: 0,
                 startX: 0, startY: 0, baseX: 0, baseY: 0, baseScale: 1, baseRotation: 0,
+                envBrightness: 0.95 
             };
 
             const activePointers = new Map();
             let initialDistance = null;
             let initialAngle = null;
 
+            // 1. STICKER REALISM (Tight shadow + Centered Transform)
             const updateOverlay = () => {
-                overlay.style.transform = `translateX(${state.x}px) translateY(${state.y}px) scale(${state.scale}) rotate(${state.rotation}deg)`;
+                // translate(calc(-50% + x)) keeps the sticker centered even when rotated
+                overlay.style.transform = `translate(calc(-50% + ${state.x}px), calc(-50% + ${state.y}px)) scale(${state.scale}) rotate(${state.rotation}deg)`;
+
+                const shadowScale = Math.max(state.scale, 0.8);
+                
+                // Very tight shadow for "stuck-on" look (2px offsets)
+                const liveX = 1 * shadowScale;
+                const liveY = 2 * shadowScale;
+                const liveBlur = 2 * shadowScale;
+
+                // Added contrast(1.04) and blur(0.2px) to match camera focus
+                const filterString = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(0, 0, 0, 0.4)) brightness(${state.envBrightness}) contrast(1.04) blur(0.2px)`;
+
+                overlay.style.filter = filterString;
+                overlay.style.webkitFilter = filterString;
             };
-            updateOverlay();
+
+            // 2. LIGHT ANALYSIS (Floor 0.74 for vibrancy)
+            function analyzeLight() {
+                if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                    analysisCtx.drawImage(video, 0, 0, 40, 40);
+                    const pixels = analysisCtx.getImageData(0, 0, 40, 40).data;
+                    let totalLuminance = 0;
+                    for (let i = 0; i < pixels.length; i += 4) {
+                        totalLuminance += (0.2126 * pixels[i] + 0.7152 * pixels[i + 1] + 0.0722 * pixels[i + 2]);
+                    }
+                    const avgLuminance = totalLuminance / (40 * 40);
+                    
+                    // Sticker range: 0.74 (dim) to 0.98 (bright)
+                    const newBrightness = 0.74 + (avgLuminance / 255) * 0.24;
+
+                    state.envBrightness = newBrightness.toFixed(3);
+                    updateOverlay();
+                }
+            }
+
+            setInterval(analyzeLight, 500);
 
             async function startCamera() {
                 message.style.display = 'block';
                 message.textContent = 'Awaiting camera permission...';
-
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({
                         video: {
@@ -775,20 +816,16 @@
                     });
                     video.srcObject = stream;
                     message.style.display = 'none';
-                    video.play().catch(e => console.error("Video play failed:", e));
+                    video.play().catch(e => console.error(e));
                 } catch (err) {
-                    console.error("Error accessing camera: ", err);
-                    message.style.display = 'block';
                     message.textContent = 'Camera access denied or unavailable.';
-                    video.style.display = 'none';
                 }
             }
 
             function getPinchDetails() {
                 const pointers = Array.from(activePointers.values());
                 if (pointers.length < 2) return null;
-                const p1 = pointers[0];
-                const p2 = pointers[1];
+                const p1 = pointers[0]; const p2 = pointers[1];
                 const dx = p1.clientX - p2.clientX;
                 const dy = p1.clientY - p2.clientY;
                 const distance = Math.sqrt(dx * dx + dy * dy);
@@ -796,14 +833,11 @@
                 return { distance, angle };
             }
 
-            // Movement logic now on the whole Viewport Container
             viewport.addEventListener('pointerdown', (e) => {
-                // If clicking buttons, don't start moving the sticker
-                if (e.target.closest('#controls') || e.target.closest('.tooltipClose') || e.target.closest('#gestureTooltip') || e.target.closest('#placementTooltip')) return;
-
+                if (e.target.closest('#controls') || e.target.closest('.tooltipClose')) return;
                 e.preventDefault();
                 viewport.setPointerCapture(e.pointerId);
-                activePointers.set(e.pointerId, { id: e.pointerId, clientX: e.clientX, clientY: e.clientY });
+                activePointers.set(e.pointerId, { clientX: e.clientX, clientY: e.clientY });
 
                 if (activePointers.size === 1) {
                     state.startX = e.clientX; state.startY = e.clientY;
@@ -831,80 +865,80 @@
                 } else if (activePointers.size >= 2) {
                     const currentDetails = getPinchDetails();
                     if (currentDetails && initialDistance && initialAngle) {
-                        const scaleFactor = currentDetails.distance / initialDistance;
-                        state.scale = Math.min(2.5, Math.max(0.1, state.baseScale * scaleFactor));
-                        const rotationDelta = currentDetails.angle - initialAngle;
-                        state.rotation = state.baseRotation + rotationDelta;
+                        state.scale = Math.min(2.5, Math.max(0.1, state.baseScale * (currentDetails.distance / initialDistance)));
+                        state.rotation = state.baseRotation + (currentDetails.angle - initialAngle);
                     }
                 }
                 updateOverlay();
             });
 
             function pointerEnd(e) {
-                if (!activePointers.has(e.pointerId)) return;
                 activePointers.delete(e.pointerId);
                 if (activePointers.size < 2) { initialDistance = null; initialAngle = null; }
-                if (activePointers.size === 1) {
-                    const rem = Array.from(activePointers.values())[0];
-                    state.startX = rem.clientX; state.startY = rem.clientY;
-                    state.baseX = state.x; state.baseY = state.y;
-                }
             }
-
             viewport.addEventListener('pointerup', pointerEnd);
             viewport.addEventListener('pointercancel', pointerEnd);
-            viewport.addEventListener('pointerleave', pointerEnd);
 
-            // Double tap to reset
+            // 3. DOUBLE TAP RESET (Middle Position)
             let lastTap = 0;
             viewport.addEventListener('click', (e) => {
-                // Guard buttons
-                if (e.target.closest('#controls') || e.target.closest('.tooltipClose')) return;
-
-                const now = new Date().getTime();
-                if ((now - lastTap < 300) && (now - lastTap > 0)) {
-                    state = { x: 0, y: 0, scale: 1, rotation: 0, startX: 0, startY: 0, baseX: 0, baseY: 0, baseScale: 1, baseRotation: 0 };
+                if (e.target.closest('#controls')) return;
+                const now = Date.now();
+                if (now - lastTap < 300) {
+                    state = { ...state, x: 0, y: 0, scale: 1, rotation: 0 };
                     updateOverlay();
                     resetTip.textContent = "RESET!";
                     resetTip.style.display = 'block';
-                    setTimeout(() => { resetTip.style.display = 'none'; resetTip.textContent = "Drag, Pinch, or Double-Tap to Reset"; }, 1000);
+                    setTimeout(() => { resetTip.style.display = 'none'; }, 1000);
                 }
                 lastTap = now;
             });
 
+            // 4. SYNCED CAPTURE (Sticker Logic)
             captureBtn.addEventListener('click', () => {
                 captureBtn.classList.add('loader');
-                const iW = video.videoWidth;
-                const iH = video.videoHeight;
-                captureCanvas.width = iW;
-                captureCanvas.height = iH;
-                ctx.clearRect(0, 0, iW, iH);
-                ctx.drawImage(video, 0, 0, iW, iH);
+                setTimeout(() => {
+                    const sf = 2.0; 
+                    captureCanvas.width = window.innerWidth * sf;
+                    captureCanvas.height = window.innerHeight * sf;
+                    ctx.scale(sf, sf);
+                    
+                    const vr = video.videoWidth / video.videoHeight;
+                    const sr = window.innerWidth / window.innerHeight;
+                    let dw, dh, sx, sy;
+                    if (sr > vr) { dw = window.innerWidth; dh = dw / vr; sx = 0; sy = (window.innerHeight - dh) / 2; }
+                    else { dh = window.innerHeight; dw = dh * vr; sx = (window.innerWidth - dw) / 2; sy = 0; }
+                    
+                    ctx.drawImage(video, sx, sy, dw, dh);
+                    ctx.save();
+                    
+                    // Centered translate
+                    ctx.translate((window.innerWidth / 2) + state.x, (window.innerHeight / 2) + state.y);
+                    ctx.rotate(state.rotation * Math.PI / 180);
+                    ctx.scale(state.scale, state.scale);
 
-                const sX = iW / video.clientWidth;
-                const sY = iH / video.clientHeight;
-                const oW = overlay.offsetWidth * sX;
-                const oH = overlay.offsetHeight * sY;
+                    const capShadowScale = Math.max(state.scale, 0.4);
+                    const capX = 1 * sf * capShadowScale;
+                    const capY = 2 * sf * capShadowScale;
+                    const capBlur = 2 * sf * capShadowScale;
 
-                ctx.save();
-                ctx.translate(iW / 2 + state.x * sX, iH / 2 + state.y * sY);
-                ctx.rotate(state.rotation * Math.PI / 180);
-                ctx.scale(state.scale, state.scale);
-                ctx.drawImage(overlay, -oW / 2, -oH / 2, oW, oH);
-                ctx.restore();
+                    ctx.filter = `drop-shadow(${capX}px ${capY}px ${capBlur}px rgba(0, 0, 0, 0.4)) brightness(${state.envBrightness}) contrast(1.04) blur(0.4px)`;
+                    
+                    ctx.globalAlpha = 0.98;
+                    ctx.drawImage(overlay, -overlay.offsetWidth / 2, -overlay.offsetHeight / 2, overlay.offsetWidth, overlay.offsetHeight);
+                    ctx.restore();
 
-                captureCanvas.toBlob(blob => {
-                    captureBtn.classList.remove('loader');
-                    if (blob) {
-                        const url = URL.createObjectURL(blob);
-                        window.open(url);
-                    }
-                }, 'image/png');
+                    captureCanvas.toBlob(blob => {
+                        captureBtn.classList.remove('loader');
+                        if (blob) window.open(URL.createObjectURL(blob));
+                    }, 'image/png'); // Using PNG to keep sticker transparency if needed
+                }, 50);
             });
 
             startCamera();
         }
 
+        
         function setupDesktopExperience() {
             generateQRCode(shareLink);
 
