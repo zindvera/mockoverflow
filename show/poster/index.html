@@ -776,242 +776,195 @@
         }
 
 
+function openCamera() {
+    const viewport = document.getElementById('viewportContainer');
+    const video = document.getElementById('cameraFeed');
+    const overlay = document.getElementById('overlayImage');
+    const message = document.getElementById('message');
+    const resetTip = document.getElementById('resetTip');
+    const captureBtn = document.getElementById('captureBtn');
+    const captureCanvas = document.getElementById('captureCanvas');
+    const ctx = captureCanvas.getContext('2d');
 
-        function openCamera() {
-            const viewport = document.getElementById('viewportContainer');
-            const video = document.getElementById('cameraFeed');
-            const overlay = document.getElementById('overlayImage');
-            const message = document.getElementById('message');
-            const resetTip = document.getElementById('resetTip');
-            const captureBtn = document.getElementById('captureBtn');
-            const captureCanvas = document.getElementById('captureCanvas');
-            const ctx = captureCanvas.getContext('2d');
+    const analysisCanvas = document.createElement('canvas');
+    const analysisCtx = analysisCanvas.getContext('2d', { willReadFrequently: true });
+    analysisCanvas.width = 40; 
+    analysisCanvas.height = 40;
 
-            // Light Analysis Setup
-            const analysisCanvas = document.createElement('canvas');
-            const analysisCtx = analysisCanvas.getContext('2d', { willReadFrequently: true });
-            analysisCanvas.width = 40;
-            analysisCanvas.height = 40;
+    let state = {
+        x: 0, y: 0, scale: 1,
+        startX: 0, startY: 0, baseX: 0, baseY: 0, baseScale: 1,
+        activeFilter: "brightness(0.94) contrast(1) saturate(1)" // Unified filter state
+    };
 
-            let state = {
-                x: 0, y: 0, scale: 1,
-                startX: 0, startY: 0, baseX: 0, baseY: 0, baseScale: 1,
-                envBrightness: 0.94 // Default starting point
-            };
+    const activePointers = new Map();
+    let initialDistance = null;
 
-            const activePointers = new Map();
-            let initialDistance = null;
+    const updateOverlay = () => {
+        overlay.style.transform = `translateX(${state.x}px) translateY(${state.y}px) scale(${state.scale})`;
+        
+        const shadowScale = Math.max(state.scale, 0.85);
+        const liveX = 8 * shadowScale;
+        const liveY = 5 * shadowScale;
+        const liveBlur = 4 * shadowScale;
 
-            const updateOverlay = () => {
-                overlay.style.transform = `translateX(${state.x}px) translateY(${state.y}px) scale(${state.scale})`;
-                const shadowScale = Math.max(state.scale, 0.85);
-                const liveX = 8 * shadowScale;
-                const liveY = 5 * shadowScale;
-                const liveBlur = 4 * shadowScale;
+        // Combine Drop Shadow + Dynamic Environment Filters
+        const fullFilter = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(0, 0, 0, 0.45)) ${state.activeFilter}`;
+        
+        overlay.style.filter = fullFilter;
+        overlay.style.webkitFilter = fullFilter;
+    };
 
-                // Apply dynamic brightness
-                const filterString = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(0, 0, 0, 0.5)) brightness(${state.envBrightness})`;
-                overlay.style.filter = filterString;
-                overlay.style.webkitFilter = filterString;
-            };
+    function analyzeLight() {
+        if (video.readyState === video.HAVE_ENOUGH_DATA) {
+            analysisCtx.drawImage(video, 0, 0, 40, 40);
+            const pixels = analysisCtx.getImageData(0, 0, 40, 40).data;
+            let totalLuminance = 0;
 
-            function analyzeLight() {
-                if (video.readyState === video.HAVE_ENOUGH_DATA) {
-                    analysisCtx.drawImage(video, 0, 0, 40, 40);
-                    const pixels = analysisCtx.getImageData(0, 0, 40, 40).data;
-                    let totalLuminance = 0;
-
-                    for (let i = 0; i < pixels.length; i += 4) {
-                        const luminance = (0.2126 * pixels[i] + 0.7152 * pixels[i + 1] + 0.0722 * pixels[i + 2]);
-                        totalLuminance += luminance;
-                    }
-
-                    const avgLuminance = totalLuminance / (40 * 40);
-                    let n = avgLuminance / 255; // 0 to 1 scale
-                    let finalB;
-
-                    if (n > 0.75) {
-                        // 1. FULL BRIGHT (Outdoor/Direct Sunlight)
-                        finalB = 0.95;
-                    } else if (n > 0.45) {
-                        // 2. NORMAL DAYLIGHT (Well-lit indoor)
-                        // Scale from 0.92 to 0.94
-                        finalB = 0.92 + ((n - 0.45) / 0.30) * 0.02;
-                    } else if (n > 0.20) {
-                        // 3. SLIGHT DARK (Shadowed wall/Indoor evening)
-                        // Drop below 0.92 into the 0.82 - 0.91 range
-                        finalB = 0.82 + ((n - 0.20) / 0.25) * 0.10;
-                    } else {
-                        // 4. DARK (Night/Closed room)
-                        // Scale from 0.70 to 0.82
-                        finalB = 0.70 + (n / 0.20) * 0.12;
-                    }
-
-                    state.envBrightness = Math.min(0.95, Math.max(0.7, finalB)).toFixed(3);
-                    updateOverlay();
-                }
+            for (let i = 0; i < pixels.length; i += 4) {
+                const luminance = (0.2126 * pixels[i] + 0.7152 * pixels[i + 1] + 0.0722 * pixels[i + 2]);
+                totalLuminance += luminance;
             }
 
-            // Interval for light tracking
-            setInterval(analyzeLight, 400);
+            const avgLuminance = totalLuminance / (40 * 40);
+            let n = avgLuminance / 255; 
+            
+            let b, c, s;
 
-            async function startCamera() {
-                message.style.display = 'block';
-                message.textContent = 'Awaiting camera permission...';
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({
-                        video: {
-                            facingMode: 'environment',
-                            width: { ideal: 4096 },
-                            height: { ideal: 2160 }
-                        }
-                    });
-                    video.srcObject = stream;
-                    message.style.display = 'none';
-                    video.play().catch(e => console.error("Video play failed:", e));
-                } catch (err) {
-                    console.error("Error accessing camera: ", err);
-                    message.style.display = 'block';
-                    message.textContent = 'Camera access denied or unavailable.';
-                    video.style.display = 'none';
-                }
+            if (n > 0.75) {
+                // BRIGHT (Outdoor/Direct Sun)
+                b = 0.95; c = 1.0; s = 1.0;
+            } else if (n > 0.45) {
+                // NORMAL DAYLIGHT (Indoors)
+                b = 0.92 + ((n - 0.45) / 0.30) * 0.02;
+                c = 0.98; s = 0.95;
+            } else if (n > 0.18) {
+                // SLIGHT DARK (Evening/Shadows)
+                b = 0.80 + ((n - 0.18) / 0.27) * 0.12;
+                c = 0.92; s = 0.88;
+            } else {
+                // DARK (Night)
+                b = 0.65 + (n / 0.18) * 0.15;
+                c = 0.85; s = 0.75;
             }
 
-            // Gesture / Touch Logic
-            function getPinchDetails() {
-                const pointers = Array.from(activePointers.values());
-                if (pointers.length < 2) return null;
-                const p1 = pointers[0];
-                const p2 = pointers[1];
-                const dx = p1.clientX - p2.clientX;
-                const dy = p1.clientY - p2.clientY;
-                return { distance: Math.sqrt(dx * dx + dy * dy) };
-            }
-
-            viewport.addEventListener('pointerdown', (e) => {
-                if (e.target.closest('#controls') || e.target.closest('.tooltipClose') || e.target.closest('#gestureTooltip') || e.target.closest('#placementTooltip')) return;
-                e.preventDefault();
-                viewport.setPointerCapture(e.pointerId);
-                activePointers.set(e.pointerId, { id: e.pointerId, clientX: e.clientX, clientY: e.clientY });
-
-                if (activePointers.size === 1) {
-                    state.startX = e.clientX; state.startY = e.clientY;
-                    state.baseX = state.x; state.baseY = state.y;
-                } else if (activePointers.size === 2) {
-                    const details = getPinchDetails();
-                    if (details) {
-                        initialDistance = details.distance;
-                        state.baseScale = state.scale;
-                    }
-                }
-            });
-
-            viewport.addEventListener('pointermove', (e) => {
-                if (!activePointers.has(e.pointerId)) return;
-                e.preventDefault();
-                activePointers.get(e.pointerId).clientX = e.clientX;
-                activePointers.get(e.pointerId).clientY = e.clientY;
-
-                if (activePointers.size === 1) {
-                    state.x = state.baseX + (e.clientX - state.startX);
-                    state.y = state.baseY + (e.clientY - state.startY);
-                } else if (activePointers.size >= 2) {
-                    const currentDetails = getPinchDetails();
-                    if (currentDetails && initialDistance) {
-                        const scaleFactor = currentDetails.distance / initialDistance;
-                        state.scale = Math.min(2.5, Math.max(0.1, state.baseScale * scaleFactor));
-                    }
-                }
-                updateOverlay();
-            });
-
-            function pointerEnd(e) {
-                if (!activePointers.has(e.pointerId)) return;
-                activePointers.delete(e.pointerId);
-                if (activePointers.size < 2) { initialDistance = null; }
-                if (activePointers.size === 1) {
-                    const rem = Array.from(activePointers.values())[0];
-                    state.startX = rem.clientX; state.startY = rem.clientY;
-                    state.baseX = state.x; state.baseY = state.y;
-                }
-            }
-
-            viewport.addEventListener('pointerup', pointerEnd);
-            viewport.addEventListener('pointercancel', pointerEnd);
-            viewport.addEventListener('pointerleave', pointerEnd);
-
-            let lastTap = 0;
-            viewport.addEventListener('click', (e) => {
-                if (e.target.closest('#controls') || e.target.closest('.tooltipClose')) return;
-                const now = new Date().getTime();
-                if ((now - lastTap < 300) && (now - lastTap > 0)) {
-                    state = { ...state, x: 0, y: 0, scale: 1 };
-                    updateOverlay();
-                    resetTip.textContent = "RESET!";
-                    resetTip.style.display = 'block';
-                    setTimeout(() => { resetTip.style.display = 'none'; resetTip.textContent = "Drag, Pinch, or Double-Tap to Reset"; }, 1000);
-                }
-                lastTap = now;
-            });
-
-            captureBtn.addEventListener('click', () => {
-                captureBtn.classList.add('loader');
-                setTimeout(() => {
-                    const scaleFactor = 1.9;
-                    captureCanvas.width = window.innerWidth * scaleFactor;
-                    captureCanvas.height = window.innerHeight * scaleFactor;
-                    ctx.scale(scaleFactor, scaleFactor);
-                    ctx.imageSmoothingEnabled = true;
-                    ctx.imageSmoothingQuality = 'high';
-
-                    const videoRatio = video.videoWidth / video.videoHeight;
-                    const screenRatio = window.innerWidth / window.innerHeight;
-                    let drawWidth, drawHeight, startX, startY;
-
-                    if (screenRatio > videoRatio) {
-                        drawWidth = window.innerWidth; drawHeight = window.innerWidth / videoRatio;
-                        startX = 0; startY = (window.innerHeight - drawHeight) / 2;
-                    } else {
-                        drawHeight = window.innerHeight; drawWidth = window.innerHeight * videoRatio;
-                        startX = (window.innerWidth - drawWidth) / 2; startY = 0;
-                    }
-
-                    ctx.clearRect(0, 0, captureCanvas.width / scaleFactor, captureCanvas.height / scaleFactor);
-                    ctx.drawImage(video, startX, startY, drawWidth, drawHeight);
-
-                    const oW = overlay.offsetWidth;
-                    const oH = overlay.offsetHeight;
-
-                    ctx.save();
-                    ctx.translate((window.innerWidth / 2) + state.x, (window.innerHeight / 2) + state.y);
-                    ctx.scale(state.scale, state.scale);
-
-                    const shadowScale = Math.max(state.scale, 0.4);
-                    const shadowOffsetX = 8 * scaleFactor * shadowScale;
-                    const shadowOffsetY = 5 * scaleFactor * shadowScale;
-                    const shadowBlur = 4 * scaleFactor * shadowScale;
-
-                    const capFilter = `drop-shadow(${shadowOffsetX}px ${shadowOffsetY}px ${shadowBlur}px rgba(0, 0, 0, 0.5)) brightness(${state.envBrightness})`;
-                    ctx.filter = capFilter;
-                    ctx.globalAlpha = 0.98;
-                    ctx.drawImage(overlay, -oW / 2, -oH / 2, oW, oH);
-                    ctx.restore();
-
-                    captureCanvas.toBlob(blob => {
-                        captureBtn.classList.remove('loader');
-                        if (blob) {
-                            const url = URL.createObjectURL(blob);
-                            window.open(url);
-                        }
-                    }, 'image/jpeg', 0.90);
-                }, 50);
-            });
-
-            startCamera();
+            // Update the unified filter string
+            state.activeFilter = `brightness(${b.toFixed(3)}) contrast(${c.toFixed(2)}) saturate(${s.toFixed(2)})`;
+            updateOverlay();
         }
+    }
+
+    setInterval(analyzeLight, 350);
+
+    async function startCamera() {
+        message.style.display = 'block';
+        message.textContent = 'Awaiting camera permission...';
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'environment', width: { ideal: 4096 }, height: { ideal: 2160 } }
+            });
+            video.srcObject = stream;
+            message.style.display = 'none';
+            video.play().catch(e => console.error(e));
+        } catch (err) {
+            message.textContent = 'Camera access denied.';
+        }
+    }
+
+    // Touch Handling (Move/Scale)
+    function getPinchDetails() {
+        const pointers = Array.from(activePointers.values());
+        if (pointers.length < 2) return null;
+        const dx = pointers[0].clientX - pointers[1].clientX;
+        const dy = pointers[0].clientY - pointers[1].clientY;
+        return { distance: Math.sqrt(dx * dx + dy * dy) };
+    }
+
+    viewport.addEventListener('pointerdown', (e) => {
+        if (e.target.closest('#controls') || e.target.closest('.tooltipClose')) return;
+        e.preventDefault();
+        viewport.setPointerCapture(e.pointerId);
+        activePointers.set(e.pointerId, { clientX: e.clientX, clientY: e.clientY });
+        if (activePointers.size === 1) {
+            state.startX = e.clientX; state.startY = e.clientY;
+            state.baseX = state.x; state.baseY = state.y;
+        } else if (activePointers.size === 2) {
+            const d = getPinchDetails();
+            if (d) { initialDistance = d.distance; state.baseScale = state.scale; }
+        }
+    });
+
+    viewport.addEventListener('pointermove', (e) => {
+        if (!activePointers.has(e.pointerId)) return;
+        activePointers.get(e.pointerId).clientX = e.clientX;
+        activePointers.get(e.pointerId).clientY = e.clientY;
+        if (activePointers.size === 1) {
+            state.x = state.baseX + (e.clientX - state.startX);
+            state.y = state.baseY + (e.clientY - state.startY);
+        } else if (activePointers.size >= 2) {
+            const d = getPinchDetails();
+            if (d && initialDistance) {
+                state.scale = Math.min(2.5, Math.max(0.1, state.baseScale * (d.distance / initialDistance)));
+            }
+        }
+        updateOverlay();
+    });
+
+    const pointerEnd = (e) => {
+        activePointers.delete(e.pointerId);
+        if (activePointers.size < 2) initialDistance = null;
+        if (activePointers.size === 1) {
+            const rem = Array.from(activePointers.values())[0];
+            state.startX = rem.clientX; state.startY = rem.clientY;
+            state.baseX = state.x; state.baseY = state.y;
+        }
+    };
+    viewport.addEventListener('pointerup', pointerEnd);
+    viewport.addEventListener('pointercancel', pointerEnd);
+
+    let lastTap = 0;
+    viewport.addEventListener('click', (e) => {
+        if (e.target.closest('#controls')) return;
+        const now = Date.now();
+        if (now - lastTap < 300) {
+            state.x = 0; state.y = 0; state.scale = 1;
+            updateOverlay();
+        }
+        lastTap = now;
+    });
+
+    captureBtn.addEventListener('click', () => {
+        captureBtn.classList.add('loader');
+        setTimeout(() => {
+            const sf = 1.9;
+            captureCanvas.width = window.innerWidth * sf;
+            captureCanvas.height = window.innerHeight * sf;
+            ctx.scale(sf, sf);
+            const vr = video.videoWidth / video.videoHeight;
+            const sr = window.innerWidth / window.innerHeight;
+            let dw, dh, sx, sy;
+            if (sr > vr) { dw = window.innerWidth; dh = dw / vr; sx = 0; sy = (window.innerHeight - dh) / 2; }
+            else { dh = window.innerHeight; dw = dh * vr; sx = (window.innerWidth - dw) / 2; sy = 0; }
+            ctx.drawImage(video, sx, sy, dw, dh);
+            ctx.save();
+            ctx.translate((window.innerWidth / 2) + state.x, (window.innerHeight / 2) + state.y);
+            ctx.scale(state.scale, state.scale);
+            const ss = Math.max(state.scale, 0.4);
+            ctx.filter = `drop-shadow(${8*sf*ss}px ${5*sf*ss}px ${4*sf*ss}px rgba(0,0,0,0.45)) ${state.activeFilter}`;
+            ctx.drawImage(overlay, -overlay.offsetWidth / 2, -overlay.offsetHeight / 2, overlay.offsetWidth, overlay.offsetHeight);
+            ctx.restore();
+            captureCanvas.toBlob(blob => {
+                captureBtn.classList.remove('loader');
+                if (blob) window.open(URL.createObjectURL(blob));
+            }, 'image/jpeg', 0.90);
+        }, 50);
+    });
+
+    startCamera();
+}
 
 
-        function setupDesktopExperience() {
+        function setupDesktopExperience() { 
             generateQRCode(shareLink);
 
             const laptopDemoImage = document.getElementById('laptopDemoImage');
