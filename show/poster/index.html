@@ -782,215 +782,198 @@
             }
         }
 
+function openCamera() {
+    const viewport = document.getElementById('viewportContainer');
+    const video = document.getElementById('cameraFeed');
+    const overlay = document.getElementById('overlayImage');
+    const message = document.getElementById('message');
+    const captureBtn = document.getElementById('captureBtn');
+    const captureCanvas = document.getElementById('captureCanvas');
+    const ctx = captureCanvas.getContext('2d');
 
-        function openCamera() {
-            const viewport = document.getElementById('viewportContainer');
-            const video = document.getElementById('cameraFeed');
-            const overlay = document.getElementById('overlayImage');
-            const message = document.getElementById('message');
-            const resetTip = document.getElementById('resetTip');
-            const captureBtn = document.getElementById('captureBtn');
-            const captureCanvas = document.getElementById('captureCanvas');
-            const ctx = captureCanvas.getContext('2d');
+    const analysisCanvas = document.createElement('canvas');
+    const analysisCtx = analysisCanvas.getContext('2d', { willReadFrequently: true });
+    analysisCanvas.width = 40; 
+    analysisCanvas.height = 40;
 
-            // Light Analysis Setup
-            const analysisCanvas = document.createElement('canvas');
-            const analysisCtx = analysisCanvas.getContext('2d', { willReadFrequently: true });
-            analysisCanvas.width = 40;
-            analysisCanvas.height = 40;
+    let state = {
+        x: 0, y: 0, scale: 1,
+        startX: 0, startY: 0, baseX: 0, baseY: 0, baseScale: 1,
+        envBrightness: 0.94 
+    };
 
-            let state = {
-                x: 0, y: 0, scale: 1,
-                startX: 0, startY: 0, baseX: 0, baseY: 0, baseScale: 1,
-                envBrightness: 0.94
-            };
+    const activePointers = new Map();
+    let initialDistance = null;
 
-            const activePointers = new Map();
-            let initialDistance = null;
+    // 1. LIVE PREVIEW (Warm Realism)
+    const updateOverlay = () => {
+        overlay.style.transform = `translate(calc(-50% + ${state.x}px), calc(-50% + ${state.y}px)) scale(${state.scale})`;
+        
+        const shadowScale = Math.max(state.scale, 0.85);
 
-            // 1. LIVE PREVIEW (Centering + Curved Lighting)
-            const updateOverlay = () => {
-                overlay.style.transform = `translate(calc(-50% + ${state.x}px), calc(-50% + ${state.y}px)) scale(${state.scale})`;
+        // Tighter offsets for a "flat on wall" look
+        const liveX = 2 * shadowScale;
+        const liveY = 3 * shadowScale;
+        const liveBlur = 4 * shadowScale;
+        
+        // Filter explains: 
+        // Brown shadow (45,35,20) + Warm Tint (sepia) + Realism (blur) + Deep Inks (contrast)
+        const filterValue = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(45, 35, 20, 0.45)) 
+                             brightness(${state.envBrightness}) 
+                             sepia(0.15) 
+                             contrast(1.05) 
+                             blur(0.4px)`;
+        
+        overlay.style.filter = filterValue;
+        overlay.style.webkitFilter = filterValue;
+    };
 
-                const shadowScale = Math.max(state.scale, 0.85);
-                const liveX = 2 * shadowScale; // Tighter
-                const liveY = 3 * shadowScale; // Tighter
-                const liveBlur = 5 * shadowScale;
-
-                // Change shadow to a very deep brown-grey (rgba(40, 30, 20, 0.4))
-                // Add contrast(1.02) and a tiny blur(0.3px) to match the wall's texture
-                const filterValue = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(40, 30, 20, 0.4)) brightness(${state.envBrightness}) contrast(1.02) blur(0.3px)`;
-
-                overlay.style.filter = filterValue;
-                overlay.style.webkitFilter = filterValue;
-            };
-
-
-
-            // 2. NON-LINEAR LIGHT ANALYSIS (Square Root Curve)
-            function analyzeLight() {
-                if (video.readyState === video.HAVE_ENOUGH_DATA) {
-                    analysisCtx.drawImage(video, 0, 0, 40, 40);
-                    const pixels = analysisCtx.getImageData(0, 0, 40, 40).data;
-                    let totalLuminance = 0;
-                    for (let i = 0; i < pixels.length; i += 4) {
-                        totalLuminance += (0.2126 * pixels[i] + 0.7152 * pixels[i + 1] + 0.0722 * pixels[i + 2]);
-                    }
-                    const avgLuminance = totalLuminance / (40 * 40);
-                    let n = avgLuminance / 255;
-
-                    // --- NEW DARK-WALL LOGIC ---
-                    // Range: 0.62 to 0.96. 
-                    // This lets the poster get darker when the wall is in shadow.
-                    const curve = Math.sqrt(n);
-                    const newBrightness = 0.62 + (curve * 0.34);
-
-                    state.envBrightness = newBrightness.toFixed(3);
-                    updateOverlay();
-                }
+    // 2. STABLE LIGHT ANALYSIS (0.62 - 0.96 Range)
+    function analyzeLight() {
+        if (video.readyState === video.HAVE_ENOUGH_DATA) {
+            analysisCtx.drawImage(video, 0, 0, 40, 40);
+            const pixels = analysisCtx.getImageData(0, 0, 40, 40).data;
+            let totalLuminance = 0;
+            for (let i = 0; i < pixels.length; i += 4) {
+                totalLuminance += (0.2126 * pixels[i] + 0.7152 * pixels[i + 1] + 0.0722 * pixels[i + 2]);
             }
+            const avgLuminance = totalLuminance / (40 * 40);
+            let n = avgLuminance / 255;
 
+            // Square root curve keeps it from getting too dark too fast
+            const curve = Math.sqrt(n); 
+            const newBrightness = 0.62 + (curve * 0.34);
 
-            setInterval(analyzeLight, 400);
-
-            async function startCamera() {
-                message.style.display = 'block';
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({
-                        video: { facingMode: 'environment', width: { ideal: 4096 }, height: { ideal: 2160 } }
-                    });
-                    video.srcObject = stream;
-                    message.style.display = 'none';
-                    video.play().catch(e => console.error(e));
-                } catch (err) {
-                    message.textContent = 'Camera access denied.';
-                }
-            }
-
-            // --- GESTURE & BOUNDARY LOGIC ---
-            function getPinchDetails() {
-                const pointers = Array.from(activePointers.values());
-                if (pointers.length < 2) return null;
-                const dx = pointers[0].clientX - pointers[1].clientX;
-                const dy = pointers[0].clientY - pointers[1].clientY;
-                return { distance: Math.sqrt(dx * dx + dy * dy) };
-            }
-
-            viewport.addEventListener('pointerdown', (e) => {
-                if (e.target.closest('#controls')) return;
-                e.preventDefault();
-                viewport.setPointerCapture(e.pointerId);
-                activePointers.set(e.pointerId, { clientX: e.clientX, clientY: e.clientY });
-                if (activePointers.size === 1) {
-                    state.startX = e.clientX; state.startY = e.clientY;
-                    state.baseX = state.x; state.baseY = state.y;
-                } else if (activePointers.size === 2) {
-                    const d = getPinchDetails();
-                    if (d) { initialDistance = d.distance; state.baseScale = state.scale; }
-                }
-            });
-
-            viewport.addEventListener('pointermove', (e) => {
-                if (!activePointers.has(e.pointerId)) return;
-                e.preventDefault();
-                activePointers.get(e.pointerId).clientX = e.clientX;
-                activePointers.get(e.pointerId).clientY = e.clientY;
-
-                if (activePointers.size === 1) {
-                    let newX = state.baseX + (e.clientX - state.startX);
-                    let newY = state.baseY + (e.clientY - state.startY);
-
-                    // Clamp within screen boundaries (Center stays on screen)
-                    const margin = 50;
-                    const limitX = (window.innerWidth / 2) - margin;
-                    const limitY = (window.innerHeight / 2) - margin;
-
-                    state.x = Math.max(-limitX, Math.min(limitX, newX));
-                    state.y = Math.max(-limitY, Math.min(limitY, newY));
-                } else if (activePointers.size >= 2) {
-                    const d = getPinchDetails();
-                    if (d && initialDistance) {
-                        state.scale = Math.min(2.5, Math.max(0.1, state.baseScale * (d.distance / initialDistance)));
-                    }
-                }
-                updateOverlay();
-            });
-
-            const pointerEnd = (e) => {
-                activePointers.delete(e.pointerId);
-                if (activePointers.size < 2) initialDistance = null;
-            };
-            viewport.addEventListener('pointerup', pointerEnd);
-            viewport.addEventListener('pointercancel', pointerEnd);
-
-            let lastTap = 0;
-            viewport.addEventListener('click', (e) => {
-                if (e.target.closest('#controls')) return;
-                const now = Date.now();
-                if (now - lastTap < 300) {
-                    state.x = 0; state.y = 0; state.scale = 1;
-                    updateOverlay();
-                }
-                lastTap = now;
-            });
-
-            // 3. FULLY SYNCED IMAGE CAPTURE
-            captureBtn.addEventListener('click', () => {
-                captureBtn.classList.add('loader');
-                setTimeout(() => {
-                    const sf = 1.9; // Scale Factor for resolution
-                    captureCanvas.width = window.innerWidth * sf;
-                    captureCanvas.height = window.innerHeight * sf;
-                    ctx.scale(sf, sf);
-
-                    const vr = video.videoWidth / video.videoHeight;
-                    const sr = window.innerWidth / window.innerHeight;
-                    let dw, dh, sx, sy;
-
-                    if (sr > vr) {
-                        dw = window.innerWidth; dh = dw / vr; sx = 0; sy = (window.innerHeight - dh) / 2;
-                    } else {
-                        dh = window.innerHeight; dw = dh * vr; sx = (window.innerWidth - dw) / 2; sy = 0;
-                    }
-
-                    // 1. Draw the camera background
-                    ctx.drawImage(video, sx, sy, dw, dh);
-                    ctx.save();
-
-                    // 2. Position the art based on user movement
-                    ctx.translate((window.innerWidth / 2) + state.x, (window.innerHeight / 2) + state.y);
-                    ctx.scale(state.scale, state.scale);
-
-                    // 3. Realistic Shadow & Lighting Sync
-                    const ss = Math.max(state.scale, 0.4);
-                    const capX = 2 * sf * ss;   // Tighter X
-                    const capY = 3 * sf * ss;   // Tighter Y
-                    const capBlur = 5 * sf * ss; // Soft blur
-
-                    // Updated Filter: Natural Shadow Color (rgba 40,30,20) + Realism Blur
-                    // This removes the "too sharp/digital" look
-                    ctx.filter = `drop-shadow(${capX}px ${capY}px ${capBlur}px rgba(40, 30, 20, 0.4)) brightness(${state.envBrightness}) contrast(1.02) blur(0.4px)`;
-
-                    ctx.globalAlpha = 0.98;
-
-                    // 4. Draw the art centered on the anchor
-                    ctx.drawImage(overlay, -overlay.offsetWidth / 2, -overlay.offsetHeight / 2, overlay.offsetWidth, overlay.offsetHeight);
-                    ctx.restore();
-
-                    // 5. Generate and open the image
-                    captureCanvas.toBlob(blob => {
-                        captureBtn.classList.remove('loader');
-                        if (blob) {
-                            const url = URL.createObjectURL(blob);
-                            window.open(url);
-                        }
-                    }, 'image/jpeg', 0.90);
-                }, 50);
-            });
-
-
-            startCamera();
+            state.envBrightness = newBrightness.toFixed(3);
+            updateOverlay();
         }
+    }
+
+    setInterval(analyzeLight, 400);
+
+    async function startCamera() {
+        message.style.display = 'block';
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'environment', width: { ideal: 4096 }, height: { ideal: 2160 } }
+            });
+            video.srcObject = stream;
+            message.style.display = 'none';
+            video.play().catch(e => console.error(e));
+        } catch (err) {
+            message.textContent = 'Camera access denied.';
+        }
+    }
+
+    function getPinchDetails() {
+        const pointers = Array.from(activePointers.values());
+        if (pointers.length < 2) return null;
+        const dx = pointers[0].clientX - pointers[1].clientX;
+        const dy = pointers[0].clientY - pointers[1].clientY;
+        return { distance: Math.sqrt(dx * dx + dy * dy) };
+    }
+
+    viewport.addEventListener('pointerdown', (e) => {
+        if (e.target.closest('#controls')) return;
+        e.preventDefault();
+        viewport.setPointerCapture(e.pointerId);
+        activePointers.set(e.pointerId, { clientX: e.clientX, clientY: e.clientY });
+        if (activePointers.size === 1) {
+            state.startX = e.clientX; state.startY = e.clientY;
+            state.baseX = state.x; state.baseY = state.y;
+        } else if (activePointers.size === 2) {
+            const d = getPinchDetails();
+            if (d) { initialDistance = d.distance; state.baseScale = state.scale; }
+        }
+    });
+
+    viewport.addEventListener('pointermove', (e) => {
+        if (!activePointers.has(e.pointerId)) return;
+        e.preventDefault();
+        activePointers.get(e.pointerId).clientX = e.clientX;
+        activePointers.get(e.pointerId).clientY = e.clientY;
+
+        if (activePointers.size === 1) {
+            let newX = state.baseX + (e.clientX - state.startX);
+            let newY = state.baseY + (e.clientY - state.startY);
+            const margin = 50;
+            const limitX = (window.innerWidth / 2) - margin;
+            const limitY = (window.innerHeight / 2) - margin;
+            state.x = Math.max(-limitX, Math.min(limitX, newX));
+            state.y = Math.max(-limitY, Math.min(limitY, newY));
+        } else if (activePointers.size >= 2) {
+            const d = getPinchDetails();
+            if (d && initialDistance) {
+                state.scale = Math.min(2.5, Math.max(0.1, state.baseScale * (d.distance / initialDistance)));
+            }
+        }
+        updateOverlay();
+    });
+
+    const pointerEnd = (e) => {
+        activePointers.delete(e.pointerId);
+        if (activePointers.size < 2) initialDistance = null;
+    };
+    viewport.addEventListener('pointerup', pointerEnd);
+    viewport.addEventListener('pointercancel', pointerEnd);
+
+    let lastTap = 0;
+    viewport.addEventListener('click', (e) => {
+        if (e.target.closest('#controls')) return;
+        const now = Date.now();
+        if (now - lastTap < 300) {
+            state.x = 0; state.y = 0; state.scale = 1;
+            updateOverlay();
+        }
+        lastTap = now;
+    });
+
+    // 3. CAPTURE (With Realism Processing)
+    captureBtn.addEventListener('click', () => {
+        captureBtn.classList.add('loader');
+        setTimeout(() => {
+            const sf = 1.9; 
+            captureCanvas.width = window.innerWidth * sf;
+            captureCanvas.height = window.innerHeight * sf;
+            ctx.scale(sf, sf);
+            
+            const vr = video.videoWidth / video.videoHeight;
+            const sr = window.innerWidth / window.innerHeight;
+            let dw, dh, sx, sy;
+            if (sr > vr) { dw = window.innerWidth; dh = dw / vr; sx = 0; sy = (window.innerHeight - dh) / 2; }
+            else { dh = window.innerHeight; dw = dh * vr; sx = (window.innerWidth - dw) / 2; sy = 0; }
+            
+            ctx.drawImage(video, sx, sy, dw, dh);
+            ctx.save();
+            
+            ctx.translate((window.innerWidth / 2) + state.x, (window.innerHeight / 2) + state.y);
+            ctx.scale(state.scale, state.scale);
+
+            const ss = Math.max(state.scale, 0.4);
+            const capX = 2 * sf * ss;
+            const capY = 3 * sf * ss;
+            const capBlur = 4 * sf * ss;
+
+            // Mirroring the live preview filters for the final JPG
+            ctx.filter = `drop-shadow(${capX}px ${capY}px ${capBlur}px rgba(45, 35, 20, 0.45)) 
+                          brightness(${state.envBrightness}) 
+                          sepia(0.15) 
+                          contrast(1.05) 
+                          blur(0.5px)`;
+            
+            ctx.globalAlpha = 0.98;
+            ctx.drawImage(overlay, -overlay.offsetWidth / 2, -overlay.offsetHeight / 2, overlay.offsetWidth, overlay.offsetHeight);
+            ctx.restore();
+            
+            captureCanvas.toBlob(blob => {
+                captureBtn.classList.remove('loader');
+                if (blob) window.open(URL.createObjectURL(blob));
+            }, 'image/jpeg', 0.90);
+        }, 50);
+    });
+
+    startCamera();
+}
 
 
         function setupDesktopExperience() {
