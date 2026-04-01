@@ -44,20 +44,49 @@
 
 
         #overlayImage {
+            /* 1. Positioning & Layering */
             position: absolute;
             z-index: 20;
+            top: 50%;
+            left: 50%;
+            /* Start at center; transform handles the X/Y movement */
+            margin-left: -150px;
+            /* Adjust margin-left/top based on your default image size if needed, 
+       or let transform: translate() handle it entirely */
+
+            /* 2. Interaction */
             touch-action: none;
             pointer-events: none;
-            transition: opacity 0.3s ease;
-            max-width: 80%;
-            max-height: 80%;
-            transform-origin: center center;
-            display: none;
-            /* Realistic Frame Polish */
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.05);
-        }
+            user-select: none;
+            -webkit-user-drag: none;
 
+            /* 3. Sizing */
+            max-width: 85%;
+            max-height: 85%;
+            object-fit: contain;
+
+            /* 4. Visual Fixes (Removing borders and ghost lines) */
+            display: none;
+            border: none !important;
+            outline: 1px solid transparent;
+            /* Prevents jagged edges/aliasing during scale */
+            background-color: transparent !important;
+            box-shadow: none !important;
+            /* Ensure no CSS box-shadow interferes with drop-shadow filter */
+
+            /* 5. Rendering & Performance */
+            transform-origin: center center;
+            will-change: transform, filter;
+            /* Optimizes for smooth animation */
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            -webkit-perspective: 1000;
+            perspective: 1000;
+
+            /* 6. Initial Filter State */
+            filter: drop-shadow(3px 4px 4px rgba(0, 0, 0, 0.5)) brightness(0.94);
+            -webkit-filter: drop-shadow(3px 4px 4px rgba(0, 0, 0, 0.5)) brightness(0.94);
+        }
 
         #previewCanvas {
             background: #1f1f1f;
@@ -877,14 +906,28 @@
                 }
             });
 
+
             viewport.addEventListener('pointermove', (e) => {
                 if (!activePointers.has(e.pointerId)) return;
                 e.preventDefault();
                 activePointers.get(e.pointerId).clientX = e.clientX;
                 activePointers.get(e.pointerId).clientY = e.clientY;
+
                 if (activePointers.size === 1) {
-                    state.x = state.baseX + (e.clientX - state.startX);
-                    state.y = state.baseY + (e.clientY - state.startY);
+                    // Calculate potential new positions
+                    let newX = state.baseX + (e.clientX - state.startX);
+                    let newY = state.baseY + (e.clientY - state.startY);
+
+                    // --- BOUNDARY CLAMPING LOGIC ---
+                    // We allow the center of the art to move only within the screen limits
+                    // plus/minus a small margin so it doesn't get "stuck" exactly at the pixel edge
+                    const margin = 50;
+                    const limitX = (window.innerWidth / 2) - margin;
+                    const limitY = (window.innerHeight / 2) - margin;
+
+                    state.x = Math.max(-limitX, Math.min(limitX, newX));
+                    state.y = Math.max(-limitY, Math.min(limitY, newY));
+
                 } else if (activePointers.size >= 2) {
                     const d = getPinchDetails();
                     if (d && initialDistance) {
