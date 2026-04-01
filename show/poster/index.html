@@ -776,7 +776,7 @@
         }
 
 
-      function openCamera() {
+        function openCamera() {
             const viewport = document.getElementById('viewportContainer');
             const video = document.getElementById('cameraFeed');
             const overlay = document.getElementById('overlayImage');
@@ -795,27 +795,29 @@
             let state = {
                 x: 0, y: 0, scale: 1,
                 startX: 0, startY: 0, baseX: 0, baseY: 0, baseScale: 1,
-                envBrightness: 0.95 
+                envBrightness: 0.95
             };
 
             const activePointers = new Map();
             let initialDistance = null;
 
-            // 1. SYNCED LIVE OVERLAY (6, 5, 4 Shadow)
+            // 1. UPDATED LIVE OVERLAY (Subtle 4, 3, 3 Shadow)
             const updateOverlay = () => {
                 overlay.style.transform = `translateX(${state.x}px) translateY(${state.y}px) scale(${state.scale})`;
 
                 const shadowScale = Math.max(state.scale, 0.85);
-                const liveX = 6 * shadowScale;
-                const liveY = 5 * shadowScale;
-                const liveBlur = 4 * shadowScale;
+                // Subtle shadow values
+                const liveX = 4 * shadowScale;
+                const liveY = 3 * shadowScale;
+                const liveBlur = 3 * shadowScale;
 
-                const filterString = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(0, 0, 0, 0.5)) brightness(${state.envBrightness})`;
+                const filterString = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(0, 0, 0, 0.45)) brightness(${state.envBrightness})`;
 
                 overlay.style.filter = filterString;
                 overlay.style.webkitFilter = filterString;
             };
 
+            // 2. UPDATED BRIGHTNESS (Slightly increased floor)
             function analyzeLight() {
                 if (video.readyState === video.HAVE_ENOUGH_DATA) {
                     analysisCtx.drawImage(video, 0, 0, 40, 40);
@@ -825,7 +827,10 @@
                         totalLuminance += (0.2126 * pixels[i] + 0.7152 * pixels[i + 1] + 0.0722 * pixels[i + 2]);
                     }
                     const avgLuminance = totalLuminance / (40 * 40);
-                    const newBrightness = 0.7 + (avgLuminance / 255) * 0.25;
+
+                    // Increased floor to 0.74 and narrowed range to 0.22 for subtle pop
+                    const newBrightness = 0.74 + (avgLuminance / 255) * 0.22;
+
                     state.envBrightness = newBrightness.toFixed(3);
                     updateOverlay();
                 }
@@ -833,7 +838,6 @@
 
             setInterval(analyzeLight, 500);
 
-            // 2. HIGH QUALITY CAMERA START
             async function startCamera() {
                 message.style.display = 'block';
                 message.textContent = 'Awaiting camera permission...';
@@ -933,11 +937,11 @@
                 lastTap = now;
             });
 
-            // 4. SYNCED CAPTURE (High Quality + 6, 5, 4 Shadow)
+            // 4. SYNCED CAPTURE (High Quality + 4, 3, 3 Shadow)
             captureBtn.addEventListener('click', () => {
                 captureBtn.classList.add('loader');
                 setTimeout(() => {
-                    const scaleFactor = 2.0; 
+                    const scaleFactor = 2.0;
                     captureCanvas.width = window.innerWidth * scaleFactor;
                     captureCanvas.height = window.innerHeight * scaleFactor;
                     ctx.scale(scaleFactor, scaleFactor);
@@ -960,20 +964,24 @@
                         startY = 0;
                     }
 
+                    ctx.clearRect(0, 0, captureCanvas.width / scaleFactor, captureCanvas.height / scaleFactor);
                     ctx.drawImage(video, startX, startY, drawWidth, drawHeight);
+
+                    const oW = overlay.offsetWidth;
+                    const oH = overlay.offsetHeight;
 
                     ctx.save();
                     ctx.translate((window.innerWidth / 2) + state.x, (window.innerHeight / 2) + state.y);
                     ctx.scale(state.scale, state.scale);
 
                     const shadowScale = Math.max(state.scale, 0.4);
-                    const capX = 6 * scaleFactor * shadowScale;
-                    const capY = 5 * scaleFactor * shadowScale;
-                    const capBlur = 4 * scaleFactor * shadowScale;
+                    const capX = 4 * scaleFactor * shadowScale;
+                    const capY = 3 * scaleFactor * shadowScale;
+                    const capBlur = 3 * scaleFactor * shadowScale;
 
-                    ctx.filter = `drop-shadow(${capX}px ${capY}px ${capBlur}px rgba(0, 0, 0, 0.5)) brightness(${state.envBrightness})`;
+                    ctx.filter = `drop-shadow(${capX}px ${capY}px ${capBlur}px rgba(0, 0, 0, 0.45)) brightness(${state.envBrightness})`;
                     ctx.globalAlpha = 0.98;
-                    ctx.drawImage(overlay, -overlay.offsetWidth / 2, -overlay.offsetHeight / 2, overlay.offsetWidth, overlay.offsetHeight);
+                    ctx.drawImage(overlay, -oW / 2, -oH / 2, oW, oH);
                     ctx.restore();
 
                     captureCanvas.toBlob(blob => {
@@ -989,7 +997,7 @@
             startCamera();
         }
 
-        
+
         function setupDesktopExperience() {
             generateQRCode(shareLink);
 
