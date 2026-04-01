@@ -775,6 +775,7 @@
             }
         }
 
+
         function openCamera() {
             const viewport = document.getElementById('viewportContainer');
             const video = document.getElementById('cameraFeed');
@@ -785,33 +786,72 @@
             const captureCanvas = document.getElementById('captureCanvas');
             const ctx = captureCanvas.getContext('2d');
 
+            // Light Analysis Setup
+            const analysisCanvas = document.createElement('canvas');
+            const analysisCtx = analysisCanvas.getContext('2d', { willReadFrequently: true });
+            analysisCanvas.width = 40;
+            analysisCanvas.height = 40;
+
             let state = {
                 x: 0, y: 0, scale: 1,
                 startX: 0, startY: 0, baseX: 0, baseY: 0, baseScale: 1,
+                envBrightness: 0.95 // Default brightness
             };
 
             const activePointers = new Map();
             let initialDistance = null;
 
             const updateOverlay = () => {
+                // 1. Apply Transform
                 overlay.style.transform = `translateX(${state.x}px) translateY(${state.y}px) scale(${state.scale})`;
 
+                // 2. Calculate Shadow
                 const shadowScale = Math.max(state.scale, 0.85);
-
                 const liveX = 8 * shadowScale;
                 const liveY = 5 * shadowScale;
                 const liveBlur = 4 * shadowScale;
 
-                overlay.style.filter = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(0, 0, 0, 0.5)) brightness(0.95)`;
+                // 3. Force the filter string to update
+                // We combine drop-shadow and brightness into ONE filter property
+                const filterString = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(0, 0, 0, 0.5)) brightness(${state.envBrightness})`;
+
+                overlay.style.filter = filterString;
+                overlay.style.webkitFilter = filterString; // Support for iOS Safari
             };
 
 
-            updateOverlay();
+
+            function analyzeLight() {
+                if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                    analysisCtx.drawImage(video, 0, 0, 40, 40);
+                    const pixels = analysisCtx.getImageData(0, 0, 40, 40).data;
+                    let totalLuminance = 0;
+
+                    for (let i = 0; i < pixels.length; i += 4) {
+                        // Standard relative luminance formula
+                        const luminance = (0.2126 * pixels[i] + 0.7152 * pixels[i + 1] + 0.0722 * pixels[i + 2]);
+                        totalLuminance += luminance;
+                    }
+
+                    const avgLuminance = totalLuminance / (40 * 40);
+
+                    // Calculation: 0.7 (floor) + (percentage of 0.25 range)
+                    // If avgLuminance is 0 (black), result is 0.70
+                    // If avgLuminance is 255 (white), result is 0.95
+                    const newBrightness = 0.7 + (avgLuminance / 255) * 0.25;
+
+                    state.envBrightness = newBrightness.toFixed(3);
+                    updateOverlay();
+                }
+            }
+
+
+            // Run light analysis every 500ms
+            setInterval(analyzeLight, 500);
 
             async function startCamera() {
                 message.style.display = 'block';
                 message.textContent = 'Awaiting camera permission...';
-
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({
                         video: {
@@ -838,15 +878,11 @@
                 const p2 = pointers[1];
                 const dx = p1.clientX - p2.clientX;
                 const dy = p1.clientY - p2.clientY;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                return { distance };
+                return { distance: Math.sqrt(dx * dx + dy * dy) };
             }
 
-            // Movement logic now on the whole Viewport Container
             viewport.addEventListener('pointerdown', (e) => {
-                // If clicking buttons, don't start moving the sticker
                 if (e.target.closest('#controls') || e.target.closest('.tooltipClose') || e.target.closest('#gestureTooltip') || e.target.closest('#placementTooltip')) return;
-
                 e.preventDefault();
                 viewport.setPointerCapture(e.pointerId);
                 activePointers.set(e.pointerId, { id: e.pointerId, clientX: e.clientX, clientY: e.clientY });
@@ -897,15 +933,12 @@
             viewport.addEventListener('pointercancel', pointerEnd);
             viewport.addEventListener('pointerleave', pointerEnd);
 
-            // Double tap to reset
             let lastTap = 0;
             viewport.addEventListener('click', (e) => {
-                // Guard buttons
                 if (e.target.closest('#controls') || e.target.closest('.tooltipClose')) return;
-
                 const now = new Date().getTime();
                 if ((now - lastTap < 300) && (now - lastTap > 0)) {
-                    state = { x: 0, y: 0, scale: 1, startX: 0, startY: 0, baseX: 0, baseY: 0, baseScale: 1 };
+                    state = { ...state, x: 0, y: 0, scale: 1 };
                     updateOverlay();
                     resetTip.textContent = "RESET!";
                     resetTip.style.display = 'block';
@@ -914,30 +947,18 @@
                 lastTap = now;
             });
 
-
-
             captureBtn.addEventListener('click', () => {
                 captureBtn.classList.add('loader');
-
                 setTimeout(() => {
-                    const captureCanvas = document.getElementById('captureCanvas');
-                    const ctx = captureCanvas.getContext('2d');
-                    const video = document.getElementById('cameraFeed');
-                    const overlay = document.getElementById('overlayImage');
-
                     const scaleFactor = 1.9;
-
                     captureCanvas.width = window.innerWidth * scaleFactor;
                     captureCanvas.height = window.innerHeight * scaleFactor;
-
                     ctx.scale(scaleFactor, scaleFactor);
-
                     ctx.imageSmoothingEnabled = true;
                     ctx.imageSmoothingQuality = 'high';
 
                     const videoRatio = video.videoWidth / video.videoHeight;
                     const screenRatio = window.innerWidth / window.innerHeight;
-
                     let drawWidth, drawHeight, startX, startY;
 
                     if (screenRatio > videoRatio) {
@@ -962,19 +983,15 @@
                     ctx.translate((window.innerWidth / 2) + state.x, (window.innerHeight / 2) + state.y);
                     ctx.scale(state.scale, state.scale);
 
-                    // This prevents the shadow multiplier from dropping below 0.4, 
-                    // ensuring the shadow never disappears entirely on tiny zooms.
                     const shadowScale = Math.max(state.scale, 0.4);
-
                     const shadowOffsetX = 8 * scaleFactor * shadowScale;
                     const shadowOffsetY = 5 * scaleFactor * shadowScale;
                     const shadowBlur = 4 * scaleFactor * shadowScale;
 
-                    ctx.filter = `drop-shadow(${shadowOffsetX}px ${shadowOffsetY}px ${shadowBlur}px rgba(0, 0, 0, 0.5)) brightness(0.95)`;
+                    // Ensure captured image uses the same environment brightness
+                    ctx.filter = `drop-shadow(${shadowOffsetX}px ${shadowOffsetY}px ${shadowBlur}px rgba(0, 0, 0, 0.5)) brightness(${state.envBrightness})`;
                     ctx.globalAlpha = 0.98;
-
                     ctx.drawImage(overlay, -oW / 2, -oH / 2, oW, oH);
-
                     ctx.restore();
 
                     captureCanvas.toBlob(blob => {
@@ -986,7 +1003,6 @@
                     }, 'image/jpeg', 0.90);
                 }, 50);
             });
-
 
             startCamera();
         }
