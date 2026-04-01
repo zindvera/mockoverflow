@@ -44,49 +44,25 @@
 
 
         #overlayImage {
-            /* 1. Positioning & Layering */
             position: absolute;
             z-index: 20;
             top: 50%;
             left: 50%;
-            /* Start at center; transform handles the X/Y movement */
-            margin-left: -150px;
-            /* Adjust margin-left/top based on your default image size if needed, 
-       or let transform: translate() handle it entirely */
-
-            /* 2. Interaction */
+            /* Initial centering */
+            transform: translate(-50%, -50%);
             touch-action: none;
             pointer-events: none;
-            user-select: none;
-            -webkit-user-drag: none;
-
-            /* 3. Sizing */
-            max-width: 85%;
-            max-height: 85%;
-            object-fit: contain;
-
-            /* 4. Visual Fixes (Removing borders and ghost lines) */
+            max-width: 80%;
+            max-height: 80%;
+            transform-origin: center center;
             display: none;
             border: none !important;
-            outline: 1px solid transparent;
-            /* Prevents jagged edges/aliasing during scale */
-            background-color: transparent !important;
-            box-shadow: none !important;
-            /* Ensure no CSS box-shadow interferes with drop-shadow filter */
-
-            /* 5. Rendering & Performance */
-            transform-origin: center center;
-            will-change: transform, filter;
-            /* Optimizes for smooth animation */
+            outline: none !important;
+            background: transparent !important;
             -webkit-backface-visibility: hidden;
             backface-visibility: hidden;
-            -webkit-perspective: 1000;
-            perspective: 1000;
-
-            /* 6. Initial Filter State */
-            filter: drop-shadow(3px 4px 4px rgba(0, 0, 0, 0.5)) brightness(0.94);
-            -webkit-filter: drop-shadow(3px 4px 4px rgba(0, 0, 0, 0.5)) brightness(0.94);
         }
+
 
         #previewCanvas {
             background: #1f1f1f;
@@ -817,7 +793,6 @@
             const captureCanvas = document.getElementById('captureCanvas');
             const ctx = captureCanvas.getContext('2d');
 
-            // Light Analysis Setup
             const analysisCanvas = document.createElement('canvas');
             const analysisCtx = analysisCanvas.getContext('2d', { willReadFrequently: true });
             analysisCanvas.width = 40;
@@ -832,13 +807,12 @@
             const activePointers = new Map();
             let initialDistance = null;
 
-            // 1. LIVE PREVIEW UPDATE
+            // 1. LIVE PREVIEW (Centered Positioning)
             const updateOverlay = () => {
-                overlay.style.transform = `translateX(${state.x}px) translateY(${state.y}px) scale(${state.scale})`;
+                // Using calc(-50% + x) ensures x:0, y:0 is the exact center of the screen
+                overlay.style.transform = `translate(calc(-50% + ${state.x}px), calc(-50% + ${state.y}px)) scale(${state.scale})`;
 
                 const shadowScale = Math.max(state.scale, 0.85);
-
-                // Realistic tight shadow (Matches your working logic)
                 const liveX = 3 * shadowScale;
                 const liveY = 4 * shadowScale;
                 const liveBlur = 4 * shadowScale;
@@ -850,7 +824,6 @@
                 overlay.style.webkitFilter = filterValue;
             };
 
-            // 2. STABLE LIGHT ANALYSIS (0.70 - 0.96 Range)
             function analyzeLight() {
                 if (video.readyState === video.HAVE_ENOUGH_DATA) {
                     analysisCtx.drawImage(video, 0, 0, 40, 40);
@@ -860,7 +833,6 @@
                         totalLuminance += (0.2126 * pixels[i] + 0.7152 * pixels[i + 1] + 0.0722 * pixels[i + 2]);
                     }
                     const avgLuminance = totalLuminance / (40 * 40);
-
                     const newBrightness = 0.70 + (avgLuminance / 255) * 0.26;
                     state.envBrightness = newBrightness.toFixed(3);
                     updateOverlay();
@@ -883,7 +855,6 @@
                 }
             }
 
-            // --- GESTURE LOGIC ---
             function getPinchDetails() {
                 const pointers = Array.from(activePointers.values());
                 if (pointers.length < 2) return null;
@@ -906,7 +877,6 @@
                 }
             });
 
-
             viewport.addEventListener('pointermove', (e) => {
                 if (!activePointers.has(e.pointerId)) return;
                 e.preventDefault();
@@ -914,20 +884,13 @@
                 activePointers.get(e.pointerId).clientY = e.clientY;
 
                 if (activePointers.size === 1) {
-                    // Calculate potential new positions
                     let newX = state.baseX + (e.clientX - state.startX);
                     let newY = state.baseY + (e.clientY - state.startY);
-
-                    // --- BOUNDARY CLAMPING LOGIC ---
-                    // We allow the center of the art to move only within the screen limits
-                    // plus/minus a small margin so it doesn't get "stuck" exactly at the pixel edge
                     const margin = 50;
                     const limitX = (window.innerWidth / 2) - margin;
                     const limitY = (window.innerHeight / 2) - margin;
-
                     state.x = Math.max(-limitX, Math.min(limitX, newX));
                     state.y = Math.max(-limitY, Math.min(limitY, newY));
-
                 } else if (activePointers.size >= 2) {
                     const d = getPinchDetails();
                     if (d && initialDistance) {
@@ -944,7 +907,6 @@
             viewport.addEventListener('pointerup', pointerEnd);
             viewport.addEventListener('pointercancel', pointerEnd);
 
-            // Double Tap Reset
             let lastTap = 0;
             viewport.addEventListener('click', (e) => {
                 if (e.target.closest('#controls')) return;
@@ -956,11 +918,11 @@
                 lastTap = now;
             });
 
-            // 3. IMAGE CAPTURE (Identical Shadow Logic)
+            // 3. CAPTURE (Full Image Fix)
             captureBtn.addEventListener('click', () => {
                 captureBtn.classList.add('loader');
                 setTimeout(() => {
-                    const sf = 1.9; // Scale Factor
+                    const sf = 1.9;
                     captureCanvas.width = window.innerWidth * sf;
                     captureCanvas.height = window.innerHeight * sf;
                     ctx.scale(sf, sf);
@@ -973,10 +935,11 @@
 
                     ctx.drawImage(video, sx, sy, dw, dh);
                     ctx.save();
+
+                    // Move to the screen center + user movement
                     ctx.translate((window.innerWidth / 2) + state.x, (window.innerHeight / 2) + state.y);
                     ctx.scale(state.scale, state.scale);
 
-                    // --- SYNCED CAPTURE SHADOW ---
                     const ss = Math.max(state.scale, 0.4);
                     const capX = 3 * sf * ss;
                     const capY = 4 * sf * ss;
@@ -984,8 +947,9 @@
                     const capOpacity = 0.5;
 
                     ctx.filter = `drop-shadow(${capX}px ${capY}px ${capBlur}px rgba(0, 0, 0, ${capOpacity})) brightness(${state.envBrightness})`;
-
                     ctx.globalAlpha = 0.98;
+
+                    // Anchor the image center to the translation point
                     ctx.drawImage(overlay, -overlay.offsetWidth / 2, -overlay.offsetHeight / 2, overlay.offsetWidth, overlay.offsetHeight);
                     ctx.restore();
 
@@ -998,7 +962,6 @@
 
             startCamera();
         }
-
 
 
         function setupDesktopExperience() {
