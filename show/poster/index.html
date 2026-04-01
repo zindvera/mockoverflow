@@ -53,7 +53,9 @@
             max-height: 80%;
             transform-origin: center center;
             display: none;
-
+            /* Realistic Frame Polish */
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.05);
         }
 
 
@@ -786,7 +788,7 @@
             const captureCanvas = document.getElementById('captureCanvas');
             const ctx = captureCanvas.getContext('2d');
 
-            // Light Analysis Setup (Hidden small canvas)
+            // Light Analysis Setup
             const analysisCanvas = document.createElement('canvas');
             const analysisCtx = analysisCanvas.getContext('2d', { willReadFrequently: true });
             analysisCanvas.width = 40;
@@ -795,100 +797,83 @@
             let state = {
                 x: 0, y: 0, scale: 1,
                 startX: 0, startY: 0, baseX: 0, baseY: 0, baseScale: 1,
-                envBrightness: 0.94 // Default brightness
+                envBrightness: 0.94
             };
 
             const activePointers = new Map();
             let initialDistance = null;
 
+            // 1. LIVE PREVIEW UPDATE
             const updateOverlay = () => {
                 overlay.style.transform = `translateX(${state.x}px) translateY(${state.y}px) scale(${state.scale})`;
 
                 const shadowScale = Math.max(state.scale, 0.85);
-                const liveX = 8 * shadowScale;
-                const liveY = 5 * shadowScale;
-                const liveBlur = 4 * shadowScale;
 
-                // Apply Original Simple Filter Logic
-                const filterValue = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(0, 0, 0, 0.5)) brightness(${state.envBrightness})`;
+                // Realistic tight shadow (Matches your working logic)
+                const liveX = 3 * shadowScale;
+                const liveY = 4 * shadowScale;
+                const liveBlur = 4 * shadowScale;
+                const shadowOpacity = 0.5;
+
+                const filterValue = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(0, 0, 0, ${shadowOpacity})) brightness(${state.envBrightness})`;
 
                 overlay.style.filter = filterValue;
                 overlay.style.webkitFilter = filterValue;
             };
 
+            // 2. STABLE LIGHT ANALYSIS (0.70 - 0.96 Range)
             function analyzeLight() {
                 if (video.readyState === video.HAVE_ENOUGH_DATA) {
-                    // 1. Draw full video frame to 40x40 canvas
                     analysisCtx.drawImage(video, 0, 0, 40, 40);
-
-                    // 2. Calculate average luminance
                     const pixels = analysisCtx.getImageData(0, 0, 40, 40).data;
                     let totalLuminance = 0;
                     for (let i = 0; i < pixels.length; i += 4) {
                         totalLuminance += (0.2126 * pixels[i] + 0.7152 * pixels[i + 1] + 0.0722 * pixels[i + 2]);
                     }
-
                     const avgLuminance = totalLuminance / (40 * 40);
 
-                    // 3. Simple Linear Mapping: 0.70 (min) to 0.96 (max)
-                    // (0.70 + 0.26 range = 0.96)
                     const newBrightness = 0.70 + (avgLuminance / 255) * 0.26;
-
                     state.envBrightness = newBrightness.toFixed(3);
                     updateOverlay();
                 }
             }
 
-            // Stable interval for light updates
             setInterval(analyzeLight, 400);
 
             async function startCamera() {
                 message.style.display = 'block';
-                message.textContent = 'Awaiting camera permission...';
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({
-                        video: {
-                            facingMode: 'environment',
-                            width: { ideal: 4096 },
-                            height: { ideal: 2160 }
-                        }
+                        video: { facingMode: 'environment', width: { ideal: 4096 }, height: { ideal: 2160 } }
                     });
                     video.srcObject = stream;
                     message.style.display = 'none';
-                    video.play().catch(e => console.error("Video play failed:", e));
+                    video.play().catch(e => console.error(e));
                 } catch (err) {
-                    console.error("Error accessing camera: ", err);
-                    message.style.display = 'block';
-                    message.textContent = 'Camera access denied or unavailable.';
-                    video.style.display = 'none';
+                    message.textContent = 'Camera access denied.';
                 }
             }
 
+            // --- GESTURE LOGIC ---
             function getPinchDetails() {
                 const pointers = Array.from(activePointers.values());
                 if (pointers.length < 2) return null;
-                const p1 = pointers[0];
-                const p2 = pointers[1];
-                const dx = p1.clientX - p2.clientX;
-                const dy = p1.clientY - p2.clientY;
+                const dx = pointers[0].clientX - pointers[1].clientX;
+                const dy = pointers[0].clientY - pointers[1].clientY;
                 return { distance: Math.sqrt(dx * dx + dy * dy) };
             }
 
             viewport.addEventListener('pointerdown', (e) => {
-                if (e.target.closest('#controls') || e.target.closest('.tooltipClose') || e.target.closest('#gestureTooltip') || e.target.closest('#placementTooltip')) return;
+                if (e.target.closest('#controls')) return;
                 e.preventDefault();
                 viewport.setPointerCapture(e.pointerId);
-                activePointers.set(e.pointerId, { id: e.pointerId, clientX: e.clientX, clientY: e.clientY });
-
+                activePointers.set(e.pointerId, { clientX: e.clientX, clientY: e.clientY });
                 if (activePointers.size === 1) {
                     state.startX = e.clientX; state.startY = e.clientY;
                     state.baseX = state.x; state.baseY = state.y;
                 } else if (activePointers.size === 2) {
-                    const details = getPinchDetails();
-                    if (details) {
-                        initialDistance = details.distance;
-                        state.baseScale = state.scale;
-                    }
+                    const d = getPinchDetails();
+                    if (d) { initialDistance = d.distance; state.baseScale = state.scale; }
                 }
             });
 
@@ -897,100 +882,80 @@
                 e.preventDefault();
                 activePointers.get(e.pointerId).clientX = e.clientX;
                 activePointers.get(e.pointerId).clientY = e.clientY;
-
                 if (activePointers.size === 1) {
                     state.x = state.baseX + (e.clientX - state.startX);
                     state.y = state.baseY + (e.clientY - state.startY);
                 } else if (activePointers.size >= 2) {
-                    const currentDetails = getPinchDetails();
-                    if (currentDetails && initialDistance) {
-                        const scaleFactor = currentDetails.distance / initialDistance;
-                        state.scale = Math.min(2.5, Math.max(0.1, state.baseScale * scaleFactor));
+                    const d = getPinchDetails();
+                    if (d && initialDistance) {
+                        state.scale = Math.min(2.5, Math.max(0.1, state.baseScale * (d.distance / initialDistance)));
                     }
                 }
                 updateOverlay();
             });
 
-            function pointerEnd(e) {
-                if (!activePointers.has(e.pointerId)) return;
+            const pointerEnd = (e) => {
                 activePointers.delete(e.pointerId);
-                if (activePointers.size < 2) { initialDistance = null; }
-                if (activePointers.size === 1) {
-                    const rem = Array.from(activePointers.values())[0];
-                    state.startX = rem.clientX; state.startY = rem.clientY;
-                    state.baseX = state.x; state.baseY = state.y;
-                }
-            }
-
+                if (activePointers.size < 2) initialDistance = null;
+            };
             viewport.addEventListener('pointerup', pointerEnd);
             viewport.addEventListener('pointercancel', pointerEnd);
-            viewport.addEventListener('pointerleave', pointerEnd);
 
+            // Double Tap Reset
             let lastTap = 0;
             viewport.addEventListener('click', (e) => {
-                if (e.target.closest('#controls') || e.target.closest('.tooltipClose')) return;
-                const now = new Date().getTime();
-                if ((now - lastTap < 300) && (now - lastTap > 0)) {
-                    state = { ...state, x: 0, y: 0, scale: 1 };
+                if (e.target.closest('#controls')) return;
+                const now = Date.now();
+                if (now - lastTap < 300) {
+                    state.x = 0; state.y = 0; state.scale = 1;
                     updateOverlay();
-                    resetTip.textContent = "RESET!";
-                    resetTip.style.display = 'block';
-                    setTimeout(() => { resetTip.style.display = 'none'; resetTip.textContent = "Drag, Pinch, or Double-Tap to Reset"; }, 1000);
                 }
                 lastTap = now;
             });
 
+            // 3. IMAGE CAPTURE (Identical Shadow Logic)
             captureBtn.addEventListener('click', () => {
                 captureBtn.classList.add('loader');
                 setTimeout(() => {
-                    const scaleFactor = 1.9;
-                    captureCanvas.width = window.innerWidth * scaleFactor;
-                    captureCanvas.height = window.innerHeight * scaleFactor;
-                    ctx.scale(scaleFactor, scaleFactor);
-                    ctx.imageSmoothingEnabled = true;
-                    ctx.imageSmoothingQuality = 'high';
+                    const sf = 1.9; // Scale Factor
+                    captureCanvas.width = window.innerWidth * sf;
+                    captureCanvas.height = window.innerHeight * sf;
+                    ctx.scale(sf, sf);
 
-                    const videoRatio = video.videoWidth / video.videoHeight;
-                    const screenRatio = window.innerWidth / window.innerHeight;
-                    let drawWidth, drawHeight, startX, startY;
+                    const vr = video.videoWidth / video.videoHeight;
+                    const sr = window.innerWidth / window.innerHeight;
+                    let dw, dh, sx, sy;
+                    if (sr > vr) { dw = window.innerWidth; dh = dw / vr; sx = 0; sy = (window.innerHeight - dh) / 2; }
+                    else { dh = window.innerHeight; dw = dh * vr; sx = (window.innerWidth - dw) / 2; sy = 0; }
 
-                    if (screenRatio > videoRatio) {
-                        drawWidth = window.innerWidth; drawHeight = window.innerWidth / videoRatio;
-                        startX = 0; startY = (window.innerHeight - drawHeight) / 2;
-                    } else {
-                        drawHeight = window.innerHeight; drawWidth = window.innerHeight * videoRatio;
-                        startX = (window.innerWidth - drawWidth) / 2; startY = 0;
-                    }
-
-                    ctx.clearRect(0, 0, captureCanvas.width / scaleFactor, captureCanvas.height / scaleFactor);
-                    ctx.drawImage(video, startX, startY, drawWidth, drawHeight);
-
+                    ctx.drawImage(video, sx, sy, dw, dh);
                     ctx.save();
                     ctx.translate((window.innerWidth / 2) + state.x, (window.innerHeight / 2) + state.y);
                     ctx.scale(state.scale, state.scale);
 
-                    const shadowScale = Math.max(state.scale, 0.4);
-                    const shadowOffsetX = 8 * scaleFactor * shadowScale;
-                    const shadowOffsetY = 5 * scaleFactor * shadowScale;
-                    const shadowBlur = 4 * scaleFactor * shadowScale;
+                    // --- SYNCED CAPTURE SHADOW ---
+                    const ss = Math.max(state.scale, 0.4);
+                    const capX = 3 * sf * ss;
+                    const capY = 4 * sf * ss;
+                    const capBlur = 4 * sf * ss;
+                    const capOpacity = 0.5;
 
-                    ctx.filter = `drop-shadow(${shadowOffsetX}px ${shadowOffsetY}px ${shadowBlur}px rgba(0, 0, 0, 0.5)) brightness(${state.envBrightness})`;
+                    ctx.filter = `drop-shadow(${capX}px ${capY}px ${capBlur}px rgba(0, 0, 0, ${capOpacity})) brightness(${state.envBrightness})`;
+
                     ctx.globalAlpha = 0.98;
                     ctx.drawImage(overlay, -overlay.offsetWidth / 2, -overlay.offsetHeight / 2, overlay.offsetWidth, overlay.offsetHeight);
                     ctx.restore();
 
                     captureCanvas.toBlob(blob => {
                         captureBtn.classList.remove('loader');
-                        if (blob) {
-                            const url = URL.createObjectURL(blob);
-                            window.open(url);
-                        }
+                        if (blob) window.open(URL.createObjectURL(blob));
                     }, 'image/jpeg', 0.90);
                 }, 50);
             });
 
             startCamera();
         }
+
 
 
         function setupDesktopExperience() {
