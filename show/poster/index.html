@@ -793,6 +793,7 @@
             const captureCanvas = document.getElementById('captureCanvas');
             const ctx = captureCanvas.getContext('2d');
 
+            // Light Analysis Setup
             const analysisCanvas = document.createElement('canvas');
             const analysisCtx = analysisCanvas.getContext('2d', { willReadFrequently: true });
             analysisCanvas.width = 40;
@@ -807,23 +808,27 @@
             const activePointers = new Map();
             let initialDistance = null;
 
-            // 1. LIVE PREVIEW (Centered Positioning)
+            // 1. LIVE PREVIEW (Centering + Curved Lighting)
             const updateOverlay = () => {
-                // Using calc(-50% + x) ensures x:0, y:0 is the exact center of the screen
+                // Center-relative positioning
                 overlay.style.transform = `translate(calc(-50% + ${state.x}px), calc(-50% + ${state.y}px)) scale(${state.scale})`;
 
                 const shadowScale = Math.max(state.scale, 0.85);
+
+                // Realistic tight shadow (3, 4, 4)
                 const liveX = 3 * shadowScale;
                 const liveY = 4 * shadowScale;
                 const liveBlur = 4 * shadowScale;
                 const shadowOpacity = 0.5;
 
-                const filterValue = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(0, 0, 0, ${shadowOpacity})) brightness(${state.envBrightness})`;
+                // Apply curved brightness + slight contrast for paper-like realism
+                const filterValue = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(0, 0, 0, ${shadowOpacity})) brightness(${state.envBrightness}) contrast(1.04)`;
 
                 overlay.style.filter = filterValue;
                 overlay.style.webkitFilter = filterValue;
             };
 
+            // 2. NON-LINEAR LIGHT ANALYSIS (Square Root Curve)
             function analyzeLight() {
                 if (video.readyState === video.HAVE_ENOUGH_DATA) {
                     analysisCtx.drawImage(video, 0, 0, 40, 40);
@@ -833,7 +838,15 @@
                         totalLuminance += (0.2126 * pixels[i] + 0.7152 * pixels[i + 1] + 0.0722 * pixels[i + 2]);
                     }
                     const avgLuminance = totalLuminance / (40 * 40);
-                    const newBrightness = 0.70 + (avgLuminance / 255) * 0.26;
+
+                    // Normalized brightness (0 to 1)
+                    let n = avgLuminance / 255;
+
+                    // Square root curve keeps "Slight Dark" environments looking bright (0.88-0.91)
+                    // while maintaining 0.70 to 0.96 limits.
+                    const curve = Math.sqrt(n);
+                    const newBrightness = 0.70 + (curve * 0.26);
+
                     state.envBrightness = newBrightness.toFixed(3);
                     updateOverlay();
                 }
@@ -855,6 +868,7 @@
                 }
             }
 
+            // --- GESTURE & BOUNDARY LOGIC ---
             function getPinchDetails() {
                 const pointers = Array.from(activePointers.values());
                 if (pointers.length < 2) return null;
@@ -886,9 +900,12 @@
                 if (activePointers.size === 1) {
                     let newX = state.baseX + (e.clientX - state.startX);
                     let newY = state.baseY + (e.clientY - state.startY);
+
+                    // Clamp within screen boundaries (Center stays on screen)
                     const margin = 50;
                     const limitX = (window.innerWidth / 2) - margin;
                     const limitY = (window.innerHeight / 2) - margin;
+
                     state.x = Math.max(-limitX, Math.min(limitX, newX));
                     state.y = Math.max(-limitY, Math.min(limitY, newY));
                 } else if (activePointers.size >= 2) {
@@ -918,11 +935,11 @@
                 lastTap = now;
             });
 
-            // 3. CAPTURE (Full Image Fix)
+            // 3. FULLY SYNCED IMAGE CAPTURE
             captureBtn.addEventListener('click', () => {
                 captureBtn.classList.add('loader');
                 setTimeout(() => {
-                    const sf = 1.9;
+                    const sf = 1.9; // Scale Factor
                     captureCanvas.width = window.innerWidth * sf;
                     captureCanvas.height = window.innerHeight * sf;
                     ctx.scale(sf, sf);
@@ -936,20 +953,22 @@
                     ctx.drawImage(video, sx, sy, dw, dh);
                     ctx.save();
 
-                    // Move to the screen center + user movement
+                    // Sync centering: move to center + user offset
                     ctx.translate((window.innerWidth / 2) + state.x, (window.innerHeight / 2) + state.y);
                     ctx.scale(state.scale, state.scale);
 
+                    // Sync shadow + brightness curve + contrast
                     const ss = Math.max(state.scale, 0.4);
                     const capX = 3 * sf * ss;
                     const capY = 4 * sf * ss;
                     const capBlur = 4 * sf * ss;
                     const capOpacity = 0.5;
 
-                    ctx.filter = `drop-shadow(${capX}px ${capY}px ${capBlur}px rgba(0, 0, 0, ${capOpacity})) brightness(${state.envBrightness})`;
+                    ctx.filter = `drop-shadow(${capX}px ${capY}px ${capBlur}px rgba(0, 0, 0, ${capOpacity})) brightness(${state.envBrightness}) contrast(1.04)`;
+
                     ctx.globalAlpha = 0.98;
 
-                    // Anchor the image center to the translation point
+                    // Draw relative to centered anchor
                     ctx.drawImage(overlay, -overlay.offsetWidth / 2, -overlay.offsetHeight / 2, overlay.offsetWidth, overlay.offsetHeight);
                     ctx.restore();
 
