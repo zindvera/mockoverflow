@@ -776,6 +776,7 @@
         }
 
 
+
         function openCamera() {
             const viewport = document.getElementById('viewportContainer');
             const video = document.getElementById('cameraFeed');
@@ -795,31 +796,24 @@
             let state = {
                 x: 0, y: 0, scale: 1,
                 startX: 0, startY: 0, baseX: 0, baseY: 0, baseScale: 1,
-                envBrightness: 0.95 // Default brightness
+                envBrightness: 0.94 // Default starting point
             };
 
             const activePointers = new Map();
             let initialDistance = null;
 
             const updateOverlay = () => {
-                // 1. Apply Transform
                 overlay.style.transform = `translateX(${state.x}px) translateY(${state.y}px) scale(${state.scale})`;
-
-                // 2. Calculate Shadow
                 const shadowScale = Math.max(state.scale, 0.85);
                 const liveX = 8 * shadowScale;
                 const liveY = 5 * shadowScale;
                 const liveBlur = 4 * shadowScale;
 
-                // 3. Force the filter string to update
-                // We combine drop-shadow and brightness into ONE filter property
+                // Apply dynamic brightness
                 const filterString = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(0, 0, 0, 0.5)) brightness(${state.envBrightness})`;
-
                 overlay.style.filter = filterString;
-                overlay.style.webkitFilter = filterString; // Support for iOS Safari
+                overlay.style.webkitFilter = filterString;
             };
-
-
 
             function analyzeLight() {
                 if (video.readyState === video.HAVE_ENOUGH_DATA) {
@@ -833,20 +827,24 @@
                     }
 
                     const avgLuminance = totalLuminance / (40 * 40);
-
-                    // Normalized light value (0 to 1)
-                    let n = avgLuminance / 255;
+                    let n = avgLuminance / 255; // 0 to 1 scale
                     let finalB;
 
                     if (n > 0.75) {
-                        // VERY BRIGHT LIGHT: Scale from 0.93 to 0.95
-                        finalB = 0.93 + ((n - 0.75) / 0.25) * 0.02;
-                    } else if (n > 0.4) {
-                        // NORMAL/SLIGHTLY LOW LIGHT: Keep it between 0.92 and 0.93
-                        finalB = 0.92 + ((n - 0.4) / 0.35) * 0.01;
+                        // 1. FULL BRIGHT (Outdoor/Direct Sunlight)
+                        finalB = 0.95;
+                    } else if (n > 0.45) {
+                        // 2. NORMAL DAYLIGHT (Well-lit indoor)
+                        // Scale from 0.92 to 0.94
+                        finalB = 0.92 + ((n - 0.45) / 0.30) * 0.02;
+                    } else if (n > 0.20) {
+                        // 3. SLIGHT DARK (Shadowed wall/Indoor evening)
+                        // Drop below 0.92 into the 0.82 - 0.91 range
+                        finalB = 0.82 + ((n - 0.20) / 0.25) * 0.10;
                     } else {
-                        // DIM/LOW LIGHT: Scale down from 0.92 to 0.7
-                        finalB = 0.7 + (n / 0.4) * 0.22;
+                        // 4. DARK (Night/Closed room)
+                        // Scale from 0.70 to 0.82
+                        finalB = 0.70 + (n / 0.20) * 0.12;
                     }
 
                     state.envBrightness = Math.min(0.95, Math.max(0.7, finalB)).toFixed(3);
@@ -854,9 +852,8 @@
                 }
             }
 
-
-            // Run light analysis every 500ms
-            setInterval(analyzeLight, 500);
+            // Interval for light tracking
+            setInterval(analyzeLight, 400);
 
             async function startCamera() {
                 message.style.display = 'block';
@@ -880,6 +877,7 @@
                 }
             }
 
+            // Gesture / Touch Logic
             function getPinchDetails() {
                 const pointers = Array.from(activePointers.values());
                 if (pointers.length < 2) return null;
@@ -971,15 +969,11 @@
                     let drawWidth, drawHeight, startX, startY;
 
                     if (screenRatio > videoRatio) {
-                        drawWidth = window.innerWidth;
-                        drawHeight = window.innerWidth / videoRatio;
-                        startX = 0;
-                        startY = (window.innerHeight - drawHeight) / 2;
+                        drawWidth = window.innerWidth; drawHeight = window.innerWidth / videoRatio;
+                        startX = 0; startY = (window.innerHeight - drawHeight) / 2;
                     } else {
-                        drawHeight = window.innerHeight;
-                        drawWidth = window.innerHeight * videoRatio;
-                        startX = (window.innerWidth - drawWidth) / 2;
-                        startY = 0;
+                        drawHeight = window.innerHeight; drawWidth = window.innerHeight * videoRatio;
+                        startX = (window.innerWidth - drawWidth) / 2; startY = 0;
                     }
 
                     ctx.clearRect(0, 0, captureCanvas.width / scaleFactor, captureCanvas.height / scaleFactor);
@@ -997,8 +991,8 @@
                     const shadowOffsetY = 5 * scaleFactor * shadowScale;
                     const shadowBlur = 4 * scaleFactor * shadowScale;
 
-                    // Ensure captured image uses the same environment brightness
-                    ctx.filter = `drop-shadow(${shadowOffsetX}px ${shadowOffsetY}px ${shadowBlur}px rgba(0, 0, 0, 0.5)) brightness(${state.envBrightness})`;
+                    const capFilter = `drop-shadow(${shadowOffsetX}px ${shadowOffsetY}px ${shadowBlur}px rgba(0, 0, 0, 0.5)) brightness(${state.envBrightness})`;
+                    ctx.filter = capFilter;
                     ctx.globalAlpha = 0.98;
                     ctx.drawImage(overlay, -oW / 2, -oH / 2, oW, oH);
                     ctx.restore();
@@ -1015,6 +1009,7 @@
 
             startCamera();
         }
+
 
         function setupDesktopExperience() {
             generateQRCode(shareLink);
