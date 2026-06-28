@@ -7,7 +7,7 @@
     <title>MockOverflow - Poster AR Preview</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
-        xintegrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+        crossorigin="anonymous">
 
     <style>
         /* Custom styles for a clean, full-screen mobile experience */
@@ -587,7 +587,6 @@
 
 <body>
 
-    <!-- Dynamic Error State -->
     <div id="notFoundOverlay">
         <h1 id="errorTitle">Error Title</h1>
         <p id="errorDesc">Error description goes here.</p>
@@ -595,36 +594,28 @@
 
     <div id="viewportContainer">
 
-        <!-- Camera Feed Element -->
         <video id="cameraFeed" autoplay playsinline muted></video>
 
-        <!-- Image Overlay -->
-        <img id="overlayImage" crossorigin="anonymous" src="" alt="Poster Overlay" class="w-72 h-auto rounded-xl"
-            draggable="false">
+        <img id="overlayImage" src="" alt="Poster Overlay" class="w-72 h-auto rounded-xl" draggable="false">
 
-        <!-- Message/Error Display -->
         <div id="message">
             Awaiting camera permission...
         </div>
 
-        <!-- Gesture Tooltip (First) -->
         <div id="gestureTooltip">
             <span class="tooltipClose" id="closeGestureTooltip" aria-label="Close Tooltip">&times;</span>
             <p>Move & zoom this poster using finger touch.</p>
         </div>
 
-        <!-- Placement Tooltip (Second) -->
         <div id="placementTooltip">
             <span class="tooltipClose" id="closePlacementTooltip" aria-label="Close Tooltip">&times;</span>
             <p>Point your camera directly at the wall to see how this poster will look.</p>
         </div>
 
-        <!-- Hidden Tip/Reset Indicator -->
         <div id="resetTip">
             Drag, Pinch, or Double-Tap to Reset
         </div>
 
-        <!-- Capture Button & Get Button -->
         <div id="controls">
             <a href="#" id="getStickerBtn">
                 <img id="btnStickerPreview" src="" alt="" style="display:none;">
@@ -635,13 +626,11 @@
 
     </div>
 
-    <!-- Hidden Canvas for Image Processing/Capture -->
     <canvas id="captureCanvas" style="display:none;"></canvas>
 
     <div class="container mt-3" id="desktopAlert">
 
         <div class="row" style="padding:15px; background:#fff;">
-            <!-- Left Column: QR code instructions -->
             <div class="col-6 text-center" id="leftColumn">
                 <h2 class="highlighted-text">For better experience, open it in phone or tablet</h2>
                 <p class="light-text">Scan QR code to see this poster on your wall</p>
@@ -662,7 +651,6 @@
                 <input type="text" id="shareLinkInput" readonly value=""
                     class="link-box" />
             </div>
-            <!-- Right Column: Phone Demo -->
             <div class="col-6">
                 <div id="phone">
                     <div id="imageContainer">
@@ -999,13 +987,18 @@
                     ctx.drawImage(overlay, -oW / 2, -oH / 2, oW, oH);
                     ctx.restore();
 
-                    captureCanvas.toBlob(blob => {
+                    try {
+                        captureCanvas.toBlob(blob => {
+                            captureBtn.classList.remove('loader');
+                            if (blob) {
+                                const url = URL.createObjectURL(blob);
+                                window.open(url);
+                            }
+                        }, 'image/jpeg', 0.95);
+                    } catch (error) {
                         captureBtn.classList.remove('loader');
-                        if (blob) {
-                            const url = URL.createObjectURL(blob);
-                            window.open(url);
-                        }
-                    }, 'image/jpeg', 0.95);
+                        alert("Screenshot saved without overlay due to cross-origin image security. To capture the full image, use your phone's native screenshot feature!");
+                    }
                 }, 50);
             });
 
