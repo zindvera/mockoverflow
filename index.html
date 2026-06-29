@@ -19,6 +19,7 @@
             --brand-purple: #B5179E;
             --brand-violet: #5E60CE;
             --brand-gradient: linear-gradient(90deg, var(--brand-pink) 0%, var(--brand-purple) 100%);
+            --error-red: #EF476F;
             
             /* Core UI Colors */
             --bg-color: #ffffff;
@@ -146,7 +147,6 @@
         }
 
         .form-control-custom:focus {
-            /* Clean light pink border only, no shadow */
             border-color: rgba(247, 37, 133, 0.4); 
             background: #fff;
             box-shadow: none;
@@ -176,7 +176,7 @@
             transform: translateY(1px);
         }
 
-        /* --- TOOLTIP --- */
+        /* --- ONBOARDING TOOLTIP --- */
         .mo-tooltip {
             position: absolute;
             top: -55px;
@@ -230,6 +230,61 @@
             color: #fff;
         }
 
+        /* --- ERROR TOOLTIP --- */
+        .mo-error-tooltip {
+            position: absolute;
+            bottom: calc(100% + 10px);
+            left: 0;
+            background: var(--error-red);
+            color: #fff;
+            padding: 12px 18px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            box-shadow: 0 10px 25px rgba(239, 71, 111, 0.3);
+            z-index: 101;
+            opacity: 1;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            pointer-events: auto;
+            width: max-content;
+            max-width: 320px;
+        }
+
+        .mo-error-tooltip.hidden {
+            opacity: 0;
+            transform: translateY(10px);
+            pointer-events: none;
+        }
+
+        .mo-error-tooltip::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 25px;
+            border-width: 6px 6px 0;
+            border-style: solid;
+            border-color: var(--error-red) transparent transparent transparent;
+        }
+
+        .error-tooltip-close {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+
+        .error-tooltip-close:hover {
+            color: #fff;
+        }
+
         /* --- PHONE MOCKUP --- */
         .phone-mockup {
             width: 300px;
@@ -239,7 +294,7 @@
             background: #000; 
             position: relative;
             overflow: hidden;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            box-shadow: none; /* Removed side shadow */
             margin: 0 auto;
             z-index: 1;
         }
@@ -248,7 +303,7 @@
             position: absolute;
             top: 0; left: 0;
             height: 110%; width: 100%;
-            transition: transform 8s cubic-bezier(0.62, 0.21, 0.38, 0.95);
+            transition: transform 5s cubic-bezier(0.62, 0.21, 0.38, 0.95); /* Faster movement */
         }
 
         .img-container img {
@@ -265,9 +320,8 @@
             background-position: center;
             background-size: contain;
             background-repeat: no-repeat;
-            /* Default position pushed up to avoid sofa */
             transform: scale(0.45) translateY(-38%);
-            transition: transform 2s cubic-bezier(0.56, 0.1, 0.92, 0.9);
+            transition: transform 1.2s cubic-bezier(0.56, 0.1, 0.92, 0.9); /* Faster zooming/shifting */
             filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.15));
             z-index: 10;
         }
@@ -427,7 +481,7 @@
             flex-grow: 1;
         }
 
-        /* --- HOW IT WORKS SECTION (Minimalist UI) --- */
+        /* --- HOW IT WORKS SECTION --- */
         .process-section {
             margin-top: 40px;
             max-width: 1000px;
@@ -475,7 +529,6 @@
             line-height: 1.6;
         }
 
-        /* Simplified, block-level warning box */
         .warning-box {
             background-color: #fffafa;
             border: 1px solid #ffe5e5;
@@ -525,14 +578,14 @@
         .modal-layout {
             display: flex;
             flex-direction: column;
-            background: rgba(248, 249, 250, 0.85); /* Light grey transparent */
-            backdrop-filter: blur(12px); /* Glassmorphism */
+            background: rgba(248, 249, 250, 0.85);
+            backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             padding: 50px 60px;
             border-radius: 32px;
             box-shadow: 0 25px 80px rgba(43, 1, 49, 0.12);
             border: 1px solid rgba(255, 255, 255, 0.6);
-            width: 45vw; /* Desktop responsive width */
+            width: 45vw; 
             transform: translateY(20px);
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             position: relative;
@@ -627,7 +680,7 @@
         /* --- RESPONSIVE MODAL MEDIA QUERIES --- */
         @media (max-width: 1024px) {
             .modal-layout {
-                width: 55vw; /* Tablet width */
+                width: 55vw; 
             }
         }
 
@@ -638,8 +691,12 @@
             .form-wrapper { text-align: center; margin-bottom: 40px; }
             
             .modal-layout { 
-                width: calc(100vw - 16px); /* Phone width with 8px margin */
-                padding: 40px 30px; 
+                width: calc(100vw - 16px); 
+                padding: 70px 30px 40px 30px; /* Increased top padding to avoid icon collision */
+            }
+            .modal-close {
+                top: 15px; /* Keep close icon pinned nicely to the top edge */
+                right: 20px;
             }
             .modal-actions { flex-direction: column; }
 
@@ -656,6 +713,19 @@
                 margin-left: 0;
                 margin-right: 0;
                 border-radius: 12px;
+            }
+            
+            /* Vertical Pricing Layout for Mobile */
+            .pricing-scroll-wrapper {
+                flex-direction: column;
+                align-items: center;
+                overflow-x: visible; /* Disable horizontal scrolling */
+                padding-bottom: 0;
+            }
+            
+            .price-card {
+                width: 100%;
+                max-width: 100%;
             }
         }
 
@@ -706,14 +776,28 @@
                     </p>
                     
                     <div class="input-group-custom" id="artInputWrapper">
+                        <!-- Onboarding Tooltip -->
                         <div id="mo-tooltip" class="mo-tooltip hidden">
                             <span id="tooltip-text">Paste your artwork's direct image URL here to test.</span>
                             <button onclick="closeTooltip()" class="tooltip-close" aria-label="Close tooltip">&times;</button>
                         </div>
+                        
+                        <!-- Validation Error Tooltip -->
+                        <div id="art-error-tooltip" class="mo-error-tooltip hidden">
+                            <span>Please enter a valid wall art image URL (https://... ending in .jpg, .png, .webp)</span>
+                            <button onclick="closeErrorTooltip('art-error-tooltip')" class="error-tooltip-close">&times;</button>
+                        </div>
+                        
                         <input type="url" id="inputArtUrl" class="form-control-custom" placeholder="Poster Image URL" />
                     </div>
                     
                     <div class="input-group-custom" id="redirectInputWrapper">
+                        <!-- Validation Error Tooltip -->
+                        <div id="redirect-error-tooltip" class="mo-error-tooltip hidden">
+                            <span>Please enter a valid product destination URL starting with https://</span>
+                            <button onclick="closeErrorTooltip('redirect-error-tooltip')" class="error-tooltip-close">&times;</button>
+                        </div>
+                        
                         <input type="url" id="inputRedirectUrl" class="form-control-custom" placeholder="Product Destination URL" />
                     </div>
                     
@@ -846,7 +930,7 @@
     </footer>
 
     <script>
-        // --- TOOLTIP LOGIC (Sequential) ---
+        // --- ONBOARDING TOOLTIP LOGIC ---
         let currentTooltipStep = 1;
 
         window.addEventListener('load', () => {
@@ -891,20 +975,40 @@
             }
         }
 
+        // --- ERROR TOOLTIP LOGIC ---
+        function closeErrorTooltip(tooltipId) {
+            document.getElementById(tooltipId).classList.add('hidden');
+        }
+
         // --- LINK GENERATION & MODAL (WITH HISTORY API) ---
         let modalHistoryStaged = false;
 
         function openCreationModal() {
-            const artUrl = document.getElementById('inputArtUrl').value.trim();
-            const redirectUrl = document.getElementById('inputRedirectUrl').value.trim();
+            const artInput = document.getElementById('inputArtUrl');
+            const redirectInput = document.getElementById('inputRedirectUrl');
+            const artUrl = artInput.value.trim();
+            const redirectUrl = redirectInput.value.trim();
 
-            if (!artUrl || !redirectUrl) {
-                const emptyInput = !artUrl ? document.getElementById('inputArtUrl') : document.getElementById('inputRedirectUrl');
-                emptyInput.style.borderColor = 'red';
-                setTimeout(() => emptyInput.style.borderColor = 'transparent', 1500);
-                return;
+            // Auto-hide any visible error tooltips initially on submission attempt
+            closeErrorTooltip('art-error-tooltip');
+            closeErrorTooltip('redirect-error-tooltip');
+
+            // Strict Validation Checks
+            const isValidArt = /^https:\/\/.*\.(jpg|jpeg|png|webp)$/i.test(artUrl);
+            const isValidRedirect = /^https:\/\//i.test(redirectUrl);
+
+            // Sequential Validation: Show one error tooltip at a time
+            if (!isValidArt) {
+                document.getElementById('art-error-tooltip').classList.remove('hidden');
+                return; // Stop execution, don't check redirect yet
+            }
+            
+            if (!isValidRedirect) {
+                document.getElementById('redirect-error-tooltip').classList.remove('hidden');
+                return; // Stop execution if second input fails
             }
 
+            // Close onboarding tooltip if it's open
             localStorage.setItem('mo_hide_tooltips', 'true');
             const tooltip = document.getElementById('mo-tooltip');
             if (tooltip) tooltip.classList.add('hidden');
@@ -912,7 +1016,7 @@
             const encodedArt = encodeURIComponent(artUrl);
             const encodedRedirect = encodeURIComponent(redirectUrl);
             
-            // Replaced endpoint to redirect to the new camera.html target
+            // Redirect to the new camera.html target
             let finalUrl = `https://mockoverflow.online/camera.html?art=${encodedArt}&redirect=${encodedRedirect}`;
 
             document.getElementById('generatedLinkOutput').value = finalUrl;
@@ -994,7 +1098,6 @@
 
             function animateWallArt() {
                 let transformStyle = "";
-                // Pushed translateY up to -38% / -40% to clear the sofa entirely
                 switch (step % 5) {
                     case 0: transformStyle = "scale(0.45) translateY(-38%)"; break;
                     case 1: transformStyle = "scale(0.43) translateY(-40%)"; break;
@@ -1006,8 +1109,9 @@
                 step++;
             }
 
-            setInterval(slideImage, 5000);
-            setInterval(animateWallArt, 5000);
+            // Increased animation speed (reduced timer interval)
+            setInterval(slideImage, 3000); 
+            setInterval(animateWallArt, 3000); 
             slideImage();
             animateWallArt();
         }
