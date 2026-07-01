@@ -294,7 +294,7 @@
             background: #000; 
             position: relative;
             overflow: hidden;
-            box-shadow: none; /* Removed side shadow */
+            box-shadow: none; 
             margin: 0 auto;
             z-index: 1;
         }
@@ -303,7 +303,7 @@
             position: absolute;
             top: 0; left: 0;
             height: 110%; width: 100%;
-            transition: transform 5s cubic-bezier(0.62, 0.21, 0.38, 0.95); /* Faster movement */
+            transition: transform 5s cubic-bezier(0.62, 0.21, 0.38, 0.95); 
         }
 
         .img-container img {
@@ -321,48 +321,89 @@
             background-size: contain;
             background-repeat: no-repeat;
             transform: scale(0.45) translateY(-38%);
-            transition: transform 1.2s cubic-bezier(0.56, 0.1, 0.92, 0.9); /* Faster zooming/shifting */
-            filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.15));
+            transition: transform 1.2s cubic-bezier(0.56, 0.1, 0.92, 0.9); 
+            filter: brightness(0.89) drop-shadow(5px 7px 4px rgba(0, 0, 0, 0.35));
             z-index: 10;
         }
 
+        /* Replicated Mobile Controls inside Mockup */
         .phonecontrols {
             width: 100%;
-            justify-content: center;
             position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
+            bottom: 25px;
+            left: 0;
             display: flex;
-            gap: 15px;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            box-sizing: border-box;
             z-index: 50;
-            border-radius: 12px;
+            pointer-events: none; /* Make purely visual */
         }
 
-        .democaptureBtn {
+        .mock-capture-btn {
             width: 55px;
             height: 55px;
             background-color: transparent;
             border-radius: 50%;
             border: 4px solid white;
-            position: relative;
-            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 0;
-            transition: border-color 0.3s ease;
         }
 
-        .democaptureBtn::before {
+        .mock-capture-btn::before {
             content: "";
-            width: 35px;
-            height: 35px;
+            width: 30px;
+            height: 30px;
             background-color: white;
             border-radius: 50%;
-            display: block;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
-            transition: opacity 0.3s ease;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+        }
+
+        .mock-cta-btn {
+            background: #f4f2f8;
+            color: #333;
+            border: 1px solid #dcd6eb;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 14px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+        }
+
+        /* --- LIVE DEMO BUTTON --- */
+        .btn-live-demo {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--brand-violet);
+            color: #fff;
+            padding: 14px 32px;
+            border-radius: 50px; /* Pill shape */
+            font-size: 1.1rem;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+            box-shadow: 0 8px 20px rgba(94, 96, 206, 0.3);
+        }
+
+        .btn-live-demo:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(94, 96, 206, 0.45);
+            background-color: #5355b8;
+            color: #fff;
+        }
+
+        .btn-live-demo:active {
+            transform: translateY(1px);
+            box-shadow: 0 5px 15px rgba(94, 96, 206, 0.3);
         }
 
         /* --- PRICING SECTION --- */
@@ -692,10 +733,10 @@
             
             .modal-layout { 
                 width: calc(100vw - 16px); 
-                padding: 70px 30px 40px 30px; /* Increased top padding to avoid icon collision */
+                padding: 70px 30px 40px 30px; 
             }
             .modal-close {
-                top: 15px; /* Keep close icon pinned nicely to the top edge */
+                top: 15px; 
                 right: 20px;
             }
             .modal-actions { flex-direction: column; }
@@ -715,11 +756,10 @@
                 border-radius: 12px;
             }
             
-            /* Vertical Pricing Layout for Mobile */
             .pricing-scroll-wrapper {
                 flex-direction: column;
                 align-items: center;
-                overflow-x: visible; /* Disable horizontal scrolling */
+                overflow-x: visible; 
                 padding-bottom: 0;
             }
             
@@ -729,7 +769,6 @@
             }
         }
 
-        /* Footer minimal */
         footer {
             padding: 60px 0 40px 0;
             text-align: center;
@@ -776,13 +815,11 @@
                     </p>
                     
                     <div class="input-group-custom" id="artInputWrapper">
-                        <!-- Onboarding Tooltip -->
                         <div id="mo-tooltip" class="mo-tooltip hidden">
                             <span id="tooltip-text">Paste your artwork's direct image URL here to test.</span>
                             <button onclick="closeTooltip()" class="tooltip-close" aria-label="Close tooltip">&times;</button>
                         </div>
                         
-                        <!-- Validation Error Tooltip -->
                         <div id="art-error-tooltip" class="mo-error-tooltip hidden">
                             <span>Please enter a valid wall art image URL (https://... ending in .jpg, .png, .webp)</span>
                             <button onclick="closeErrorTooltip('art-error-tooltip')" class="error-tooltip-close">&times;</button>
@@ -792,7 +829,6 @@
                     </div>
                     
                     <div class="input-group-custom" id="redirectInputWrapper">
-                        <!-- Validation Error Tooltip -->
                         <div id="redirect-error-tooltip" class="mo-error-tooltip hidden">
                             <span>Please enter a valid product destination URL starting with https://</span>
                             <button onclick="closeErrorTooltip('redirect-error-tooltip')" class="error-tooltip-close">&times;</button>
@@ -814,8 +850,15 @@
                     </div>
                     <div class="wall-art-layer" id="homeWallArt" style="background-image: url('media/wall-art-demo.png');"></div>
                     <div class="phonecontrols">
-                        <div class="democaptureBtn"></div>
+                        <div class="mock-capture-btn"></div>
+                        <div class="mock-cta-btn">Get This Poster</div>
                     </div>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <button onclick="window.open('https://mockoverflow.online/camera.html?art=https://mockoverflow.online/media/wall-art-demo.png&redirect=https://www.zazzle.com/minimalist_keep_calm_stay_happy_typography_wall_poster-256519492070711915', '_blank')" class="btn-live-demo">
+                        See Live Demo
+                    </button>
                 </div>
             </div>
         </div>
@@ -930,11 +973,75 @@
     </footer>
 
     <script>
+        // --- IMAGE PROCESSING LOGIC (AUTO-CROP TRANSPARENCY) ---
+        function processWallArtImage(url, element) {
+            const img = new Image();
+            img.crossOrigin = "Anonymous";
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+
+                try {
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const data = imageData.data;
+                    let minX = canvas.width, minY = canvas.height, maxX = 0, maxY = 0;
+                    let hasVisiblePixels = false;
+
+                    for (let y = 0; y < canvas.height; y++) {
+                        for (let x = 0; x < canvas.width; x++) {
+                            const alpha = data[(y * canvas.width + x) * 4 + 3];
+                            if (alpha > 0) { 
+                                if (x < minX) minX = x;
+                                if (x > maxX) maxX = x;
+                                if (y < minY) minY = y;
+                                if (y > maxY) maxY = y;
+                                hasVisiblePixels = true;
+                            }
+                        }
+                    }
+
+                    if (hasVisiblePixels) {
+                        const cropWidth = maxX - minX + 1;
+                        const cropHeight = maxY - minY + 1;
+                        const padding = 5;
+
+                        const finalCanvas = document.createElement('canvas');
+                        finalCanvas.width = cropWidth + (padding * 2);
+                        finalCanvas.height = cropHeight + (padding * 2);
+                        const finalCtx = finalCanvas.getContext('2d');
+                        
+                        finalCtx.drawImage(
+                            canvas, 
+                            minX, minY, cropWidth, cropHeight, 
+                            padding, padding, cropWidth, cropHeight
+                        );
+
+                        element.style.backgroundImage = `url(${finalCanvas.toDataURL()})`;
+                    }
+                } catch (e) {
+                    console.warn("Canvas CORS error, skipping crop:", e);
+                }
+            };
+            img.src = url;
+        }
+
         // --- ONBOARDING TOOLTIP LOGIC ---
         let currentTooltipStep = 1;
 
         window.addEventListener('load', () => {
             startAnimations();
+
+            const artLayer = document.getElementById('homeWallArt');
+            if(artLayer) {
+                const bgImg = artLayer.style.backgroundImage;
+                const match = bgImg.match(/url\(["']?(.*?)["']?\)/);
+                if (match && match[1]) {
+                    processWallArtImage(match[1], artLayer);
+                }
+            }
 
             if (localStorage.getItem('mo_hide_tooltips') !== 'true') {
                 setTimeout(() => { showTooltip(1); }, 4000);
@@ -989,26 +1096,22 @@
             const artUrl = artInput.value.trim();
             const redirectUrl = redirectInput.value.trim();
 
-            // Auto-hide any visible error tooltips initially on submission attempt
             closeErrorTooltip('art-error-tooltip');
             closeErrorTooltip('redirect-error-tooltip');
 
-            // Strict Validation Checks
             const isValidArt = /^https:\/\/.*\.(jpg|jpeg|png|webp)$/i.test(artUrl);
             const isValidRedirect = /^https:\/\//i.test(redirectUrl);
 
-            // Sequential Validation: Show one error tooltip at a time
             if (!isValidArt) {
                 document.getElementById('art-error-tooltip').classList.remove('hidden');
-                return; // Stop execution, don't check redirect yet
+                return; 
             }
             
             if (!isValidRedirect) {
                 document.getElementById('redirect-error-tooltip').classList.remove('hidden');
-                return; // Stop execution if second input fails
+                return; 
             }
 
-            // Close onboarding tooltip if it's open
             localStorage.setItem('mo_hide_tooltips', 'true');
             const tooltip = document.getElementById('mo-tooltip');
             if (tooltip) tooltip.classList.add('hidden');
@@ -1016,7 +1119,6 @@
             const encodedArt = encodeURIComponent(artUrl);
             const encodedRedirect = encodeURIComponent(redirectUrl);
             
-            // Redirect to the new camera.html target
             let finalUrl = `https://mockoverflow.online/camera.html?art=${encodedArt}&redirect=${encodedRedirect}`;
 
             document.getElementById('generatedLinkOutput').value = finalUrl;
@@ -1027,7 +1129,6 @@
             copyBtn.style.backgroundImage = 'var(--brand-gradient)';
             copyBtn.style.backgroundColor = 'transparent';
 
-            // Show Modal and Push State
             document.getElementById('successModal').classList.add('active');
             history.pushState({ modalOpen: true }, '');
             modalHistoryStaged = true;
@@ -1036,14 +1137,12 @@
         function closeModal() {
             document.getElementById('successModal').classList.remove('active');
             
-            // Clear history state if closed manually via button
             if (modalHistoryStaged) {
                 modalHistoryStaged = false;
                 history.back();
             }
         }
 
-        // Intercept browser back button
         window.addEventListener('popstate', function(event) {
             const modal = document.getElementById('successModal');
             if (modal.classList.contains('active')) {
@@ -1109,7 +1208,6 @@
                 step++;
             }
 
-            // Increased animation speed (reduced timer interval)
             setInterval(slideImage, 3000); 
             setInterval(animateWallArt, 3000); 
             slideImage();
