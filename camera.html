@@ -48,12 +48,12 @@
             z-index: 20;
             touch-action: none;
             pointer-events: none;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.3s ease, filter 0.2s ease; /* Added smooth transition for dynamic filters */
             max-width: 80%;
             max-height: 80%;
             transform-origin: center center;
             display: none;
-
+            opacity: 0.97; /* Micro-texture blend */
         }
 
 
@@ -273,7 +273,6 @@
             transform-origin: center center;
         }
 
-     
         #wallArt {
             position: absolute;
             top: 0;
@@ -287,8 +286,8 @@
             transform: scale(0.42) translateY(-40%);
             transform-origin: center center;
             transition: transform 2s ease-in-out;
-            /* Subtle right (8px) and bottom (10px) drop shadow with smooth blur and transparency */
-            filter: brightness(0.89) drop-shadow(5px 7px 4px rgba(0, 0, 0, 0.35));
+            /* Subtle right (8px) and bottom (10px) drop shadow with smooth blur */
+            filter: brightness(0.94) drop-shadow(8px 10px 6px rgba(0, 0, 0, 0.35));
         }
 
         #leftColumn {
@@ -851,30 +850,33 @@
             let state = {
                 x: 0, y: 0, scale: 1, rotation: 0,
                 startX: 0, startY: 0, baseX: 0, baseY: 0, baseScale: 1, baseRotation: 0,
-                envBrightness: 0.95
+                envBrightness: 0.95,
+                envContrast: 1.0,
+                envSaturation: 1.0,
+                shadowOpacity: 0.4,
+                shadowBlur: 6
             };
 
             const activePointers = new Map();
             let initialDistance = null;
             let initialAngle = 0;
 
-            // 1. UPDATED LIVE OVERLAY (Subtle 4, 3, 3 Shadow + Rotation support)
+            // 1. UPDATED LIVE OVERLAY (Dynamic Shadows & Environment Filtering)
             const updateOverlay = () => {
                 overlay.style.transform = `translateX(${state.x}px) translateY(${state.y}px) scale(${state.scale}) rotate(${state.rotation}deg)`;
 
                 const shadowScale = Math.max(state.scale, 0.85);
-                // Subtle shadow values
                 const liveX = 4 * shadowScale;
                 const liveY = 3 * shadowScale;
-                const liveBlur = 3 * shadowScale;
+                const liveBlur = state.shadowBlur * shadowScale;
 
-                const filterString = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(0, 0, 0, 0.45)) brightness(${state.envBrightness})`;
+                const filterString = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(0, 0, 0, ${state.shadowOpacity})) brightness(${state.envBrightness}) contrast(${state.envContrast}) saturate(${state.envSaturation})`;
 
                 overlay.style.filter = filterString;
                 overlay.style.webkitFilter = filterString;
             };
 
-            // 2. UPDATED BRIGHTNESS (Slightly increased floor)
+            // 2. UPDATED BRIGHTNESS (Full spectrum realism analysis)
             function analyzeLight() {
                 if (video.readyState === video.HAVE_ENOUGH_DATA) {
                     analysisCtx.drawImage(video, 0, 0, 40, 40);
@@ -883,12 +885,20 @@
                     for (let i = 0; i < pixels.length; i += 4) {
                         totalLuminance += (0.2126 * pixels[i] + 0.7152 * pixels[i + 1] + 0.0722 * pixels[i + 2]);
                     }
-                    const avgLuminance = totalLuminance / (40 * 40);
+                    const avgLuminance = totalLuminance / (1600); // 40*40 pixels
+                    
+                    // Normalize luminance from 0 to 1
+                    const L = Math.min(1, Math.max(0, avgLuminance / 255));
 
-                    // Increased floor to 0.74 and narrowed range to 0.22 for subtle pop
-                    const newBrightness = 0.74 + (avgLuminance / 255) * 0.22;
+                    // Dynamic property scaling based on real ambient light
+                    state.envBrightness = (0.74 + L * 0.26).toFixed(3);
+                    state.envContrast = (0.85 + L * 0.20).toFixed(3);
+                    state.envSaturation = (0.80 + L * 0.25).toFixed(3);
+                    
+                    // Darker rooms produce deeper/harsher shadows. Bright rooms produce softer/diffuse shadows.
+                    state.shadowOpacity = (0.60 - L * 0.30).toFixed(3); // Ranges from 0.3 to 0.6
+                    state.shadowBlur = (4 + L * 8).toFixed(1); // Ranges from 4px to 12px
 
-                    state.envBrightness = newBrightness.toFixed(3);
                     updateOverlay();
                 }
             }
@@ -1002,7 +1012,7 @@
                 lastTap = now;
             });
 
-            // 4. SYNCED CAPTURE (High Quality + 4, 3, 3 Shadow + Rotation applied)
+            // 4. SYNCED CAPTURE (Mirrors dynamic lighting and micro-textures)
             captureBtn.addEventListener('click', () => {
                 captureBtn.classList.add('loader');
                 setTimeout(() => {
@@ -1043,10 +1053,10 @@
                     const shadowScale = Math.max(state.scale, 0.4);
                     const capX = 4 * scaleFactor * shadowScale;
                     const capY = 3 * scaleFactor * shadowScale;
-                    const capBlur = 3 * scaleFactor * shadowScale;
+                    const capBlur = state.shadowBlur * scaleFactor * shadowScale;
 
-                    ctx.filter = `drop-shadow(${capX}px ${capY}px ${capBlur}px rgba(0, 0, 0, 0.45)) brightness(${state.envBrightness})`;
-                    ctx.globalAlpha = 0.98;
+                    ctx.filter = `drop-shadow(${capX}px ${capY}px ${capBlur}px rgba(0, 0, 0, ${state.shadowOpacity})) brightness(${state.envBrightness}) contrast(${state.envContrast}) saturate(${state.envSaturation})`;
+                    ctx.globalAlpha = 0.97; // Match live micro-texture opacity
                     ctx.drawImage(overlay, -oW / 2, -oH / 2, oW, oH);
                     ctx.restore();
 
@@ -1088,11 +1098,11 @@
                 if (paused) return;
                 // Subtle scale/position adjustments for poster visualization (scaled down to look natural)
                 switch (step) {
-                    case 0: wallArtDiv.style.transform = "scale(0.48) translateY(-40%)"; break;
-                    case 1: wallArtDiv.style.transform = "scale(0.44) translateY(-42%)"; break;
-                    case 2: wallArtDiv.style.transform = "scale(0.43) translateY(-39%)"; break;
+                    case 0: wallArtDiv.style.transform = "scale(0.44) translateY(-40%)"; break;
+                    case 1: wallArtDiv.style.transform = "scale(0.40) translateY(-42%)"; break;
+                    case 2: wallArtDiv.style.transform = "scale(0.42) translateY(-39%)"; break;
                     case 3: wallArtDiv.style.transform = "scale(0.40) translateY(-40%)"; break;
-                    default: wallArtDiv.style.transform = "scale(0.43) translateY(-40.5%)";
+                    default: wallArtDiv.style.transform = "scale(0.41) translateY(-40.5%)";
                 }
                 step = (step + 1) % 5;
             }
