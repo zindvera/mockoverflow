@@ -810,14 +810,14 @@
                 overlay.style.transform = `translateX(${state.x}px) translateY(${state.y}px) scale(${state.scale}) rotate(${state.rotation}deg)`;
 
                 const shadowScale = Math.max(state.scale, 0.85);
-                const liveX = 4 * shadowScale;
+                const liveX = 3 * shadowScale;
                 const liveY = 3 * shadowScale;
-                const liveBlur = 3 * shadowScale;
+                const liveBlur = 4 * shadowScale;
 
-                // Slightly reduces digital contrast in low-light environments for a realistic paper/matte effect
-                const contrastVal = 0.85 + (state.envBrightness * 0.15);
+                // Gently lowers contrast in dark rooms to match wall texture (0.75 to 0.90)
+                const contrastVal = 0.75 + (state.envBrightness * 0.15);
 
-                const filterString = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(0, 0, 0, 0.45)) brightness(${state.envBrightness}) contrast(${contrastVal})`;
+                const filterString = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(0, 0, 0, 0.40)) brightness(${state.envBrightness}) contrast(${contrastVal})`;
 
                 overlay.style.filter = filterString;
                 overlay.style.webkitFilter = filterString;
@@ -863,13 +863,13 @@
                         // 3. Response Curve Exponent (Gamma)
                         // 0.4 - 0.5 = Keeps artwork readable in medium light while reacting strongly to deep shadows
                         // 1.0       = Pure 1:1 linear relationship with room light
-                        const gamma = 0.3;
+                        const gamma = 0.45;
 
                         // Calculate brightness purely from environmental light
                         const calculatedBrightness = maxBrightness * Math.pow(normalizedLight, gamma);
 
                         // Safety floor so artwork is never 100% invisible in pitch black
-                        const absoluteFloor = 0.65;
+                        const absoluteFloor = 0.48;
                         const finalBrightness = Math.max(absoluteFloor, calculatedBrightness);
 
                         state.envBrightness = finalBrightness.toFixed(3);
@@ -1033,7 +1033,7 @@
                     const capBlur = 3 * scaleFactor * shadowScale;
 
                     // NEW LINE:
-                    const capContrast = 0.85 + (state.envBrightness * 0.15);
+                    const capContrast = 0.75 + (state.envBrightness * 0.15);
                     ctx.filter = `drop-shadow(${capX}px ${capY}px ${capBlur}px rgba(0, 0, 0, 0.45)) brightness(${state.envBrightness}) contrast(${capContrast})`;
                     ctx.globalAlpha = 0.98;
                     ctx.drawImage(overlay, -oW / 2, -oH / 2, oW, oH);
