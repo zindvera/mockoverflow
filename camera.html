@@ -1078,6 +1078,9 @@
                             const url = URL.createObjectURL(blob);
                             document.getElementById('capturedResultImg').src = url;
                             document.getElementById('downloadResultBtn').href = url;
+                            
+                            // Push state to browser history so phone back button closes the overlay
+                            history.pushState({ previewOpen: true }, '');
                             document.getElementById('capturedOverlay').style.display = 'block';
                         }
                     }, 'image/jpeg', 0.95);
@@ -1148,11 +1151,27 @@
             }, 300);
         }
 
-        // Back to Camera button action - hides overlay to reveal camera stream
+        function closePreviewOverlay() {
+            const overlay = document.getElementById('capturedOverlay');
+            if (overlay && overlay.style.display === 'block') {
+                overlay.style.display = 'none';
+            }
+        }
+
+        // Back to Camera button action - triggers browser back to stay in sync with history
         document.getElementById('backToCameraBtn').addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            document.getElementById('capturedOverlay').style.display = 'none';
+            if (history.state && history.state.previewOpen) {
+                history.back();
+            } else {
+                closePreviewOverlay();
+            }
+        });
+
+        // Listen for hardware/swipe back events on phones
+        window.addEventListener('popstate', (e) => {
+            closePreviewOverlay();
         });
 
     </script>
