@@ -10,7 +10,6 @@
         crossorigin="anonymous">
 
     <style>
-        /* Custom styles for a clean, full-screen mobile experience */
         body {
             font-family: 'Inter', sans-serif;
             overflow: hidden;
@@ -43,12 +42,14 @@
             z-index: 20;
             touch-action: none;
             pointer-events: none;
-            transition: filter 0.1s linear, opacity 0.3s ease; /* Added filter transition for smooth light shifts */
             max-width: 80%;
             max-height: 80%;
             transform-origin: center center;
             display: none;
-            /* Optional: Add a subtle inner shadow or border via CSS if needed, but keeping it canvas-based is better */
+            /* CRITICAL FOR REALISM: Blends artwork directly into wall texture & camera noise */
+            mix-blend-mode: multiply;
+            opacity: 0.95;
+            transition: filter 0.1s linear;
         }
 
         #previewCanvas {
@@ -203,19 +204,6 @@
             }
         }
 
-        #switchCameraBtn {
-            padding: 12px 24px;
-            font-size: 16px;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            font-weight: bold;
-            color: rgb(0, 0, 0);
-            background: linear-gradient(90deg, #f8f8f8, #fcf9ff);
-            user-select: none;
-            transition: background 0.3s ease;
-        }
-
         #loadingText {
             position: fixed;
             top: 48%;
@@ -329,35 +317,12 @@
             color: #0e46ad;
         }
 
-        /* Desktop overrides */
         @media (min-width: 1025px) {
             body {
                 background: #f6f4f7;
                 overflow-x: auto;
                 overflow-y: auto;
             }
-        }
-
-        #page-loader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: #ffffff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-        }
-
-        .loader-circle {
-            border: 6px solid #e0e0e0;
-            border-top: 6px solid rgb(223, 86, 223);
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
         }
 
         #resetTip {
@@ -413,13 +378,11 @@
             margin-bottom: 15px;
         }
 
-        #gestureTooltip {
+        #gestureTooltip, #placementTooltip {
             display: none;
             position: absolute;
-            top: 25%;
             left: 50%;
             transform: translateX(-50%);
-            background: #f8f4ff;
             color: #333;
             padding: 24px;
             border-radius: 20px;
@@ -427,88 +390,28 @@
             width: 85%;
             max-width: 320px;
             text-align: left;
+            pointer-events: auto;
+        }
+
+        #gestureTooltip {
+            top: 25%;
+            background: #f8f4ff;
             box-shadow: 0 12px 40px rgba(114, 9, 183, 0.2);
             border: 2px solid #e0d4ff;
-            pointer-events: auto;
         }
 
         #placementTooltip {
-            display: none;
-            position: absolute;
             bottom: 25%;
-            left: 50%;
-            transform: translateX(-50%);
             background: #fff4f4;
-            color: #333;
-            padding: 24px;
-            border-radius: 20px;
-            z-index: 101;
-            width: 85%;
-            max-width: 320px;
-            text-align: left;
             box-shadow: 0 12px 40px rgba(183, 9, 72, 0.15);
             border: 2px solid #ffe4e4;
-            pointer-events: auto;
         }
 
-        #gestureTooltip p,
-        #placementTooltip p {
+        #gestureTooltip p, #placementTooltip p {
             margin: 0;
             margin-top: 12px;
             font-weight: 600;
             line-height: 1.5;
-        }
-
-        @media (max-width: 767px) {
-            #gestureTooltip,
-            #placementTooltip {
-                width: 85%;
-                padding: 20px;
-            }
-
-            #gestureTooltip p,
-            #placementTooltip p {
-                font-size: 18px;
-            }
-        }
-
-        @media (min-width: 768px) and (max-width: 1024px) {
-            #gestureTooltip,
-            #placementTooltip {
-                width: 70%;
-                max-width: 500px;
-                padding: 40px;
-            }
-
-            #gestureTooltip p,
-            #placementTooltip p {
-                font-size: 26px;
-                margin-top: 18px;
-            }
-
-            #getStickerBtn {
-                font-size: 20px;
-                padding: 16px 30px;
-            }
-
-            #getStickerBtn img {
-                width: 36px;
-                height: 36px;
-            }
-
-            #captureBtn {
-                width: 85px;
-                height: 85px;
-            }
-
-            #captureBtn::before {
-                width: 50px;
-                height: 50px;
-            }
-
-            #controls {
-                padding: 0 85px;
-            }
         }
 
         .tooltipClose {
@@ -522,10 +425,6 @@
             color: #7209b7;
             opacity: 0.6;
             z-index: 102;
-        }
-
-        .tooltipClose:hover {
-            opacity: 1;
         }
     </style>
 </head>
@@ -617,12 +516,8 @@
             showError("Redirect URL Not Exist", "A destination link is required to proceed with the checkout.");
         } else {
             const checkImg = new Image();
-            checkImg.onload = function () {
-                initApp(artUrl, redirectUrl);
-            };
-            checkImg.onerror = function () {
-                showError("Wall Art Link Does Not Exist", "The provided image could not be loaded. Please check the URL and try again.");
-            };
+            checkImg.onload = function () { initApp(artUrl, redirectUrl); };
+            checkImg.onerror = function () { showError("Wall Art Link Does Not Exist", "The provided image could not be loaded. Please check the URL and try again."); };
             checkImg.src = artUrl;
         }
 
@@ -633,9 +528,7 @@
 
             const getStickerBtn = document.getElementById('getStickerBtn');
             const btnImg = document.getElementById('btnStickerPreview');
-            if (getStickerBtn) {
-                getStickerBtn.href = validRedirectUrl;
-            }
+            if (getStickerBtn) getStickerBtn.href = validRedirectUrl;
             if (btnImg) {
                 btnImg.src = validArtUrl;
                 btnImg.style.display = 'inline-block';
@@ -700,87 +593,89 @@
             const captureCanvas = document.getElementById('captureCanvas');
             const ctx = captureCanvas.getContext('2d');
 
-            const analysisCanvas = document.createElement('canvas');
-            const analysisCtx = analysisCanvas.getContext('2d', { willReadFrequently: true });
-            analysisCanvas.width = 40;
-            analysisCanvas.height = 40;
+            // High-precision canvas for sampling around poster perimeter
+            const samplingCanvas = document.createElement('canvas');
+            const samplingCtx = samplingCanvas.getContext('2d', { willReadFrequently: true });
 
             let state = {
                 x: 0, y: 0, scale: 1, rotation: 0,
                 startX: 0, startY: 0, baseX: 0, baseY: 0, baseScale: 1, baseRotation: 0,
-                envBrightness: 0.95,
-                envWarmth: 0 // New state for dynamic color adjustments
+                envBrightness: 0.9
             };
 
+            let smoothedLuminance = 0.7;
             const activePointers = new Map();
             let initialDistance = null;
             let initialAngle = 0;
 
-            // EXPONENTIAL MOVING AVERAGE VARS
-            let smoothedLuminance = 0.8;
-            let smoothedWarmth = 1.0;
-            const smoothFactor = 0.15; // Lower = smoother tracking, Higher = faster reaction
-
-            // DYNAMIC UPDATE OVERLAY
             const updateOverlay = () => {
                 overlay.style.transform = `translateX(${state.x}px) translateY(${state.y}px) scale(${state.scale}) rotate(${state.rotation}deg)`;
 
                 const shadowScale = Math.max(state.scale, 0.85);
-                const liveX = 4 * shadowScale;
+                const liveX = 3 * shadowScale;
                 const liveY = 3 * shadowScale;
-                const liveBlur = 3 * shadowScale;
+                const liveBlur = 4 * shadowScale;
 
-                // Subtle dynamic sepia if the room is warm
-                let sepiaAmount = 0;
-                if (state.envWarmth > 1.1) {
-                    sepiaAmount = Math.min((state.envWarmth - 1.1) * 0.4, 0.5); // Cap at 50%
-                }
-
-                // Incorporate continuous 1% mappings
-                const filterString = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(0, 0, 0, 0.45)) brightness(${state.envBrightness}) sepia(${sepiaAmount.toFixed(3)})`;
-
+                // Adjust filter softly based on perimeter lighting
+                const filterString = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(0, 0, 0, 0.35)) brightness(${state.envBrightness})`;
                 overlay.style.filter = filterString;
                 overlay.style.webkitFilter = filterString;
             };
 
-            // CONTINUOUS 1% LIGHT AND COLOR ANALYSIS
-            function analyzeLight() {
-                if (video.readyState === video.HAVE_ENOUGH_DATA) {
-                    analysisCtx.drawImage(video, 0, 0, 40, 40);
-                    const pixels = analysisCtx.getImageData(0, 0, 40, 40).data;
-                    
-                    let totalR = 0, totalG = 0, totalB = 0;
-                    const count = pixels.length / 4;
-                    
-                    for (let i = 0; i < pixels.length; i += 4) {
-                        totalR += pixels[i];
-                        totalG += pixels[i + 1];
-                        totalB += pixels[i + 2];
+            // PERIMETER SAMPLE ENGINE (Samples 20px ring around poster boundaries)
+            function samplePerimeterEnvironment() {
+                if (video.readyState === video.HAVE_ENOUGH_DATA && overlay.offsetWidth > 0) {
+                    samplingCanvas.width = video.videoWidth;
+                    samplingCanvas.height = video.videoHeight;
+                    samplingCtx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+
+                    // Get poster's exact bounding region relative to screen
+                    const rect = overlay.getBoundingClientRect();
+                    const scaleX = video.videoWidth / window.innerWidth;
+                    const scaleY = video.videoHeight / window.innerHeight;
+
+                    // Convert screen pixels to video coordinates
+                    const margin = 20 * scaleX; // 20px perimeter
+                    const vx = Math.max(0, rect.left * scaleX - margin);
+                    const vy = Math.max(0, rect.top * scaleY - margin);
+                    const vw = Math.min(video.videoWidth - vx, rect.width * scaleX + (margin * 2));
+                    const vh = Math.min(video.videoHeight - vy, rect.height * scaleY + (margin * 2));
+
+                    if (vw > 0 && vh > 0) {
+                        const imgData = samplingCtx.getImageData(vx, vy, vw, vh).data;
+                        let totalLuminance = 0;
+                        let sampleCount = 0;
+
+                        // Sample outer 20px boundary only (skip center where poster hides wall)
+                        for (let y = 0; y < vh; y += 4) {
+                            for (let x = 0; x < vw; x += 4) {
+                                const isPerimeter = (x < margin || x > vw - margin || y < margin || y > vh - margin);
+                                if (isPerimeter) {
+                                    const index = (y * vw + x) * 4;
+                                    const r = imgData[index];
+                                    const g = imgData[index + 1];
+                                    const b = imgData[index + 2];
+                                    totalLuminance += (0.2126 * r + 0.7152 * g + 0.0722 * b);
+                                    sampleCount++;
+                                }
+                            }
+                        }
+
+                        if (sampleCount > 0) {
+                            const rawLuminance = (totalLuminance / sampleCount) / 255;
+                            // Smooth transitions via Exponential Moving Average
+                            smoothedLuminance = (0.15 * rawLuminance) + (0.85 * smoothedLuminance);
+
+                            // Map directly: allows poster to darken naturally down to 0.3 in low light
+                            const mappedBrightness = 0.35 + (smoothedLuminance * 0.65);
+                            state.envBrightness = mappedBrightness.toFixed(3);
+                            updateOverlay();
+                        }
                     }
-
-                    const avgR = totalR / count;
-                    const avgG = totalG / count;
-                    const avgB = totalB / count;
-
-                    // 1. Get raw float luminance and calculate moving average
-                    const rawLuminance = (0.2126 * avgR + 0.7152 * avgG + 0.0722 * avgB) / 255;
-                    smoothedLuminance = (smoothFactor * rawLuminance) + ((1 - smoothFactor) * smoothedLuminance);
-                    
-                    // 2. Floor mappings so image doesn't go pure black
-                    const newBrightness = 0.70 + (smoothedLuminance * 0.30);
-                    state.envBrightness = newBrightness.toFixed(3);
-
-                    // 3. Determine ambient color warmth (Red vs Blue ratio)
-                    const rawWarmth = avgR / (avgB + 1); // +1 prevents division by zero
-                    smoothedWarmth = (smoothFactor * rawWarmth) + ((1 - smoothFactor) * smoothedWarmth);
-                    state.envWarmth = smoothedWarmth;
-
-                    updateOverlay();
                 }
             }
 
-            // Run at a fast interval for smooth 1% granular transitions
-            setInterval(analyzeLight, 100);
+            setInterval(samplePerimeterEnvironment, 100);
 
             async function startCamera() {
                 message.style.display = 'block';
@@ -888,7 +783,7 @@
                 lastTap = now;
             });
 
-            // UPDATED SYNC CAPTURE LOGIC
+            // REALISTIC CANVAS CAPTURE WITH MULTIPLY BLENDING
             captureBtn.addEventListener('click', () => {
                 captureBtn.classList.add('loader');
                 setTimeout(() => {
@@ -927,18 +822,14 @@
                     ctx.rotate(state.rotation * Math.PI / 180);
 
                     const shadowScale = Math.max(state.scale, 0.4);
-                    const capX = 4 * scaleFactor * shadowScale;
+                    const capX = 3 * scaleFactor * shadowScale;
                     const capY = 3 * scaleFactor * shadowScale;
-                    const capBlur = 3 * scaleFactor * shadowScale;
+                    const capBlur = 4 * scaleFactor * shadowScale;
 
-                    // Match exact live styling to capture canvas
-                    let capSepiaAmount = 0;
-                    if (state.envWarmth > 1.1) {
-                        capSepiaAmount = Math.min((state.envWarmth - 1.1) * 0.4, 0.5);
-                    }
-
-                    ctx.filter = `drop-shadow(${capX}px ${capY}px ${capBlur}px rgba(0, 0, 0, 0.45)) brightness(${state.envBrightness}) sepia(${capSepiaAmount.toFixed(3)})`;
-                    ctx.globalAlpha = 0.98;
+                    // REALISTIC BLENDING FOR SAVED IMAGE
+                    ctx.globalCompositeOperation = 'multiply';
+                    ctx.filter = `drop-shadow(${capX}px ${capY}px ${capBlur}px rgba(0, 0, 0, 0.35)) brightness(${state.envBrightness})`;
+                    ctx.globalAlpha = 0.95;
                     ctx.drawImage(overlay, -oW / 2, -oH / 2, oW, oH);
                     ctx.restore();
 
