@@ -834,14 +834,17 @@
                     const screenH = window.innerHeight;
 
                     const overlayRect = overlay.getBoundingClientRect();
-
                     const scaleX = videoW / screenW;
                     const scaleY = videoH / screenH;
 
-                    let srcX = overlayRect.left * scaleX;
-                    let srcY = overlayRect.top * scaleY;
-                    let srcW = overlayRect.width * scaleX;
-                    let srcH = overlayRect.height * scaleY;
+                    // Expand sampling box 25% outside the poster to capture surrounding wall
+                    const paddingX = overlayRect.width * 0.25;
+                    const paddingY = overlayRect.height * 0.25;
+
+                    let srcX = (overlayRect.left - paddingX) * scaleX;
+                    let srcY = (overlayRect.top - paddingY) * scaleY;
+                    let srcW = (overlayRect.width + paddingX * 2) * scaleX;
+                    let srcH = (overlayRect.height + paddingY * 2) * scaleY;
 
                     srcX = Math.max(0, Math.min(srcX, videoW));
                     srcY = Math.max(0, Math.min(srcY, videoH));
@@ -853,21 +856,28 @@
 
                         const pixels = analysisCtx.getImageData(0, 0, 40, 40).data;
                         let totalLuminance = 0;
-                        for (let i = 0; i < pixels.length; i += 4) {
-                            totalLuminance += (0.2126 * pixels[i] + 0.7152 * pixels[i + 1] + 0.0722 * pixels[i + 2]);
+                        let count = 0;
+
+                        // Loop 40x40 grid, but ignore the central 60% (where the poster sits)
+                        for (let y = 0; y < 40; y++) {
+                            for (let x = 0; x < 40; x++) {
+                                if (x > 8 && x < 32 && y > 8 && y < 32) continue; // Skip poster area
+
+                                const i = (y * 40 + x) * 4;
+                                totalLuminance += (0.2126 * pixels[i] + 0.7152 * pixels[i + 1] + 0.0722 * pixels[i + 2]);
+                                count++;
+                            }
                         }
 
-                        // Raw environmental light (0.0 to 1.0)
-                        const normalizedLight = totalLuminance / (40 * 40 * 255);
+                        // Real wall environmental light
+                        const normalizedLight = totalLuminance / (count * 255);
 
-                        // Linear Remapping (Slope 0.35 + Offset 0.52)
-                        const calculatedBrightness = 0.52 + (normalizedLight * 0.35);
+                        // Linear Remapping adjusted for natural paper reflectance
+                        const calculatedBrightness = 0.68 + (normalizedLight * 0.28);
 
-                        // Hard Limits: 
-                        // MIN 0.55 stops dark/muddy art in low light
-                        // MAX 0.82 stops glowing/digital screen effect on bright walls
-                        const MIN_BRIGHTNESS = 0.55;
-                        const MAX_BRIGHTNESS = 0.82;
+                        // Floor raised to 0.70 to keep paper light outdoors; capped at 0.95 to avoid glowing
+                        const MIN_BRIGHTNESS = 0.70;
+                        const MAX_BRIGHTNESS = 0.95;
 
                         const finalBrightness = Math.min(MAX_BRIGHTNESS, Math.max(MIN_BRIGHTNESS, calculatedBrightness));
 
@@ -877,6 +887,7 @@
                 }
                 requestAnimationFrame(analyzeLight);
             }
+
 
             // NEW LINE:
             requestAnimationFrame(analyzeLight);
