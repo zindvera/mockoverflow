@@ -1079,8 +1079,8 @@
                             document.getElementById('capturedResultImg').src = url;
                             document.getElementById('downloadResultBtn').href = url;
                             
-                            // Push state to browser history so phone back button closes the overlay
-                            history.pushState({ previewOpen: true }, '');
+                            // Push history entry explicitly to intercept phone back button
+                            history.pushState({ isOverlayActive: true }, null, window.location.href);
                             document.getElementById('capturedOverlay').style.display = 'block';
                         }
                     }, 'image/jpeg', 0.95);
@@ -1158,18 +1158,18 @@
             }
         }
 
-        // Back to Camera button action - triggers browser back to stay in sync with history
+        // Back to Camera button action - calls history.back() to pop the overlay state smoothly
         document.getElementById('backToCameraBtn').addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            if (history.state && history.state.previewOpen) {
+            if (history.state && history.state.isOverlayActive) {
                 history.back();
             } else {
                 closePreviewOverlay();
             }
         });
 
-        // Listen for hardware/swipe back events on phones
+        // Intercept native phone back hardware button / swipe gesture
         window.addEventListener('popstate', (e) => {
             closePreviewOverlay();
         });
