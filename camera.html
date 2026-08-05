@@ -652,8 +652,7 @@
                 </div>
 
                 <p class="link-text">or you can use this link</p>
-                <input type="text" id="shareLinkInput" readonly value=""
-                    class="link-box" />
+                <input type="text" id="shareLinkInput" readonly value="" class="link-box" />
             </div>
             <!-- Right Column: Phone Demo -->
             <div class="col-6">
@@ -806,37 +805,69 @@
             let initialAngle = 0;
 
             // 1. UPDATED LIVE OVERLAY (Subtle 4, 3, 3 Shadow + Rotation support)
+
             const updateOverlay = () => {
                 overlay.style.transform = `translateX(${state.x}px) translateY(${state.y}px) scale(${state.scale}) rotate(${state.rotation}deg)`;
 
                 const shadowScale = Math.max(state.scale, 0.85);
-                // Subtle shadow values
                 const liveX = 4 * shadowScale;
                 const liveY = 3 * shadowScale;
                 const liveBlur = 3 * shadowScale;
 
-                const filterString = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(0, 0, 0, 0.45)) brightness(${state.envBrightness})`;
+                // Slightly reduces digital contrast in low-light environments for a realistic paper/matte effect
+                const contrastVal = 0.85 + (state.envBrightness * 0.15);
+
+                const filterString = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(0, 0, 0, 0.45)) brightness(${state.envBrightness}) contrast(${contrastVal})`;
 
                 overlay.style.filter = filterString;
                 overlay.style.webkitFilter = filterString;
             };
 
-            // 2. UPDATED BRIGHTNESS (Slightly increased floor)
+            // NEW CODE:
             function analyzeLight() {
                 if (video.readyState === video.HAVE_ENOUGH_DATA) {
-                    analysisCtx.drawImage(video, 0, 0, 40, 40);
-                    const pixels = analysisCtx.getImageData(0, 0, 40, 40).data;
-                    let totalLuminance = 0;
-                    for (let i = 0; i < pixels.length; i += 4) {
-                        totalLuminance += (0.2126 * pixels[i] + 0.7152 * pixels[i + 1] + 0.0722 * pixels[i + 2]);
+                    const videoW = video.videoWidth;
+                    const videoH = video.videoHeight;
+                    const screenW = window.innerWidth;
+                    const screenH = window.innerHeight;
+
+                    // Get actual overlay bounds on screen
+                    const overlayRect = overlay.getBoundingClientRect();
+
+                    // Convert screen coordinates to video feed coordinates
+                    const scaleX = videoW / screenW;
+                    const scaleY = videoH / screenH;
+
+                    let srcX = overlayRect.left * scaleX;
+                    let srcY = overlayRect.top * scaleY;
+                    let srcW = overlayRect.width * scaleX;
+                    let srcH = overlayRect.height * scaleY;
+
+                    // Keep values inside video dimensions
+                    srcX = Math.max(0, Math.min(srcX, videoW));
+                    srcY = Math.max(0, Math.min(srcY, videoH));
+                    srcW = Math.min(srcW, videoW - srcX);
+                    srcH = Math.min(srcH, videoH - srcY);
+
+                    if (srcW > 0 && srcH > 0) {
+                        // Crop only the video area behind the poster
+                        analysisCtx.drawImage(video, srcX, srcY, srcW, srcH, 0, 0, 40, 40);
+
+                        const pixels = analysisCtx.getImageData(0, 0, 40, 40).data;
+                        let totalLuminance = 0;
+                        for (let i = 0; i < pixels.length; i += 4) {
+                            totalLuminance += (0.2126 * pixels[i] + 0.7152 * pixels[i + 1] + 0.0722 * pixels[i + 2]);
+                        }
+                        const avgLuminance = totalLuminance / (40 * 40);
+
+                        // Brightness range: drops to 0.35 in deep shadow, caps at 0.95 in bright light
+                        const minBrightness = 0.35;
+                        const maxBrightness = 0.95;
+                        const newBrightness = minBrightness + (avgLuminance / 255) * (maxBrightness - minBrightness);
+
+                        state.envBrightness = newBrightness.toFixed(3);
+                        updateOverlay();
                     }
-                    const avgLuminance = totalLuminance / (40 * 40);
-
-                    // Increased floor to 0.74 and narrowed range to 0.22 for subtle pop
-                    const newBrightness = 0.74 + (avgLuminance / 255) * 0.22;
-
-                    state.envBrightness = newBrightness.toFixed(3);
-                    updateOverlay();
                 }
             }
 
@@ -871,7 +902,7 @@
                 const p2 = pointers[1];
                 const dx = p2.clientX - p1.clientX;
                 const dy = p2.clientY - p1.clientY;
-                return { 
+                return {
                     distance: Math.sqrt(dx * dx + dy * dy),
                     angle: Math.atan2(dy, dx)
                 };
@@ -911,7 +942,7 @@
                     if (currentDetails && initialDistance) {
                         const scaleFactor = currentDetails.distance / initialDistance;
                         state.scale = Math.min(2.5, Math.max(0.1, state.baseScale * scaleFactor));
-                        
+
                         const angleDiff = currentDetails.angle - initialAngle;
                         state.rotation = state.baseRotation + (angleDiff * 180 / Math.PI);
                     }
@@ -992,7 +1023,9 @@
                     const capY = 3 * scaleFactor * shadowScale;
                     const capBlur = 3 * scaleFactor * shadowScale;
 
-                    ctx.filter = `drop-shadow(${capX}px ${capY}px ${capBlur}px rgba(0, 0, 0, 0.45)) brightness(${state.envBrightness})`;
+                    // NEW LINE:
+                    const capContrast = 0.85 + (state.envBrightness * 0.15);
+                    ctx.filter = `drop-shadow(${capX}px ${capY}px ${capBlur}px rgba(0, 0, 0, 0.45)) brightness(${state.envBrightness}) contrast(${capContrast})`;
                     ctx.globalAlpha = 0.98;
                     ctx.drawImage(overlay, -oW / 2, -oH / 2, oW, oH);
                     ctx.restore();
@@ -1054,7 +1087,7 @@
             const loader = document.getElementById('loader');
             const qrImage = document.getElementById('qrCodeImage');
             const tempDiv = document.createElement('div');
-            
+
             // NOTE: Decreased CorrectLevel to L to safely handle very long dynamic parameter strings without crashing
             new QRCode(tempDiv, {
                 text: url, width: 180, height: 180,
