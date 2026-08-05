@@ -14,9 +14,7 @@
         body {
             font-family: 'Inter', sans-serif;
             overflow: hidden;
-            /* Prevent body scrolling */
             touch-action: none;
-            /* Disable default touch actions like pull-to-refresh */
         }
 
         #viewportContainer {
@@ -27,7 +25,6 @@
             justify-content: center;
             align-items: center;
             background-color: #1f2937;
-            /* Dark background */
             touch-action: none;
         }
 
@@ -35,27 +32,24 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            /* Ensures video covers the entire viewport */
             position: absolute;
             top: 0;
             left: 0;
             z-index: 10;
         }
 
-
         #overlayImage {
             position: absolute;
             z-index: 20;
             touch-action: none;
             pointer-events: none;
-            transition: opacity 0.3s ease;
+            transition: filter 0.1s linear, opacity 0.3s ease; /* Added filter transition for smooth light shifts */
             max-width: 80%;
             max-height: 80%;
             transform-origin: center center;
             display: none;
-
+            /* Optional: Add a subtle inner shadow or border via CSS if needed, but keeping it canvas-based is better */
         }
-
 
         #previewCanvas {
             background: #1f1f1f;
@@ -73,7 +67,6 @@
             justify-content: space-between;
             align-items: center;
             padding: 0 35px;
-            /* Phone view padding */
             box-sizing: border-box;
             z-index: 60;
             pointer-events: none;
@@ -85,7 +78,6 @@
 
         #getStickerBtn {
             background: #f4f2f8;
-            /* Offwhite light violet greyish */
             color: #333;
             border: 1px solid #dcd6eb;
             padding: 10px 20px;
@@ -133,7 +125,6 @@
             background-color: transparent;
             border-radius: 50%;
             border: 4px solid white;
-            /* outer white border */
             position: relative;
             cursor: pointer;
             display: flex;
@@ -148,7 +139,6 @@
             width: 35px;
             height: 35px;
             background-color: white;
-            /* inner circle */
             border-radius: 50%;
             display: block;
             box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
@@ -161,7 +151,6 @@
             background-color: transparent;
             border-radius: 50%;
             border: 4px solid white;
-            /* outer white border */
             position: relative;
             cursor: pointer;
             display: flex;
@@ -177,7 +166,6 @@
             width: 40px;
             height: 40px;
             background-color: white;
-            /* inner circle */
             border-radius: 50%;
             display: block;
             box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
@@ -189,7 +177,6 @@
             background-color: transparent;
             position: relative;
             pointer-events: none;
-            /* disable clicks while loading */
         }
 
         #captureBtn.loader::before {
@@ -299,7 +286,6 @@
             font-weight: 900;
             font-size: 1.8rem;
             color: #7209b7;
-            /* deep violet */
             background: linear-gradient(90deg, #f72585, #7209b7);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -311,7 +297,6 @@
             font-weight: 500;
             font-size: 1rem;
             color: #181818;
-            /* lighter grey */
             margin-bottom: 0.25in;
             margin-top: 0.3in;
         }
@@ -321,7 +306,6 @@
             height: 180px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(245, 245, 245, 0.3);
-            /* pink shadow */
             margin-bottom: 20px;
         }
 
@@ -361,7 +345,6 @@
             width: 100vw;
             height: 100vh;
             background-color: #ffffff;
-            /* White background */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -370,9 +353,7 @@
 
         .loader-circle {
             border: 6px solid #e0e0e0;
-            /* Light grey circle background */
             border-top: 6px solid rgb(223, 86, 223);
-            /* Violet colored front for spinner */
             border-radius: 50%;
             width: 50px;
             height: 50px;
@@ -383,17 +364,12 @@
             position: absolute;
             top: 120px;
             padding: 0.5rem;
-            /* 8px */
             background-color: rgba(31, 41, 55, 0.7);
-            /* gray-800/70 */
             color: white;
             font-size: 0.75rem;
-            /* text-xs */
             border-radius: 9999px;
-            /* fully rounded */
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
                 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-            /* shadow-lg */
             z-index: 30;
             opacity: 0.7;
             display: none;
@@ -404,17 +380,12 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            /* center horizontally and vertically */
             color: white;
             text-align: center;
             padding: 1rem;
-            /* 16px */
             background-color: rgba(127, 28, 185, 0.8);
-            /* violet/purple background */
             border-radius: 0.5rem;
-            /* rounded-lg */
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            /* shadow-2xl */
             z-index: 50;
             display: none;
         }
@@ -442,7 +413,6 @@
             margin-bottom: 15px;
         }
 
-        /* Gesture Tooltip Style - Responsive Updates */
         #gestureTooltip {
             display: none;
             position: absolute;
@@ -450,40 +420,32 @@
             left: 50%;
             transform: translateX(-50%);
             background: #f8f4ff;
-            /* Light violet offwhite */
             color: #333;
-            /* Normal dark grey text */
             padding: 24px;
             border-radius: 20px;
             z-index: 100;
             width: 85%;
             max-width: 320px;
             text-align: left;
-            /* Align text from start */
             box-shadow: 0 12px 40px rgba(114, 9, 183, 0.2);
             border: 2px solid #e0d4ff;
             pointer-events: auto;
         }
 
-        /* Placement Tooltip Style - Responsive Updates */
         #placementTooltip {
             display: none;
             position: absolute;
             bottom: 25%;
-            /* Slight bottom from middle */
             left: 50%;
             transform: translateX(-50%);
             background: #fff4f4;
-            /* Reddish offwhite */
             color: #333;
-            /* Normal dark grey text */
             padding: 24px;
             border-radius: 20px;
             z-index: 101;
             width: 85%;
             max-width: 320px;
             text-align: left;
-            /* Align text from start */
             box-shadow: 0 12px 40px rgba(183, 9, 72, 0.15);
             border: 2px solid #ffe4e4;
             pointer-events: auto;
@@ -493,14 +455,11 @@
         #placementTooltip p {
             margin: 0;
             margin-top: 12px;
-            /* Add margin-top for clearing close button */
             font-weight: 600;
             line-height: 1.5;
         }
 
-        /* Responsive Tooltip: Phone */
         @media (max-width: 767px) {
-
             #gestureTooltip,
             #placementTooltip {
                 width: 85%;
@@ -513,9 +472,7 @@
             }
         }
 
-        /* Responsive Tooltip: Tablet */
         @media (min-width: 768px) and (max-width: 1024px) {
-
             #gestureTooltip,
             #placementTooltip {
                 width: 70%;
@@ -527,7 +484,6 @@
             #placementTooltip p {
                 font-size: 26px;
                 margin-top: 18px;
-                /* More margin for larger tablet button */
             }
 
             #getStickerBtn {
@@ -552,25 +508,20 @@
 
             #controls {
                 padding: 0 85px;
-                /* Tablet view padding */
             }
         }
 
         .tooltipClose {
             position: absolute;
             top: 4px;
-            /* Position at the top */
             right: 12px;
-            /* Position at the right */
             cursor: pointer;
             font-size: 34px;
-            /* Increased size */
             line-height: 1;
             font-weight: bold;
             color: #7209b7;
             opacity: 0.6;
             z-index: 102;
-            /* Ensure it is on top */
         }
 
         .tooltipClose:hover {
@@ -581,43 +532,27 @@
 
 <body>
 
-    <!-- Not Found State -->
-    <div id="notFoundOverlay">
-        <!-- Will be dynamically updated by showError function -->
-    </div>
+    <div id="notFoundOverlay"></div>
 
     <div id="viewportContainer">
-
-        <!-- Camera Feed Element -->
         <video id="cameraFeed" autoplay playsinline muted></video>
-
-        <!-- Image Overlay -->
         <img id="overlayImage" crossorigin="anonymous" src="" alt="Poster Overlay" class="w-72 h-auto rounded-xl"
             draggable="false">
 
-        <!-- Message/Error Display -->
-        <div id="message">
-            Awaiting camera permission...
-        </div>
+        <div id="message">Awaiting camera permission...</div>
 
-        <!-- Gesture Tooltip (First) -->
         <div id="gestureTooltip">
             <span class="tooltipClose" id="closeGestureTooltip" aria-label="Close Tooltip">&times;</span>
             <p>Move & zoom this poster using finger touch.</p>
         </div>
 
-        <!-- Placement Tooltip (Second) -->
         <div id="placementTooltip">
             <span class="tooltipClose" id="closePlacementTooltip" aria-label="Close Tooltip">&times;</span>
             <p>Point your camera directly at the wall to see how this poster will look.</p>
         </div>
 
-        <!-- Hidden Tip/Reset Indicator -->
-        <div id="resetTip">
-            Drag, Pinch, or Double-Tap to Reset
-        </div>
+        <div id="resetTip">Drag, Pinch, or Double-Tap to Reset</div>
 
-        <!-- Capture Button & Get Button -->
         <div id="controls">
             <a href="#" id="getStickerBtn">
                 <img id="btnStickerPreview" src="" alt="" style="display:none;">
@@ -625,37 +560,29 @@
             </a>
             <button id="captureBtn" aria-label="Capture Picture"></button>
         </div>
-
     </div>
 
-    <!-- Hidden Canvas for Image Processing/Capture -->
     <canvas id="captureCanvas" style="display:none;"></canvas>
 
     <div class="container mt-3" id="desktopAlert">
-
         <div class="row" style="padding:15px; background:#fff;">
-            <!-- Left Column: QR code instructions -->
             <div class="col-6 text-center" id="leftColumn">
                 <h2 class="highlighted-text">For better experience, open it in phone or tablet</h2>
                 <p class="light-text">Scan QR code to see this poster on your wall</p>
 
-                <div id="qrCodeWrapper" class="qr-code"
-                    style="margin:auto; position: relative; width: 180px; height: 180px;">
+                <div id="qrCodeWrapper" class="qr-code" style="margin:auto; position: relative; width: 180px; height: 180px;">
                     <div id="loader" style="
                         position: absolute; top: 50%; left: 50%; 
                         transform: translate(-50%, -50%); 
                         color: #555; font-weight: bold;
                         user-select: none;
                     ">Loading QR Code...</div>
-                    <img id="qrCodeImage" alt="Generated QR Code"
-                        style="width: 100%; height: 100%; display: none; border-radius: 12px; box-shadow: 0 4px 15px rgba(245, 245, 245, 0.3);" />
+                    <img id="qrCodeImage" alt="Generated QR Code" style="width: 100%; height: 100%; display: none; border-radius: 12px; box-shadow: 0 4px 15px rgba(245, 245, 245, 0.3);" />
                 </div>
 
                 <p class="link-text">or you can use this link</p>
-                <input type="text" id="shareLinkInput" readonly value=""
-                    class="link-box" />
+                <input type="text" id="shareLinkInput" readonly value="" class="link-box" />
             </div>
-            <!-- Right Column: Phone Demo -->
             <div class="col-6">
                 <div id="phone">
                     <div id="imageContainer">
@@ -666,15 +593,12 @@
                         <div id="democaptureBtn"></div>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script>
-
-        // 1. Parameter and Validation logic
         const urlParams = new URLSearchParams(window.location.search);
         const artUrl = urlParams.get('art');
         const redirectUrl = urlParams.get('redirect');
@@ -687,7 +611,6 @@
             if (document.getElementById('desktopAlert')) document.getElementById('desktopAlert').style.display = 'none';
         }
 
-        // Validate Assets before starting
         if (!artUrl) {
             showError("Wall Art Link Does Not Exist", "Please provide a valid image URL to preview the wall art.");
         } else if (!redirectUrl) {
@@ -695,11 +618,9 @@
         } else {
             const checkImg = new Image();
             checkImg.onload = function () {
-                // Success - start app
                 initApp(artUrl, redirectUrl);
             };
             checkImg.onerror = function () {
-                // Not Found - show message
                 showError("Wall Art Link Does Not Exist", "The provided image could not be loaded. Please check the URL and try again.");
             };
             checkImg.src = artUrl;
@@ -707,12 +628,9 @@
 
         function initApp(validArtUrl, validRedirectUrl) {
             const fullShareLink = window.location.href;
-
-            // Update Share Link
             const linkInput = document.getElementById('shareLinkInput');
             if (linkInput) linkInput.value = fullShareLink;
 
-            // Update Get Button Link & Image Preview
             const getStickerBtn = document.getElementById('getStickerBtn');
             const btnImg = document.getElementById('btnStickerPreview');
             if (getStickerBtn) {
@@ -723,7 +641,6 @@
                 btnImg.style.display = 'inline-block';
             }
 
-            // Device check
             const deviceType = (window.innerWidth <= 1024) ? 'mobile' : 'desktop';
 
             if (deviceType === 'desktop') {
@@ -747,19 +664,16 @@
         function setupGestureTooltip() {
             const tooltipSeen = document.cookie.split('; ').find(row => row.startsWith('posterTooltipSeen='));
             if (!tooltipSeen) {
-                // First Tooltip
                 setTimeout(() => {
                     const tooltip = document.getElementById('gestureTooltip');
                     if (tooltip) tooltip.style.display = 'block';
                 }, 3000);
             }
 
-            // Close logic for first tooltip
             const closeGestureBtn = document.getElementById('closeGestureTooltip');
             if (closeGestureBtn) {
                 closeGestureBtn.onclick = function () {
                     document.getElementById('gestureTooltip').style.display = 'none';
-                    // Trigger second tooltip after 3.5 seconds
                     setTimeout(() => {
                         const placementTooltip = document.getElementById('placementTooltip');
                         if (placementTooltip) placementTooltip.style.display = 'block';
@@ -767,17 +681,14 @@
                 };
             }
 
-            // Close logic for second tooltip
             const closePlacementBtn = document.getElementById('closePlacementTooltip');
             if (closePlacementBtn) {
                 closePlacementBtn.onclick = function () {
                     document.getElementById('placementTooltip').style.display = 'none';
-                    // Final cookie set when sequence completes/second is closed
                     document.cookie = "posterTooltipSeen=true; path=/; max-age=31536000";
                 };
             }
         }
-
 
         function openCamera() {
             const viewport = document.getElementById('viewportContainer');
@@ -789,7 +700,6 @@
             const captureCanvas = document.getElementById('captureCanvas');
             const ctx = captureCanvas.getContext('2d');
 
-            // Light Analysis Setup
             const analysisCanvas = document.createElement('canvas');
             const analysisCtx = analysisCanvas.getContext('2d', { willReadFrequently: true });
             analysisCanvas.width = 40;
@@ -798,49 +708,79 @@
             let state = {
                 x: 0, y: 0, scale: 1, rotation: 0,
                 startX: 0, startY: 0, baseX: 0, baseY: 0, baseScale: 1, baseRotation: 0,
-                envBrightness: 0.95
+                envBrightness: 0.95,
+                envWarmth: 0 // New state for dynamic color adjustments
             };
 
             const activePointers = new Map();
             let initialDistance = null;
             let initialAngle = 0;
 
-            // 1. UPDATED LIVE OVERLAY (Subtle 4, 3, 3 Shadow + Rotation support)
+            // EXPONENTIAL MOVING AVERAGE VARS
+            let smoothedLuminance = 0.8;
+            let smoothedWarmth = 1.0;
+            const smoothFactor = 0.15; // Lower = smoother tracking, Higher = faster reaction
+
+            // DYNAMIC UPDATE OVERLAY
             const updateOverlay = () => {
                 overlay.style.transform = `translateX(${state.x}px) translateY(${state.y}px) scale(${state.scale}) rotate(${state.rotation}deg)`;
 
                 const shadowScale = Math.max(state.scale, 0.85);
-                // Subtle shadow values
                 const liveX = 4 * shadowScale;
                 const liveY = 3 * shadowScale;
                 const liveBlur = 3 * shadowScale;
 
-                const filterString = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(0, 0, 0, 0.45)) brightness(${state.envBrightness})`;
+                // Subtle dynamic sepia if the room is warm
+                let sepiaAmount = 0;
+                if (state.envWarmth > 1.1) {
+                    sepiaAmount = Math.min((state.envWarmth - 1.1) * 0.4, 0.5); // Cap at 50%
+                }
+
+                // Incorporate continuous 1% mappings
+                const filterString = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(0, 0, 0, 0.45)) brightness(${state.envBrightness}) sepia(${sepiaAmount.toFixed(3)})`;
 
                 overlay.style.filter = filterString;
                 overlay.style.webkitFilter = filterString;
             };
 
-            // 2. UPDATED BRIGHTNESS (Slightly increased floor)
+            // CONTINUOUS 1% LIGHT AND COLOR ANALYSIS
             function analyzeLight() {
                 if (video.readyState === video.HAVE_ENOUGH_DATA) {
                     analysisCtx.drawImage(video, 0, 0, 40, 40);
                     const pixels = analysisCtx.getImageData(0, 0, 40, 40).data;
-                    let totalLuminance = 0;
+                    
+                    let totalR = 0, totalG = 0, totalB = 0;
+                    const count = pixels.length / 4;
+                    
                     for (let i = 0; i < pixels.length; i += 4) {
-                        totalLuminance += (0.2126 * pixels[i] + 0.7152 * pixels[i + 1] + 0.0722 * pixels[i + 2]);
+                        totalR += pixels[i];
+                        totalG += pixels[i + 1];
+                        totalB += pixels[i + 2];
                     }
-                    const avgLuminance = totalLuminance / (40 * 40);
 
-                    // Increased floor to 0.74 and narrowed range to 0.22 for subtle pop
-                    const newBrightness = 0.74 + (avgLuminance / 255) * 0.22;
+                    const avgR = totalR / count;
+                    const avgG = totalG / count;
+                    const avgB = totalB / count;
 
+                    // 1. Get raw float luminance and calculate moving average
+                    const rawLuminance = (0.2126 * avgR + 0.7152 * avgG + 0.0722 * avgB) / 255;
+                    smoothedLuminance = (smoothFactor * rawLuminance) + ((1 - smoothFactor) * smoothedLuminance);
+                    
+                    // 2. Floor mappings so image doesn't go pure black
+                    const newBrightness = 0.70 + (smoothedLuminance * 0.30);
                     state.envBrightness = newBrightness.toFixed(3);
+
+                    // 3. Determine ambient color warmth (Red vs Blue ratio)
+                    const rawWarmth = avgR / (avgB + 1); // +1 prevents division by zero
+                    smoothedWarmth = (smoothFactor * rawWarmth) + ((1 - smoothFactor) * smoothedWarmth);
+                    state.envWarmth = smoothedWarmth;
+
                     updateOverlay();
                 }
             }
 
-            setInterval(analyzeLight, 500);
+            // Run at a fast interval for smooth 1% granular transitions
+            setInterval(analyzeLight, 100);
 
             async function startCamera() {
                 message.style.display = 'block';
@@ -934,7 +874,6 @@
             viewport.addEventListener('pointercancel', pointerEnd);
             viewport.addEventListener('pointerleave', pointerEnd);
 
-            // 3. DOUBLE TAP RESET (Kept exactly as original)
             let lastTap = 0;
             viewport.addEventListener('click', (e) => {
                 if (e.target.closest('#controls') || e.target.closest('.tooltipClose')) return;
@@ -949,7 +888,7 @@
                 lastTap = now;
             });
 
-            // 4. SYNCED CAPTURE (High Quality + 4, 3, 3 Shadow + Rotation support)
+            // UPDATED SYNC CAPTURE LOGIC
             captureBtn.addEventListener('click', () => {
                 captureBtn.classList.add('loader');
                 setTimeout(() => {
@@ -992,7 +931,13 @@
                     const capY = 3 * scaleFactor * shadowScale;
                     const capBlur = 3 * scaleFactor * shadowScale;
 
-                    ctx.filter = `drop-shadow(${capX}px ${capY}px ${capBlur}px rgba(0, 0, 0, 0.45)) brightness(${state.envBrightness})`;
+                    // Match exact live styling to capture canvas
+                    let capSepiaAmount = 0;
+                    if (state.envWarmth > 1.1) {
+                        capSepiaAmount = Math.min((state.envWarmth - 1.1) * 0.4, 0.5);
+                    }
+
+                    ctx.filter = `drop-shadow(${capX}px ${capY}px ${capBlur}px rgba(0, 0, 0, 0.45)) brightness(${state.envBrightness}) sepia(${capSepiaAmount.toFixed(3)})`;
                     ctx.globalAlpha = 0.98;
                     ctx.drawImage(overlay, -oW / 2, -oH / 2, oW, oH);
                     ctx.restore();
@@ -1009,7 +954,6 @@
 
             startCamera();
         }
-
 
         function setupDesktopExperience(validArtUrl, fullShareLink) {
             generateQRCode(fullShareLink);
@@ -1033,7 +977,6 @@
 
             function animateWallArt() {
                 if (paused) return;
-                // Subtle scale/position adjustments for poster visualization (rotation removed)
                 switch (step) {
                     case 0: wallArtDiv.style.transform = "scale(0.65) translateY(-20%)"; break;
                     case 1: wallArtDiv.style.transform = "scale(0.6) translateY(-22%)"; break;
@@ -1055,7 +998,6 @@
             const qrImage = document.getElementById('qrCodeImage');
             const tempDiv = document.createElement('div');
             
-            // NOTE: Decreased CorrectLevel to L to safely handle very long dynamic parameter strings without crashing
             new QRCode(tempDiv, {
                 text: url, width: 180, height: 180,
                 colorDark: "#000000", colorLight: "#ffffff",
