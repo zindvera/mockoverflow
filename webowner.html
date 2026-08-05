@@ -3,15 +3,13 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>MockOverflow - Free Wall Art Preview for Creators</title>
+    <title>MockOverflow - Wall Art Camera View Link</title>
     
     <link rel="icon" type="image/png" sizes="32x32" href="media/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="media/favicon-16x16.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="media/favicon-180x180.png" />
     
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
-    <!-- Inter Font -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
     
     <style>
@@ -28,7 +26,7 @@
             --text-main: #1a0f2e;
             --text-muted: #6c757d;
             --input-bg: #f8f8fb;
-            --phone-bezel: #333333; 
+            --phone-bezel: #333333;
         }
 
         body {
@@ -149,9 +147,9 @@
         }
 
         .form-control-custom:focus {
-            border-color: var(--brand-purple);
+            border-color: rgba(247, 37, 133, 0.4); 
             background: #fff;
-            box-shadow: 0 0 0 4px rgba(181, 23, 158, 0.1);
+            box-shadow: none;
         }
 
         .btn-create {
@@ -178,7 +176,7 @@
             transform: translateY(1px);
         }
 
-        /* --- TOOLTIP (Sequential & LocalStorage powered) --- */
+        /* --- ONBOARDING TOOLTIP --- */
         .mo-tooltip {
             position: absolute;
             top: -55px;
@@ -340,7 +338,7 @@
             padding: 0 20px;
             box-sizing: border-box;
             z-index: 50;
-            pointer-events: none;
+            pointer-events: none; /* Make purely visual */
         }
 
         .mock-capture-btn {
@@ -386,7 +384,7 @@
             background-color: var(--brand-violet);
             color: #fff;
             padding: 14px 32px;
-            border-radius: 50px; 
+            border-radius: 50px; /* Pill shape */
             font-size: 1.1rem;
             font-weight: 700;
             border: none;
@@ -408,9 +406,9 @@
             box-shadow: 0 5px 15px rgba(94, 96, 206, 0.3);
         }
 
-        /* --- WHY IT'S FREE (Minimalist Cards) --- */
-        .why-free-section {
-            margin-top: 90px;
+        /* --- PRICING SECTION --- */
+        .pricing-section {
+            margin-top: 80px;
             padding-top: 60px;
             border-top: 1px solid #f0f0f5;
             max-width: 1000px;
@@ -418,65 +416,187 @@
             margin-right: auto;
         }
 
-        .why-free-header {
-            text-align: left;
+        .pricing-header {
             margin-bottom: 30px;
+            text-align: left;
         }
 
-        .why-free-title {
+        .pricing-header h2 {
             font-size: 1.8rem;
             font-weight: 800;
             color: var(--text-main);
             margin: 0 0 5px 0;
         }
 
-        .free-card {
-            background: var(--input-bg);
+        .pricing-header span {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+        }
+
+        .pricing-scroll-wrapper {
+            display: flex;
+            overflow-x: auto;
+            gap: 20px;
+            padding-bottom: 25px;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        
+        .pricing-scroll-wrapper::-webkit-scrollbar {
+            display: none;
+        }
+
+        .price-card {
+            background: #fff;
+            border: 1px solid #e0e0ef;
             border-radius: 16px;
-            padding: 35px 30px;
-            border: 1px solid transparent;
-            transition: all 0.2s;
+            min-width: 300px;
+            max-width: 320px;
+            flex: 0 0 auto;
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
             display: flex;
             flex-direction: column;
+            transition: box-shadow 0.2s, border-color 0.2s;
+        }
+
+        .price-card:hover {
+            box-shadow: 0 15px 35px rgba(94, 96, 206, 0.06);
+            border-color: #e6daff;
+        }
+
+        .plan-top {
+            padding: 30px 30px 25px 30px;
+            border-bottom: 1px solid #f0f0f5;
+            text-align: center;
+        }
+
+        .p-tier { 
+            font-size: 1rem; 
+            font-weight: 800; 
+            color: var(--text-main); 
+            text-transform: uppercase; 
+            letter-spacing: 0.05em; 
+            margin-bottom: 15px;
+        }
+        
+        .p-price { 
+            font-size: 2.2rem; 
+            font-weight: 900; 
+            margin-bottom: 25px; 
+            color: var(--text-main); 
+        }
+        
+        .p-price span {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .btn-pricing {
+            display: block;
+            width: 100%;
+            background-color: #fbf8ff;
+            color: var(--brand-violet);
+            border: 1px solid #e6daff;
+            padding: 14px 0;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1.05rem;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-pricing:hover {
+            background-color: #f0e6ff;
+            border-color: #d8c4ff;
+            color: var(--brand-purple);
+        }
+
+        .plan-bottom {
+            padding: 25px 30px;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+            flex-grow: 1;
+        }
+
+        /* --- HOW IT WORKS SECTION --- */
+        .process-section {
+            margin-top: 40px;
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+            background: #fff;
+            padding: 50px 20px;
+        }
+
+        .process-header {
+            text-align: left;
+            margin-bottom: 45px;
+        }
+
+        .process-header h3 {
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: var(--text-main);
+            margin-bottom: 10px;
+            letter-spacing: -0.02em;
+        }
+
+        .process-header p {
+            color: var(--text-muted);
+            font-size: 1.15rem;
+            font-weight: 500;
+        }
+
+        .step-card {
+            padding: 15px 20px;
             height: 100%;
         }
 
-        .free-card:hover {
-            background: #fff;
-            border-color: #e6daff;
-            box-shadow: 0 15px 35px rgba(94, 96, 206, 0.08);
-            transform: translateY(-2px);
-        }
-
-        .fc-icon {
-            font-size: 1.8rem;
-            margin-bottom: 15px;
-            display: inline-block;
-        }
-
-        .fc-title {
-            font-size: 1.2rem;
+        .step-card h5 {
+            font-size: 1.3rem;
             font-weight: 800;
-            color: var(--brand-purple);
+            color: var(--text-main);
             margin-bottom: 12px;
         }
 
-        .fc-desc {
-            font-size: 1rem;
+        .step-card p {
             color: var(--text-muted);
+            margin: 0;
+            font-size: 1.05rem;
             line-height: 1.6;
         }
 
-        .warning-card:hover {
-            border-color: #ffd6d6;
-            box-shadow: 0 15px 35px rgba(220, 38, 38, 0.08);
-        }
-        
-        .warning-card .fc-title {
-            color: #DC2626; 
+        .warning-box {
+            background-color: #fffafa;
+            border: 1px solid #ffe5e5;
+            padding: 20px 25px;
+            border-radius: 12px;
+            color: #b91c1c;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            display: block;
+            margin-top: 40px;
         }
 
-        /* --- FULL WIDTH MODAL --- */
+        .warning-box strong {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            font-size: 1.05rem;
+        }
+
+        .warning-box span.icon {
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+
+        /* --- CENTERED MODAL --- */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
@@ -498,16 +618,15 @@
 
         .modal-layout {
             display: flex;
-            flex-direction: row;
-            align-items: center;
-            gap: 60px;
-            background: #fff;
-            padding: 50px 70px;
+            flex-direction: column;
+            background: rgba(248, 249, 250, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 50px 60px;
             border-radius: 32px;
             box-shadow: 0 25px 80px rgba(43, 1, 49, 0.12);
-            border: 1px solid #f0f0f5;
-            max-width: 1000px;
-            width: 90%;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            width: 45vw; 
             transform: translateY(20px);
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             position: relative;
@@ -516,9 +635,6 @@
         .modal-overlay.active .modal-layout {
             transform: translateY(0);
         }
-
-        .modal-left { flex: 1; }
-        .modal-right { flex-shrink: 0; }
 
         .modal-close {
             position: absolute;
@@ -538,7 +654,7 @@
         .modal-title {
             font-size: 2.2rem;
             font-weight: 800;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             line-height: 1.2;
             color: var(--brand-purple);
         }
@@ -602,17 +718,57 @@
             color: #fff;
         }
 
+        /* --- RESPONSIVE MODAL MEDIA QUERIES --- */
+        @media (max-width: 1024px) {
+            .modal-layout {
+                width: 55vw; 
+            }
+        }
+
         /* Mobile adjustments */
         @media (max-width: 850px) {
             h1 { font-size: 2.4rem; text-align: center; }
             .hero-subtitle { text-align: center; margin: 0 auto 2.5rem auto; }
             .form-wrapper { text-align: center; margin-bottom: 40px; }
-            .modal-layout { flex-direction: column; padding: 40px 30px; gap: 30px; overflow-y: auto; max-height: 95vh; }
+            
+            .modal-layout { 
+                width: calc(100vw - 16px); 
+                padding: 70px 30px 40px 30px; 
+            }
+            .modal-close {
+                top: 15px; 
+                right: 20px;
+            }
+            .modal-actions { flex-direction: column; }
+
             .nav-container { justify-content: center; flex-direction: column; gap: 15px; }
             .nav-logo { margin-right: 0; }
+            
+            .process-section { 
+                padding: 40px 0px; 
+            }
+            .step-card {
+                padding: 15px 5px;
+            }
+            .warning-box {
+                margin-left: 0;
+                margin-right: 0;
+                border-radius: 12px;
+            }
+            
+            .pricing-scroll-wrapper {
+                flex-direction: column;
+                align-items: center;
+                overflow-x: visible; 
+                padding-bottom: 0;
+            }
+            
+            .price-card {
+                width: 100%;
+                max-width: 100%;
+            }
         }
 
-        /* Footer minimal */
         footer {
             padding: 60px 0 40px 0;
             text-align: center;
@@ -625,7 +781,6 @@
 </head>
 <body>
 
-    <!-- Header Navigation -->
     <div class="nav-container">
         <div class="nav-logo">
             <picture>
@@ -640,14 +795,13 @@
         <div class="row">
             <div class="col-12 d-flex justify-content-center justify-content-lg-start">
                 <div class="audience-nav">
-                    <a href="index.html">Website Owners</a>
-                    <a href="individual.html" class="active">Individual Sellers</a>
+                    <a href="index.html" class="active">Website Owners</a>
+                    <a href="individual.html">Individual Sellers</a>
                 </div>
             </div>
         </div>
 
         <div class="row align-items-center">
-            <!-- LEFT COLUMN: Form -->
             <div class="col-lg-6 col-md-12 order-1 order-lg-1">
                 <div class="form-wrapper text-lg-start">
                     <h1>
@@ -656,34 +810,30 @@
                         <span class="highlight-gradient">Camera View Link</span>
                     </h1>
                     
-                    <!-- Sales & Customer Benefit Focused Subtitle -->
                     <p class="hero-subtitle">
-                        Let your customers see your artwork on their own wall through their phone camera. Share the link to build buyer confidence and boost your sales.
+                        Let your customers see your artwork directly on their own wall through their phone camera. 
                     </p>
                     
                     <div class="input-group-custom" id="artInputWrapper">
-                        <!-- Reusable Tooltip Element -->
                         <div id="mo-tooltip" class="mo-tooltip hidden">
                             <span id="tooltip-text">Paste your artwork's direct image URL here to test.</span>
                             <button onclick="closeTooltip()" class="tooltip-close" aria-label="Close tooltip">&times;</button>
                         </div>
                         
-                        <!-- Validation Error Tooltip -->
                         <div id="art-error-tooltip" class="mo-error-tooltip hidden">
                             <span>Please enter a valid wall art image URL (https://... ending in .jpg, .png, .webp)</span>
                             <button onclick="closeErrorTooltip('art-error-tooltip')" class="error-tooltip-close">&times;</button>
                         </div>
-
+                        
                         <input type="url" id="inputArtUrl" class="form-control-custom" placeholder="Poster Image URL" />
                     </div>
                     
                     <div class="input-group-custom" id="redirectInputWrapper">
-                        <!-- Validation Error Tooltip -->
                         <div id="redirect-error-tooltip" class="mo-error-tooltip hidden">
                             <span>Please enter a valid product destination URL starting with https://</span>
                             <button onclick="closeErrorTooltip('redirect-error-tooltip')" class="error-tooltip-close">&times;</button>
                         </div>
-
+                        
                         <input type="url" id="inputRedirectUrl" class="form-control-custom" placeholder="Product Destination URL" />
                     </div>
                     
@@ -693,7 +843,6 @@
                 </div>
             </div>
 
-            <!-- RIGHT COLUMN: Phone Demo -->
             <div class="col-lg-6 col-md-12 order-2 order-lg-2 mt-5 mt-lg-0">
                 <div class="phone-mockup" id="homePhone">
                     <div class="img-container" id="homeImageContainer">
@@ -714,79 +863,101 @@
             </div>
         </div>
 
-        <!-- Minimalist Process Cards: Why It's Free & Terms -->
-        <div class="why-free-section">
-            <div class="why-free-header">
-                <h2 class="why-free-title">Why is this free?</h2>
+        <div class="pricing-section">
+            <div class="pricing-header">
+                <h2>Commercial Plans</h2>
+                <span>(Scroll horizontally to view)</span>
             </div>
-            
-            <div class="row g-4">
-                <!-- Card 1 -->
-                <div class="col-lg-4 col-md-6 col-12">
-                    <div class="free-card">
-                        <span class="fc-icon">🎨</span>
-                        <div class="fc-title">Zero Cost Link Generation</div>
-                        <div class="fc-desc">
-                            As an independent creator, you can generate unlimited camera view links for your artwork without paying any monthly subscription fees.
-                        </div>
+
+            <div class="pricing-scroll-wrapper" id="pricingScrollWrapper">
+                <div class="price-card">
+                    <div class="plan-top">
+                        <div class="p-tier">50 Links Plan</div>
+                        <div class="p-price">$29<span>/ mo</span></div>
+                        <a href="contact.html" class="btn-pricing">Contact to Activate</a>
+                    </div>
+                    <div class="plan-bottom">
+                        You can use the camera link for up to 50 different wall art products on your site.
                     </div>
                 </div>
 
-                <!-- Card 2 -->
-                <div class="col-lg-4 col-md-6 col-12">
-                    <div class="free-card">
-                        <span class="fc-icon">🤝</span>
-                        <div class="fc-title">Our Affiliate Partnership</div>
-                        <div class="fc-desc">
-                            To keep this tool free for artists, we automatically attach our affiliate ID to your generated destination link. We only earn if your customer buys.
-                        </div>
+                <div class="price-card">
+                    <div class="plan-top">
+                        <div class="p-tier">100 Links Plan</div>
+                        <div class="p-price">$49<span>/ mo</span></div>
+                        <a href="contact.html" class="btn-pricing">Contact to Activate</a>
+                    </div>
+                    <div class="plan-bottom">
+                        You can use the camera link for up to 100 different wall art products on your site.
                     </div>
                 </div>
 
-                <!-- Card 3 (The Warning Rule) -->
-                <div class="col-lg-4 col-md-6 col-12">
-                    <div class="free-card warning-card">
-                        <span class="fc-icon">⚠️</span>
-                        <div class="fc-title">The Fair Use Rule</div>
-                        <div class="fc-desc">
-                            The tool remains free <strong>only</strong> if our affiliate ID stays in the link. Bypassing or removing it violates our Terms and will result in your link being permanently blocked.
-                        </div>
+                <div class="price-card">
+                    <div class="plan-top">
+                        <div class="p-tier">500 Links Plan</div>
+                        <div class="p-price">$99<span>/ mo</span></div>
+                        <a href="contact.html" class="btn-pricing">Contact to Activate</a>
+                    </div>
+                    <div class="plan-bottom">
+                        You can use the camera link for up to 500 different wall art products on your site.
                     </div>
                 </div>
             </div>
         </div>
+
+        <div class="process-section">
+            <div class="process-header">
+                <h3>How it Works</h3>
+                <p>Want to use camera link on your website? Follow these easy steps.</p>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="step-card">
+                        <h5>1. Let us know</h5>
+                        <p>Send us a quick message with your store's website address so we know who you are and don't flag your URLs.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="step-card">
+                        <h5>2. Make Payment</h5>
+                        <p>Pay the simple flat rate based on how many camera view links you want to keep active across your online store.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="step-card">
+                        <h5>3. Safe & Permanent</h5>
+                        <p>We officially whitelist your store. Your links are guaranteed to stay active and will never be removed or blocked.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="warning-box">
+                <strong><span class="icon">⚠️</span> Please Note:</strong>
+                <div>
+                    Running multiple camera preview links on your online store website without notifying us or making a payment will result in those URLs being permanently blocked during our manual checks. Use the free generator above to test out how it works!
+                </div>
+            </div>
+        </div>
+
     </main>
 
-    <!-- FULL WIDTH MODAL UI -->
     <div class="modal-overlay" id="successModal">
         <div class="modal-layout">
             <button class="modal-close" onclick="closeModal()">&times;</button>
             
-            <div class="modal-left">
-                <h3 class="modal-title">Your link is ready.</h3>
-                <p style="color: var(--text-muted); margin-bottom: 25px; font-size: 1.1rem;">
-                    Here is how your artwork looks in the camera preview simulation:
-                </p>
-                <div class="modal-link-box">
-                    <input type="text" id="generatedLinkOutput" readonly value="https://mockoverflow.online/..." />
-                </div>
-                <div class="modal-actions">
-                    <button class="btn-modal-copy" id="copyBtn" onclick="copyModalLink()">Copy Link</button>
-                    <a href="#" target="_blank" class="btn-modal-visit" id="visitBtn">Visit Link ↗</a>
-                </div>
+            <h3 class="modal-title">Your link is ready.</h3>
+            <p style="color: var(--text-muted); margin-bottom: 25px; font-size: 1.1rem;">
+                Here is your generated artwork camera preview simulation link:
+            </p>
+            <div class="modal-link-box">
+                <input type="text" id="generatedLinkOutput" readonly value="" />
             </div>
-
-            <div class="modal-right">
-                <div class="phone-mockup" id="modalPhone">
-                    <div class="img-container" id="modalImageContainer">
-                        <img src="media/wall-demo.jpg" alt="Living Room Mockup" onerror="this.src='https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?q=80&w=600&auto=format&fit=crop'" />
-                    </div>
-                    <div class="wall-art-layer" id="modalWallArt"></div>
-                    <div class="phonecontrols">
-                        <div class="mock-capture-btn"></div>
-                        <div class="mock-cta-btn">Get This Poster</div>
-                    </div>
-                </div>
+            <div class="modal-actions">
+                <button class="btn-modal-copy" id="copyBtn" onclick="copyModalLink()">Copy Link</button>
+                <a href="#" target="_blank" class="btn-modal-visit" id="visitBtn">Visit Link ↗</a>
             </div>
         </div>
     </div>
@@ -852,13 +1023,12 @@
                     }
                 } catch (e) {
                     console.warn("Canvas CORS error, skipping crop:", e);
-                    element.style.backgroundImage = `url(${url})`;
                 }
             };
             img.src = url;
         }
 
-        // --- TOOLTIP LOGIC (Sequential) ---
+        // --- ONBOARDING TOOLTIP LOGIC ---
         let currentTooltipStep = 1;
 
         window.addEventListener('load', () => {
@@ -874,10 +1044,7 @@
             }
 
             if (localStorage.getItem('mo_hide_tooltips') !== 'true') {
-                // Wait exactly 4 seconds before showing Step 1
-                setTimeout(() => {
-                    showTooltip(1);
-                }, 4000);
+                setTimeout(() => { showTooltip(1); }, 4000);
             }
         });
 
@@ -886,19 +1053,17 @@
             const tooltip = document.getElementById('mo-tooltip');
             const textEl = document.getElementById('tooltip-text');
             
-            tooltip.classList.add('hidden'); // Hide temporarily before moving
+            tooltip.classList.add('hidden');
 
-            // Brief pause to allow the DOM to hide before moving and fading in
             setTimeout(() => {
                 if (step === 1) {
                     textEl.textContent = "Paste your artwork's direct image URL here to test.";
                     document.getElementById('artInputWrapper').appendChild(tooltip);
                 } else if (step === 2) {
-                    textEl.textContent = "Where should buyers go? Paste your shop link here.";
+                    textEl.textContent = "Where should buyers go? Paste your product link here.";
                     document.getElementById('redirectInputWrapper').appendChild(tooltip);
                 }
                 
-                // Trigger reflow to ensure the CSS transition plays correctly
                 void tooltip.offsetWidth; 
                 tooltip.classList.remove('hidden');
             }, 50);
@@ -909,15 +1074,10 @@
             tooltip.classList.add('hidden');
 
             if (currentTooltipStep === 1) {
-                // User closed Step 1. Wait exactly 0.5s before showing Step 2.
                 setTimeout(() => {
-                    // Check local storage in case they triggered "Create Link" before the half second finished
-                    if (localStorage.getItem('mo_hide_tooltips') !== 'true') {
-                        showTooltip(2);
-                    }
+                    if (localStorage.getItem('mo_hide_tooltips') !== 'true') showTooltip(2);
                 }, 500);
             } else {
-                // User closed Step 2. Never show tooltips again.
                 localStorage.setItem('mo_hide_tooltips', 'true');
             }
         }
@@ -927,33 +1087,31 @@
             document.getElementById(tooltipId).classList.add('hidden');
         }
 
-        // --- LINK GENERATION & MODAL ---
+        // --- LINK GENERATION & MODAL (WITH HISTORY API) ---
+        let modalHistoryStaged = false;
+
         function openCreationModal() {
             const artInput = document.getElementById('inputArtUrl');
             const redirectInput = document.getElementById('inputRedirectUrl');
             const artUrl = artInput.value.trim();
             const redirectUrl = redirectInput.value.trim();
 
-            // Auto-hide any visible error tooltips initially on submission attempt
             closeErrorTooltip('art-error-tooltip');
             closeErrorTooltip('redirect-error-tooltip');
 
-            // Strict Validation Checks
             const isValidArt = /^https:\/\/.*\.(jpg|jpeg|png|webp)$/i.test(artUrl);
             const isValidRedirect = /^https:\/\//i.test(redirectUrl);
 
-            // Sequential Validation: Show one error tooltip at a time
             if (!isValidArt) {
                 document.getElementById('art-error-tooltip').classList.remove('hidden');
-                return; // Stop execution, don't check redirect yet
+                return; 
             }
             
             if (!isValidRedirect) {
                 document.getElementById('redirect-error-tooltip').classList.remove('hidden');
-                return; // Stop execution if second input fails
+                return; 
             }
 
-            // Immediately save state so tooltip logic completely aborts if active
             localStorage.setItem('mo_hide_tooltips', 'true');
             const tooltip = document.getElementById('mo-tooltip');
             if (tooltip) tooltip.classList.add('hidden');
@@ -961,13 +1119,10 @@
             const encodedArt = encodeURIComponent(artUrl);
             const encodedRedirect = encodeURIComponent(redirectUrl);
             
-            let finalUrl = `https://mockoverflow.online/show/poster/?art=${encodedArt}&redirect=${encodedRedirect}`;
+            let finalUrl = `https://mockoverflow.online/camera.html?art=${encodedArt}&redirect=${encodedRedirect}`;
 
             document.getElementById('generatedLinkOutput').value = finalUrl;
             document.getElementById('visitBtn').href = finalUrl;
-            
-            // Process cropping for the modal preview
-            processWallArtImage(artUrl, document.getElementById('modalWallArt'));
 
             const copyBtn = document.getElementById('copyBtn');
             copyBtn.textContent = 'Copy Link';
@@ -975,11 +1130,26 @@
             copyBtn.style.backgroundColor = 'transparent';
 
             document.getElementById('successModal').classList.add('active');
+            history.pushState({ modalOpen: true }, '');
+            modalHistoryStaged = true;
         }
 
         function closeModal() {
             document.getElementById('successModal').classList.remove('active');
+            
+            if (modalHistoryStaged) {
+                modalHistoryStaged = false;
+                history.back();
+            }
         }
+
+        window.addEventListener('popstate', function(event) {
+            const modal = document.getElementById('successModal');
+            if (modal.classList.contains('active')) {
+                modal.classList.remove('active');
+                modalHistoryStaged = false;
+            }
+        });
 
         function copyModalLink() {
             const input = document.getElementById('generatedLinkOutput');
@@ -990,7 +1160,7 @@
                 const btn = document.getElementById('copyBtn');
                 btn.textContent = 'Copied!';
                 btn.style.backgroundImage = 'none';
-                btn.style.backgroundColor = '#10B981'; // Green success
+                btn.style.backgroundColor = '#10B981';
             };
 
             try {
@@ -1009,8 +1179,6 @@
         function startAnimations() {
             const hContainer = document.getElementById('homeImageContainer');
             const hArt = document.getElementById('homeWallArt');
-            const mContainer = document.getElementById('modalImageContainer');
-            const mArt = document.getElementById('modalWallArt');
 
             let step = 0;
 
@@ -1025,7 +1193,6 @@
                     case 5: transformStyle = "translateX(-20px) translateY(0)"; break;
                 }
                 if(hContainer) hContainer.style.transform = transformStyle;
-                if(mContainer) mContainer.style.transform = transformStyle;
             }
 
             function animateWallArt() {
@@ -1038,12 +1205,11 @@
                     case 4: transformStyle = "scale(0.44) translateY(-39%)"; break;
                 }
                 if(hArt) hArt.style.transform = transformStyle;
-                if(mArt) mArt.style.transform = transformStyle;
                 step++;
             }
 
-            setInterval(slideImage, 3000);
-            setInterval(animateWallArt, 3000);
+            setInterval(slideImage, 3000); 
+            setInterval(animateWallArt, 3000); 
             slideImage();
             animateWallArt();
         }
