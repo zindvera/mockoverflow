@@ -861,7 +861,7 @@
                         const avgLuminance = totalLuminance / (40 * 40);
 
                         // Brightness range: drops to 0.35 in deep shadow, caps at 0.95 in bright light
-                        const minBrightness = 0.35;
+                        const minBrightness = 0.65;
                         const maxBrightness = 0.95;
                         const newBrightness = minBrightness + (avgLuminance / 255) * (maxBrightness - minBrightness);
 
