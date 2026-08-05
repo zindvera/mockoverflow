@@ -672,6 +672,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script>
+
         // 1. Parameter and Validation logic
         const urlParams = new URLSearchParams(window.location.search);
         const artUrl = urlParams.get('art');
@@ -693,9 +694,11 @@
         } else {
             const checkImg = new Image();
             checkImg.onload = function () {
+                // Success - start app
                 initApp(artUrl, redirectUrl);
             };
             checkImg.onerror = function () {
+                // Not Found - show message
                 showError("Wall Art Link Does Not Exist", "The provided image could not be loaded. Please check the URL and try again.");
             };
             checkImg.src = artUrl;
@@ -704,17 +707,22 @@
         function initApp(validArtUrl, validRedirectUrl) {
             const fullShareLink = window.location.href;
 
+            // Update Share Link
             const linkInput = document.getElementById('shareLinkInput');
             if (linkInput) linkInput.value = fullShareLink;
 
+            // Update Get Button Link & Image Preview
             const getStickerBtn = document.getElementById('getStickerBtn');
             const btnImg = document.getElementById('btnStickerPreview');
-            if (getStickerBtn) getStickerBtn.href = validRedirectUrl;
+            if (getStickerBtn) {
+                getStickerBtn.href = validRedirectUrl;
+            }
             if (btnImg) {
                 btnImg.src = validArtUrl;
                 btnImg.style.display = 'inline-block';
             }
 
+            // Device check
             const deviceType = (window.innerWidth <= 1024) ? 'mobile' : 'desktop';
 
             if (deviceType === 'desktop') {
@@ -738,16 +746,19 @@
         function setupGestureTooltip() {
             const tooltipSeen = document.cookie.split('; ').find(row => row.startsWith('posterTooltipSeen='));
             if (!tooltipSeen) {
+                // First Tooltip
                 setTimeout(() => {
                     const tooltip = document.getElementById('gestureTooltip');
                     if (tooltip) tooltip.style.display = 'block';
                 }, 3000);
             }
 
+            // Close logic for first tooltip
             const closeGestureBtn = document.getElementById('closeGestureTooltip');
             if (closeGestureBtn) {
                 closeGestureBtn.onclick = function () {
                     document.getElementById('gestureTooltip').style.display = 'none';
+                    // Trigger second tooltip after 3.5 seconds
                     setTimeout(() => {
                         const placementTooltip = document.getElementById('placementTooltip');
                         if (placementTooltip) placementTooltip.style.display = 'block';
@@ -755,14 +766,17 @@
                 };
             }
 
+            // Close logic for second tooltip
             const closePlacementBtn = document.getElementById('closePlacementTooltip');
             if (closePlacementBtn) {
                 closePlacementBtn.onclick = function () {
                     document.getElementById('placementTooltip').style.display = 'none';
+                    // Final cookie set when sequence completes/second is closed
                     document.cookie = "posterTooltipSeen=true; path=/; max-age=31536000";
                 };
             }
         }
+
 
         function openCamera() {
             const viewport = document.getElementById('viewportContainer');
@@ -774,6 +788,7 @@
             const captureCanvas = document.getElementById('captureCanvas');
             const ctx = captureCanvas.getContext('2d');
 
+            // Light Analysis Setup
             const analysisCanvas = document.createElement('canvas');
             const analysisCtx = analysisCanvas.getContext('2d', { willReadFrequently: true });
             analysisCanvas.width = 40;
@@ -781,37 +796,16 @@
 
             let state = {
                 x: 0, y: 0, scale: 1, rotation: 0,
+                startX: 0, startY: 0, baseX: 0, baseY: 0, baseScale: 1, baseRotation: 0,
                 envBrightness: 0.95
             };
 
-            let target = {
-                x: 0, y: 0, scale: 1, rotation: 0
-            };
-
-            let dragStart = { x: 0, y: 0, baseX: 0, baseY: 0 };
-            let pinchStart = { dist: 0, angle: 0, scale: 1, rot: 0 };
-
             const activePointers = new Map();
+            let initialDistance = null;
+            let initialAngle = 0;
 
-            // Change lerp factor from 0.20 to 0.03 for ultra-slow response
-            const lerp = (start, end, factor = 0.03) => start + (end - start) * factor;
+            // 1. UPDATED LIVE OVERLAY (Subtle 4, 3, 3 Shadow + Rotation support)
 
-            function renderLoop() {
-                // Moves very slowly toward target position
-                state.x = lerp(state.x, target.x, 0.03);
-                state.y = lerp(state.y, target.y, 0.03);
-                state.scale = lerp(state.scale, target.scale, 0.03);
-
-                // Handle rotation wraparound with high latency
-                let rotDiff = (target.rotation - state.rotation) % 360;
-                if (rotDiff > 180) rotDiff -= 360;
-                if (rotDiff < -180) rotDiff += 360;
-                state.rotation += rotDiff * 0.03;
-
-                updateOverlay();
-                requestAnimationFrame(renderLoop);
-            }
-            requestAnimationFrame(renderLoop);
 
             const updateOverlay = () => {
                 overlay.style.transform = `translateX(${state.x}px) translateY(${state.y}px) scale(${state.scale}) rotate(${state.rotation}deg)`;
@@ -821,12 +815,16 @@
                 const liveY = 3 * shadowScale;
                 const liveBlur = 4 * shadowScale;
 
+                // Gently adapts contrast relative to light (0.80 to 0.95)
                 const contrastVal = 0.80 + (state.envBrightness * 0.15);
+
                 const filterString = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(0, 0, 0, 0.40)) brightness(${state.envBrightness}) contrast(${contrastVal})`;
 
                 overlay.style.filter = filterString;
                 overlay.style.webkitFilter = filterString;
             };
+
+
 
             function analyzeLight() {
                 if (video.readyState === video.HAVE_ENOUGH_DATA) {
@@ -839,6 +837,7 @@
                     const scaleX = videoW / screenW;
                     const scaleY = videoH / screenH;
 
+                    // Expand sampling box 25% outside the poster to capture surrounding wall
                     const paddingX = overlayRect.width * 0.25;
                     const paddingY = overlayRect.height * 0.25;
 
@@ -859,9 +858,10 @@
                         let totalLuminance = 0;
                         let count = 0;
 
+                        // Loop 40x40 grid, but ignore the central 60% (where the poster sits)
                         for (let y = 0; y < 40; y++) {
                             for (let x = 0; x < 40; x++) {
-                                if (x > 8 && x < 32 && y > 8 && y < 32) continue;
+                                if (x > 8 && x < 32 && y > 8 && y < 32) continue; // Skip poster area
 
                                 const i = (y * 40 + x) * 4;
                                 totalLuminance += (0.2126 * pixels[i] + 0.7152 * pixels[i + 1] + 0.0722 * pixels[i + 2]);
@@ -869,18 +869,27 @@
                             }
                         }
 
+                        // Real wall environmental light
                         const normalizedLight = totalLuminance / (count * 255);
+
+                        // Linear Remapping adjusted for natural paper reflectance
                         const calculatedBrightness = 0.68 + (normalizedLight * 0.28);
 
+                        // Floor raised to 0.70 to keep paper light outdoors; capped at 0.95 to avoid glowing
                         const MIN_BRIGHTNESS = 0.70;
                         const MAX_BRIGHTNESS = 0.95;
 
                         const finalBrightness = Math.min(MAX_BRIGHTNESS, Math.max(MIN_BRIGHTNESS, calculatedBrightness));
+
                         state.envBrightness = finalBrightness.toFixed(3);
+                        updateOverlay();
                     }
                 }
                 requestAnimationFrame(analyzeLight);
             }
+
+
+            // NEW LINE:
             requestAnimationFrame(analyzeLight);
 
             async function startCamera() {
@@ -913,7 +922,7 @@
                 const dx = p2.clientX - p1.clientX;
                 const dy = p2.clientY - p1.clientY;
                 return {
-                    distance: Math.hypot(dx, dy),
+                    distance: Math.sqrt(dx * dx + dy * dy),
                     angle: Math.atan2(dy, dx)
                 };
             }
@@ -925,17 +934,15 @@
                 activePointers.set(e.pointerId, { id: e.pointerId, clientX: e.clientX, clientY: e.clientY });
 
                 if (activePointers.size === 1) {
-                    dragStart.x = e.clientX;
-                    dragStart.y = e.clientY;
-                    dragStart.baseX = target.x;
-                    dragStart.baseY = target.y;
+                    state.startX = e.clientX; state.startY = e.clientY;
+                    state.baseX = state.x; state.baseY = state.y;
                 } else if (activePointers.size === 2) {
                     const details = getPinchDetails();
                     if (details) {
-                        pinchStart.dist = details.distance;
-                        pinchStart.angle = details.angle;
-                        pinchStart.scale = target.scale;
-                        pinchStart.rot = target.rotation;
+                        initialDistance = details.distance;
+                        initialAngle = details.angle;
+                        state.baseScale = state.scale;
+                        state.baseRotation = state.rotation;
                     }
                 }
             });
@@ -947,30 +954,29 @@
                 activePointers.get(e.pointerId).clientY = e.clientY;
 
                 if (activePointers.size === 1) {
-                    target.x = dragStart.baseX + (e.clientX - dragStart.x);
-                    target.y = dragStart.baseY + (e.clientY - dragStart.y);
+                    state.x = state.baseX + (e.clientX - state.startX);
+                    state.y = state.baseY + (e.clientY - state.startY);
                 } else if (activePointers.size >= 2) {
-                    const details = getPinchDetails();
-                    if (details && pinchStart.dist) {
-                        const scaleFactor = details.distance / pinchStart.dist;
-                        target.scale = Math.min(2.5, Math.max(0.1, pinchStart.scale * scaleFactor));
+                    const currentDetails = getPinchDetails();
+                    if (currentDetails && initialDistance) {
+                        const scaleFactor = currentDetails.distance / initialDistance;
+                        state.scale = Math.min(2.5, Math.max(0.1, state.baseScale * scaleFactor));
 
-                        let angleDiff = (details.angle - pinchStart.angle) * (180 / Math.PI);
-                        target.rotation = pinchStart.rot + angleDiff;
+                        const angleDiff = currentDetails.angle - initialAngle;
+                        state.rotation = state.baseRotation + (angleDiff * 180 / Math.PI);
                     }
                 }
+                updateOverlay();
             });
 
             function pointerEnd(e) {
                 if (!activePointers.has(e.pointerId)) return;
                 activePointers.delete(e.pointerId);
-                if (activePointers.size < 2) { pinchStart.dist = 0; }
+                if (activePointers.size < 2) { initialDistance = null; }
                 if (activePointers.size === 1) {
-                    const remaining = Array.from(activePointers.values())[0];
-                    dragStart.x = remaining.clientX;
-                    dragStart.y = remaining.clientY;
-                    dragStart.baseX = target.x;
-                    dragStart.baseY = target.y;
+                    const rem = Array.from(activePointers.values())[0];
+                    state.startX = rem.clientX; state.startY = rem.clientY;
+                    state.baseX = state.x; state.baseY = state.y;
                 }
             }
 
@@ -978,12 +984,14 @@
             viewport.addEventListener('pointercancel', pointerEnd);
             viewport.addEventListener('pointerleave', pointerEnd);
 
+            // 3. DOUBLE TAP RESET (Kept exactly as original)
             let lastTap = 0;
             viewport.addEventListener('click', (e) => {
                 if (e.target.closest('#controls') || e.target.closest('.tooltipClose')) return;
                 const now = new Date().getTime();
                 if ((now - lastTap < 300) && (now - lastTap > 0)) {
-                    target = { x: 0, y: 0, scale: 1, rotation: 0 };
+                    state = { ...state, x: 0, y: 0, scale: 1, rotation: 0 };
+                    updateOverlay();
                     resetTip.textContent = "RESET!";
                     resetTip.style.display = 'block';
                     setTimeout(() => { resetTip.style.display = 'none'; resetTip.textContent = "Drag, Pinch, or Double-Tap to Reset"; }, 1000);
@@ -991,6 +999,7 @@
                 lastTap = now;
             });
 
+            // 4. SYNCED CAPTURE (High Quality + 4, 3, 3 Shadow + Rotation support)
             captureBtn.addEventListener('click', () => {
                 captureBtn.classList.add('loader');
                 setTimeout(() => {
@@ -1033,6 +1042,8 @@
                     const capY = 3 * scaleFactor * shadowScale;
                     const capBlur = 3 * scaleFactor * shadowScale;
 
+                    // NEW LINE:
+                    // NEW UPDATED LINES:
                     const capContrast = 0.80 + (state.envBrightness * 0.15);
                     ctx.filter = `drop-shadow(${capX}px ${capY}px ${capBlur}px rgba(0, 0, 0, 0.45)) brightness(${state.envBrightness}) contrast(${capContrast})`;
 
@@ -1052,6 +1063,7 @@
 
             startCamera();
         }
+
 
         function setupDesktopExperience(validArtUrl, fullShareLink) {
             generateQRCode(fullShareLink);
@@ -1075,6 +1087,7 @@
 
             function animateWallArt() {
                 if (paused) return;
+                // Subtle scale/position adjustments for poster visualization (rotation removed)
                 switch (step) {
                     case 0: wallArtDiv.style.transform = "scale(0.65) translateY(-20%)"; break;
                     case 1: wallArtDiv.style.transform = "scale(0.6) translateY(-22%)"; break;
@@ -1096,6 +1109,7 @@
             const qrImage = document.getElementById('qrCodeImage');
             const tempDiv = document.createElement('div');
 
+            // NOTE: Decreased CorrectLevel to L to safely handle very long dynamic parameter strings without crashing
             new QRCode(tempDiv, {
                 text: url, width: 180, height: 180,
                 colorDark: "#000000", colorLight: "#ffffff",
@@ -1113,6 +1127,7 @@
                 }
             }, 300);
         }
+
     </script>
 </body>
 
