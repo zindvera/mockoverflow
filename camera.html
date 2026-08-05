@@ -863,13 +863,13 @@
                         // 3. Response Curve Exponent (Gamma)
                         // 0.4 - 0.5 = Keeps artwork readable in medium light while reacting strongly to deep shadows
                         // 1.0       = Pure 1:1 linear relationship with room light
-                        const gamma = 0.45;
+                        const gamma = 0.3;
 
                         // Calculate brightness purely from environmental light
                         const calculatedBrightness = maxBrightness * Math.pow(normalizedLight, gamma);
 
                         // Safety floor so artwork is never 100% invisible in pitch black
-                        const absoluteFloor = 0.30;
+                        const absoluteFloor = 0.65;
                         const finalBrightness = Math.max(absoluteFloor, calculatedBrightness);
 
                         state.envBrightness = finalBrightness.toFixed(3);
