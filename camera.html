@@ -806,6 +806,7 @@
 
             // 1. UPDATED LIVE OVERLAY (Subtle 4, 3, 3 Shadow + Rotation support)
 
+
             const updateOverlay = () => {
                 overlay.style.transform = `translateX(${state.x}px) translateY(${state.y}px) scale(${state.scale}) rotate(${state.rotation}deg)`;
 
@@ -814,14 +815,16 @@
                 const liveY = 3 * shadowScale;
                 const liveBlur = 4 * shadowScale;
 
-                // Gently lowers contrast in dark rooms to match wall texture (0.75 to 0.90)
-                const contrastVal = 0.75 + (state.envBrightness * 0.15);
+                // Gently adapts contrast relative to light (0.80 to 0.95)
+                const contrastVal = 0.80 + (state.envBrightness * 0.15);
 
                 const filterString = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(0, 0, 0, 0.40)) brightness(${state.envBrightness}) contrast(${contrastVal})`;
 
                 overlay.style.filter = filterString;
                 overlay.style.webkitFilter = filterString;
             };
+
+
 
             function analyzeLight() {
                 if (video.readyState === video.HAVE_ENOUGH_DATA) {
@@ -854,23 +857,19 @@
                             totalLuminance += (0.2126 * pixels[i] + 0.7152 * pixels[i + 1] + 0.0722 * pixels[i + 2]);
                         }
 
-                        // 1. Normalize environmental light from 0.0 (dark) to 1.0 (bright)
+                        // Raw environmental light (0.0 to 1.0)
                         const normalizedLight = totalLuminance / (40 * 40 * 255);
 
-                        // 2. Maximum Cap
-                        const maxBrightness = 0.95;
+                        // Linear Remapping (Slope 0.35 + Offset 0.52)
+                        const calculatedBrightness = 0.52 + (normalizedLight * 0.35);
 
-                        // 3. Response Curve Exponent (Gamma)
-                        // 0.4 - 0.5 = Keeps artwork readable in medium light while reacting strongly to deep shadows
-                        // 1.0       = Pure 1:1 linear relationship with room light
-                        const gamma = 0.45;
+                        // Hard Limits: 
+                        // MIN 0.55 stops dark/muddy art in low light
+                        // MAX 0.82 stops glowing/digital screen effect on bright walls
+                        const MIN_BRIGHTNESS = 0.55;
+                        const MAX_BRIGHTNESS = 0.82;
 
-                        // Calculate brightness purely from environmental light
-                        const calculatedBrightness = maxBrightness * Math.pow(normalizedLight, gamma);
-
-                        // Safety floor so artwork is never 100% invisible in pitch black
-                        const absoluteFloor = 0.48;
-                        const finalBrightness = Math.max(absoluteFloor, calculatedBrightness);
+                        const finalBrightness = Math.min(MAX_BRIGHTNESS, Math.max(MIN_BRIGHTNESS, calculatedBrightness));
 
                         state.envBrightness = finalBrightness.toFixed(3);
                         updateOverlay();
@@ -1033,8 +1032,10 @@
                     const capBlur = 3 * scaleFactor * shadowScale;
 
                     // NEW LINE:
-                    const capContrast = 0.75 + (state.envBrightness * 0.15);
+                    // NEW UPDATED LINES:
+                    const capContrast = 0.80 + (state.envBrightness * 0.15);
                     ctx.filter = `drop-shadow(${capX}px ${capY}px ${capBlur}px rgba(0, 0, 0, 0.45)) brightness(${state.envBrightness}) contrast(${capContrast})`;
+
                     ctx.globalAlpha = 0.98;
                     ctx.drawImage(overlay, -oW / 2, -oH / 2, oW, oH);
                     ctx.restore();
