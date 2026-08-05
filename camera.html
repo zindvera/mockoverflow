@@ -10,10 +10,13 @@
         crossorigin="anonymous">
 
     <style>
+        /* Custom styles for a clean, full-screen mobile experience */
         body {
             font-family: 'Inter', sans-serif;
             overflow: hidden;
+            /* Prevent body scrolling */
             touch-action: none;
+            /* Disable default touch actions like pull-to-refresh */
         }
 
         #viewportContainer {
@@ -24,6 +27,7 @@
             justify-content: center;
             align-items: center;
             background-color: #1f2937;
+            /* Dark background */
             touch-action: none;
         }
 
@@ -31,26 +35,27 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            /* Ensures video covers the entire viewport */
             position: absolute;
             top: 0;
             left: 0;
             z-index: 10;
         }
 
+
         #overlayImage {
             position: absolute;
             z-index: 20;
             touch-action: none;
             pointer-events: none;
+            transition: opacity 0.3s ease;
             max-width: 80%;
             max-height: 80%;
             transform-origin: center center;
             display: none;
-            /* CRITICAL FOR REALISM: Blends artwork directly into wall texture & camera noise */
-            mix-blend-mode: multiply;
-            opacity: 0.95;
-            transition: filter 0.1s linear;
+
         }
+
 
         #previewCanvas {
             background: #1f1f1f;
@@ -68,6 +73,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 0 35px;
+            /* Phone view padding */
             box-sizing: border-box;
             z-index: 60;
             pointer-events: none;
@@ -79,6 +85,7 @@
 
         #getStickerBtn {
             background: #f4f2f8;
+            /* Offwhite light violet greyish */
             color: #333;
             border: 1px solid #dcd6eb;
             padding: 10px 20px;
@@ -126,6 +133,7 @@
             background-color: transparent;
             border-radius: 50%;
             border: 4px solid white;
+            /* outer white border */
             position: relative;
             cursor: pointer;
             display: flex;
@@ -140,6 +148,7 @@
             width: 35px;
             height: 35px;
             background-color: white;
+            /* inner circle */
             border-radius: 50%;
             display: block;
             box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
@@ -152,6 +161,7 @@
             background-color: transparent;
             border-radius: 50%;
             border: 4px solid white;
+            /* outer white border */
             position: relative;
             cursor: pointer;
             display: flex;
@@ -167,6 +177,7 @@
             width: 40px;
             height: 40px;
             background-color: white;
+            /* inner circle */
             border-radius: 50%;
             display: block;
             box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
@@ -178,6 +189,7 @@
             background-color: transparent;
             position: relative;
             pointer-events: none;
+            /* disable clicks while loading */
         }
 
         #captureBtn.loader::before {
@@ -202,6 +214,19 @@
             to {
                 transform: rotate(360deg);
             }
+        }
+
+        #switchCameraBtn {
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            color: rgb(0, 0, 0);
+            background: linear-gradient(90deg, #f8f8f8, #fcf9ff);
+            user-select: none;
+            transition: background 0.3s ease;
         }
 
         #loadingText {
@@ -274,6 +299,7 @@
             font-weight: 900;
             font-size: 1.8rem;
             color: #7209b7;
+            /* deep violet */
             background: linear-gradient(90deg, #f72585, #7209b7);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -285,6 +311,7 @@
             font-weight: 500;
             font-size: 1rem;
             color: #181818;
+            /* lighter grey */
             margin-bottom: 0.25in;
             margin-top: 0.3in;
         }
@@ -294,6 +321,7 @@
             height: 180px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(245, 245, 245, 0.3);
+            /* pink shadow */
             margin-bottom: 20px;
         }
 
@@ -317,6 +345,7 @@
             color: #0e46ad;
         }
 
+        /* Desktop overrides */
         @media (min-width: 1025px) {
             body {
                 background: #f6f4f7;
@@ -325,16 +354,46 @@
             }
         }
 
+        #page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #ffffff;
+            /* White background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .loader-circle {
+            border: 6px solid #e0e0e0;
+            /* Light grey circle background */
+            border-top: 6px solid rgb(223, 86, 223);
+            /* Violet colored front for spinner */
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
         #resetTip {
             position: absolute;
             top: 120px;
             padding: 0.5rem;
+            /* 8px */
             background-color: rgba(31, 41, 55, 0.7);
+            /* gray-800/70 */
             color: white;
             font-size: 0.75rem;
+            /* text-xs */
             border-radius: 9999px;
+            /* fully rounded */
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
                 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            /* shadow-lg */
             z-index: 30;
             opacity: 0.7;
             display: none;
@@ -345,12 +404,17 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+            /* center horizontally and vertically */
             color: white;
             text-align: center;
             padding: 1rem;
+            /* 16px */
             background-color: rgba(127, 28, 185, 0.8);
+            /* violet/purple background */
             border-radius: 0.5rem;
+            /* rounded-lg */
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            /* shadow-2xl */
             z-index: 50;
             display: none;
         }
@@ -378,80 +442,182 @@
             margin-bottom: 15px;
         }
 
-        #gestureTooltip, #placementTooltip {
+        /* Gesture Tooltip Style - Responsive Updates */
+        #gestureTooltip {
             display: none;
             position: absolute;
+            top: 25%;
             left: 50%;
             transform: translateX(-50%);
+            background: #f8f4ff;
+            /* Light violet offwhite */
             color: #333;
+            /* Normal dark grey text */
             padding: 24px;
             border-radius: 20px;
             z-index: 100;
             width: 85%;
             max-width: 320px;
             text-align: left;
+            /* Align text from start */
+            box-shadow: 0 12px 40px rgba(114, 9, 183, 0.2);
+            border: 2px solid #e0d4ff;
             pointer-events: auto;
         }
 
-        #gestureTooltip {
-            top: 25%;
-            background: #f8f4ff;
-            box-shadow: 0 12px 40px rgba(114, 9, 183, 0.2);
-            border: 2px solid #e0d4ff;
-        }
-
+        /* Placement Tooltip Style - Responsive Updates */
         #placementTooltip {
+            display: none;
+            position: absolute;
             bottom: 25%;
+            /* Slight bottom from middle */
+            left: 50%;
+            transform: translateX(-50%);
             background: #fff4f4;
+            /* Reddish offwhite */
+            color: #333;
+            /* Normal dark grey text */
+            padding: 24px;
+            border-radius: 20px;
+            z-index: 101;
+            width: 85%;
+            max-width: 320px;
+            text-align: left;
+            /* Align text from start */
             box-shadow: 0 12px 40px rgba(183, 9, 72, 0.15);
             border: 2px solid #ffe4e4;
+            pointer-events: auto;
         }
 
-        #gestureTooltip p, #placementTooltip p {
+        #gestureTooltip p,
+        #placementTooltip p {
             margin: 0;
             margin-top: 12px;
+            /* Add margin-top for clearing close button */
             font-weight: 600;
             line-height: 1.5;
+        }
+
+        /* Responsive Tooltip: Phone */
+        @media (max-width: 767px) {
+
+            #gestureTooltip,
+            #placementTooltip {
+                width: 85%;
+                padding: 20px;
+            }
+
+            #gestureTooltip p,
+            #placementTooltip p {
+                font-size: 18px;
+            }
+        }
+
+        /* Responsive Tooltip: Tablet */
+        @media (min-width: 768px) and (max-width: 1024px) {
+
+            #gestureTooltip,
+            #placementTooltip {
+                width: 70%;
+                max-width: 500px;
+                padding: 40px;
+            }
+
+            #gestureTooltip p,
+            #placementTooltip p {
+                font-size: 26px;
+                margin-top: 18px;
+                /* More margin for larger tablet button */
+            }
+
+            #getStickerBtn {
+                font-size: 20px;
+                padding: 16px 30px;
+            }
+
+            #getStickerBtn img {
+                width: 36px;
+                height: 36px;
+            }
+
+            #captureBtn {
+                width: 85px;
+                height: 85px;
+            }
+
+            #captureBtn::before {
+                width: 50px;
+                height: 50px;
+            }
+
+            #controls {
+                padding: 0 85px;
+                /* Tablet view padding */
+            }
         }
 
         .tooltipClose {
             position: absolute;
             top: 4px;
+            /* Position at the top */
             right: 12px;
+            /* Position at the right */
             cursor: pointer;
             font-size: 34px;
+            /* Increased size */
             line-height: 1;
             font-weight: bold;
             color: #7209b7;
             opacity: 0.6;
             z-index: 102;
+            /* Ensure it is on top */
+        }
+
+        .tooltipClose:hover {
+            opacity: 1;
         }
     </style>
 </head>
 
 <body>
 
-    <div id="notFoundOverlay"></div>
+    <!-- Not Found State -->
+    <div id="notFoundOverlay">
+        <!-- Will be dynamically updated by showError function -->
+    </div>
 
     <div id="viewportContainer">
+
+        <!-- Camera Feed Element -->
         <video id="cameraFeed" autoplay playsinline muted></video>
+
+        <!-- Image Overlay -->
         <img id="overlayImage" crossorigin="anonymous" src="" alt="Poster Overlay" class="w-72 h-auto rounded-xl"
             draggable="false">
 
-        <div id="message">Awaiting camera permission...</div>
+        <!-- Message/Error Display -->
+        <div id="message">
+            Awaiting camera permission...
+        </div>
 
+        <!-- Gesture Tooltip (First) -->
         <div id="gestureTooltip">
             <span class="tooltipClose" id="closeGestureTooltip" aria-label="Close Tooltip">&times;</span>
             <p>Move & zoom this poster using finger touch.</p>
         </div>
 
+        <!-- Placement Tooltip (Second) -->
         <div id="placementTooltip">
             <span class="tooltipClose" id="closePlacementTooltip" aria-label="Close Tooltip">&times;</span>
             <p>Point your camera directly at the wall to see how this poster will look.</p>
         </div>
 
-        <div id="resetTip">Drag, Pinch, or Double-Tap to Reset</div>
+        <!-- Hidden Tip/Reset Indicator -->
+        <div id="resetTip">
+            Drag, Pinch, or Double-Tap to Reset
+        </div>
 
+        <!-- Capture Button & Get Button -->
         <div id="controls">
             <a href="#" id="getStickerBtn">
                 <img id="btnStickerPreview" src="" alt="" style="display:none;">
@@ -459,29 +625,37 @@
             </a>
             <button id="captureBtn" aria-label="Capture Picture"></button>
         </div>
+
     </div>
 
+    <!-- Hidden Canvas for Image Processing/Capture -->
     <canvas id="captureCanvas" style="display:none;"></canvas>
 
     <div class="container mt-3" id="desktopAlert">
+
         <div class="row" style="padding:15px; background:#fff;">
+            <!-- Left Column: QR code instructions -->
             <div class="col-6 text-center" id="leftColumn">
                 <h2 class="highlighted-text">For better experience, open it in phone or tablet</h2>
                 <p class="light-text">Scan QR code to see this poster on your wall</p>
 
-                <div id="qrCodeWrapper" class="qr-code" style="margin:auto; position: relative; width: 180px; height: 180px;">
+                <div id="qrCodeWrapper" class="qr-code"
+                    style="margin:auto; position: relative; width: 180px; height: 180px;">
                     <div id="loader" style="
                         position: absolute; top: 50%; left: 50%; 
                         transform: translate(-50%, -50%); 
                         color: #555; font-weight: bold;
                         user-select: none;
                     ">Loading QR Code...</div>
-                    <img id="qrCodeImage" alt="Generated QR Code" style="width: 100%; height: 100%; display: none; border-radius: 12px; box-shadow: 0 4px 15px rgba(245, 245, 245, 0.3);" />
+                    <img id="qrCodeImage" alt="Generated QR Code"
+                        style="width: 100%; height: 100%; display: none; border-radius: 12px; box-shadow: 0 4px 15px rgba(245, 245, 245, 0.3);" />
                 </div>
 
                 <p class="link-text">or you can use this link</p>
-                <input type="text" id="shareLinkInput" readonly value="" class="link-box" />
+                <input type="text" id="shareLinkInput" readonly value=""
+                    class="link-box" />
             </div>
+            <!-- Right Column: Phone Demo -->
             <div class="col-6">
                 <div id="phone">
                     <div id="imageContainer">
@@ -492,12 +666,15 @@
                         <div id="democaptureBtn"></div>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script>
+
+        // 1. Parameter and Validation logic
         const urlParams = new URLSearchParams(window.location.search);
         const artUrl = urlParams.get('art');
         const redirectUrl = urlParams.get('redirect');
@@ -510,30 +687,43 @@
             if (document.getElementById('desktopAlert')) document.getElementById('desktopAlert').style.display = 'none';
         }
 
+        // Validate Assets before starting
         if (!artUrl) {
             showError("Wall Art Link Does Not Exist", "Please provide a valid image URL to preview the wall art.");
         } else if (!redirectUrl) {
             showError("Redirect URL Not Exist", "A destination link is required to proceed with the checkout.");
         } else {
             const checkImg = new Image();
-            checkImg.onload = function () { initApp(artUrl, redirectUrl); };
-            checkImg.onerror = function () { showError("Wall Art Link Does Not Exist", "The provided image could not be loaded. Please check the URL and try again."); };
+            checkImg.onload = function () {
+                // Success - start app
+                initApp(artUrl, redirectUrl);
+            };
+            checkImg.onerror = function () {
+                // Not Found - show message
+                showError("Wall Art Link Does Not Exist", "The provided image could not be loaded. Please check the URL and try again.");
+            };
             checkImg.src = artUrl;
         }
 
         function initApp(validArtUrl, validRedirectUrl) {
             const fullShareLink = window.location.href;
+
+            // Update Share Link
             const linkInput = document.getElementById('shareLinkInput');
             if (linkInput) linkInput.value = fullShareLink;
 
+            // Update Get Button Link & Image Preview
             const getStickerBtn = document.getElementById('getStickerBtn');
             const btnImg = document.getElementById('btnStickerPreview');
-            if (getStickerBtn) getStickerBtn.href = validRedirectUrl;
+            if (getStickerBtn) {
+                getStickerBtn.href = validRedirectUrl;
+            }
             if (btnImg) {
                 btnImg.src = validArtUrl;
                 btnImg.style.display = 'inline-block';
             }
 
+            // Device check
             const deviceType = (window.innerWidth <= 1024) ? 'mobile' : 'desktop';
 
             if (deviceType === 'desktop') {
@@ -557,16 +747,19 @@
         function setupGestureTooltip() {
             const tooltipSeen = document.cookie.split('; ').find(row => row.startsWith('posterTooltipSeen='));
             if (!tooltipSeen) {
+                // First Tooltip
                 setTimeout(() => {
                     const tooltip = document.getElementById('gestureTooltip');
                     if (tooltip) tooltip.style.display = 'block';
                 }, 3000);
             }
 
+            // Close logic for first tooltip
             const closeGestureBtn = document.getElementById('closeGestureTooltip');
             if (closeGestureBtn) {
                 closeGestureBtn.onclick = function () {
                     document.getElementById('gestureTooltip').style.display = 'none';
+                    // Trigger second tooltip after 3.5 seconds
                     setTimeout(() => {
                         const placementTooltip = document.getElementById('placementTooltip');
                         if (placementTooltip) placementTooltip.style.display = 'block';
@@ -574,14 +767,17 @@
                 };
             }
 
+            // Close logic for second tooltip
             const closePlacementBtn = document.getElementById('closePlacementTooltip');
             if (closePlacementBtn) {
                 closePlacementBtn.onclick = function () {
                     document.getElementById('placementTooltip').style.display = 'none';
+                    // Final cookie set when sequence completes/second is closed
                     document.cookie = "posterTooltipSeen=true; path=/; max-age=31536000";
                 };
             }
         }
+
 
         function openCamera() {
             const viewport = document.getElementById('viewportContainer');
@@ -593,89 +789,58 @@
             const captureCanvas = document.getElementById('captureCanvas');
             const ctx = captureCanvas.getContext('2d');
 
-            // High-precision canvas for sampling around poster perimeter
-            const samplingCanvas = document.createElement('canvas');
-            const samplingCtx = samplingCanvas.getContext('2d', { willReadFrequently: true });
+            // Light Analysis Setup
+            const analysisCanvas = document.createElement('canvas');
+            const analysisCtx = analysisCanvas.getContext('2d', { willReadFrequently: true });
+            analysisCanvas.width = 40;
+            analysisCanvas.height = 40;
 
             let state = {
                 x: 0, y: 0, scale: 1, rotation: 0,
                 startX: 0, startY: 0, baseX: 0, baseY: 0, baseScale: 1, baseRotation: 0,
-                envBrightness: 0.9
+                envBrightness: 0.95
             };
 
-            let smoothedLuminance = 0.7;
             const activePointers = new Map();
             let initialDistance = null;
             let initialAngle = 0;
 
+            // 1. UPDATED LIVE OVERLAY (Subtle 4, 3, 3 Shadow + Rotation support)
             const updateOverlay = () => {
                 overlay.style.transform = `translateX(${state.x}px) translateY(${state.y}px) scale(${state.scale}) rotate(${state.rotation}deg)`;
 
                 const shadowScale = Math.max(state.scale, 0.85);
-                const liveX = 3 * shadowScale;
+                // Subtle shadow values
+                const liveX = 4 * shadowScale;
                 const liveY = 3 * shadowScale;
-                const liveBlur = 4 * shadowScale;
+                const liveBlur = 3 * shadowScale;
 
-                // Adjust filter softly based on perimeter lighting
-                const filterString = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(0, 0, 0, 0.35)) brightness(${state.envBrightness})`;
+                const filterString = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(0, 0, 0, 0.45)) brightness(${state.envBrightness})`;
+
                 overlay.style.filter = filterString;
                 overlay.style.webkitFilter = filterString;
             };
 
-            // PERIMETER SAMPLE ENGINE (Samples 20px ring around poster boundaries)
-            function samplePerimeterEnvironment() {
-                if (video.readyState === video.HAVE_ENOUGH_DATA && overlay.offsetWidth > 0) {
-                    samplingCanvas.width = video.videoWidth;
-                    samplingCanvas.height = video.videoHeight;
-                    samplingCtx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
-
-                    // Get poster's exact bounding region relative to screen
-                    const rect = overlay.getBoundingClientRect();
-                    const scaleX = video.videoWidth / window.innerWidth;
-                    const scaleY = video.videoHeight / window.innerHeight;
-
-                    // Convert screen pixels to video coordinates
-                    const margin = 20 * scaleX; // 20px perimeter
-                    const vx = Math.max(0, rect.left * scaleX - margin);
-                    const vy = Math.max(0, rect.top * scaleY - margin);
-                    const vw = Math.min(video.videoWidth - vx, rect.width * scaleX + (margin * 2));
-                    const vh = Math.min(video.videoHeight - vy, rect.height * scaleY + (margin * 2));
-
-                    if (vw > 0 && vh > 0) {
-                        const imgData = samplingCtx.getImageData(vx, vy, vw, vh).data;
-                        let totalLuminance = 0;
-                        let sampleCount = 0;
-
-                        // Sample outer 20px boundary only (skip center where poster hides wall)
-                        for (let y = 0; y < vh; y += 4) {
-                            for (let x = 0; x < vw; x += 4) {
-                                const isPerimeter = (x < margin || x > vw - margin || y < margin || y > vh - margin);
-                                if (isPerimeter) {
-                                    const index = (y * vw + x) * 4;
-                                    const r = imgData[index];
-                                    const g = imgData[index + 1];
-                                    const b = imgData[index + 2];
-                                    totalLuminance += (0.2126 * r + 0.7152 * g + 0.0722 * b);
-                                    sampleCount++;
-                                }
-                            }
-                        }
-
-                        if (sampleCount > 0) {
-                            const rawLuminance = (totalLuminance / sampleCount) / 255;
-                            // Smooth transitions via Exponential Moving Average
-                            smoothedLuminance = (0.15 * rawLuminance) + (0.85 * smoothedLuminance);
-
-                            // Map directly: allows poster to darken naturally down to 0.3 in low light
-                            const mappedBrightness = 0.35 + (smoothedLuminance * 0.65);
-                            state.envBrightness = mappedBrightness.toFixed(3);
-                            updateOverlay();
-                        }
+            // 2. UPDATED BRIGHTNESS (Slightly increased floor)
+            function analyzeLight() {
+                if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                    analysisCtx.drawImage(video, 0, 0, 40, 40);
+                    const pixels = analysisCtx.getImageData(0, 0, 40, 40).data;
+                    let totalLuminance = 0;
+                    for (let i = 0; i < pixels.length; i += 4) {
+                        totalLuminance += (0.2126 * pixels[i] + 0.7152 * pixels[i + 1] + 0.0722 * pixels[i + 2]);
                     }
+                    const avgLuminance = totalLuminance / (40 * 40);
+
+                    // Increased floor to 0.74 and narrowed range to 0.22 for subtle pop
+                    const newBrightness = 0.74 + (avgLuminance / 255) * 0.22;
+
+                    state.envBrightness = newBrightness.toFixed(3);
+                    updateOverlay();
                 }
             }
 
-            setInterval(samplePerimeterEnvironment, 100);
+            setInterval(analyzeLight, 500);
 
             async function startCamera() {
                 message.style.display = 'block';
@@ -769,6 +934,7 @@
             viewport.addEventListener('pointercancel', pointerEnd);
             viewport.addEventListener('pointerleave', pointerEnd);
 
+            // 3. DOUBLE TAP RESET (Kept exactly as original)
             let lastTap = 0;
             viewport.addEventListener('click', (e) => {
                 if (e.target.closest('#controls') || e.target.closest('.tooltipClose')) return;
@@ -783,7 +949,7 @@
                 lastTap = now;
             });
 
-            // REALISTIC CANVAS CAPTURE WITH MULTIPLY BLENDING
+            // 4. SYNCED CAPTURE (High Quality + 4, 3, 3 Shadow + Rotation support)
             captureBtn.addEventListener('click', () => {
                 captureBtn.classList.add('loader');
                 setTimeout(() => {
@@ -822,14 +988,12 @@
                     ctx.rotate(state.rotation * Math.PI / 180);
 
                     const shadowScale = Math.max(state.scale, 0.4);
-                    const capX = 3 * scaleFactor * shadowScale;
+                    const capX = 4 * scaleFactor * shadowScale;
                     const capY = 3 * scaleFactor * shadowScale;
-                    const capBlur = 4 * scaleFactor * shadowScale;
+                    const capBlur = 3 * scaleFactor * shadowScale;
 
-                    // REALISTIC BLENDING FOR SAVED IMAGE
-                    ctx.globalCompositeOperation = 'multiply';
-                    ctx.filter = `drop-shadow(${capX}px ${capY}px ${capBlur}px rgba(0, 0, 0, 0.35)) brightness(${state.envBrightness})`;
-                    ctx.globalAlpha = 0.95;
+                    ctx.filter = `drop-shadow(${capX}px ${capY}px ${capBlur}px rgba(0, 0, 0, 0.45)) brightness(${state.envBrightness})`;
+                    ctx.globalAlpha = 0.98;
                     ctx.drawImage(overlay, -oW / 2, -oH / 2, oW, oH);
                     ctx.restore();
 
@@ -845,6 +1009,7 @@
 
             startCamera();
         }
+
 
         function setupDesktopExperience(validArtUrl, fullShareLink) {
             generateQRCode(fullShareLink);
@@ -868,6 +1033,7 @@
 
             function animateWallArt() {
                 if (paused) return;
+                // Subtle scale/position adjustments for poster visualization (rotation removed)
                 switch (step) {
                     case 0: wallArtDiv.style.transform = "scale(0.65) translateY(-20%)"; break;
                     case 1: wallArtDiv.style.transform = "scale(0.6) translateY(-22%)"; break;
@@ -889,6 +1055,7 @@
             const qrImage = document.getElementById('qrCodeImage');
             const tempDiv = document.createElement('div');
             
+            // NOTE: Decreased CorrectLevel to L to safely handle very long dynamic parameter strings without crashing
             new QRCode(tempDiv, {
                 text: url, width: 180, height: 180,
                 colorDark: "#000000", colorLight: "#ffffff",
