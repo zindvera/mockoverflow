@@ -823,7 +823,6 @@
                 overlay.style.webkitFilter = filterString;
             };
 
-            // NEW CODE:
             function analyzeLight() {
                 if (video.readyState === video.HAVE_ENOUGH_DATA) {
                     const videoW = video.videoWidth;
@@ -831,10 +830,8 @@
                     const screenW = window.innerWidth;
                     const screenH = window.innerHeight;
 
-                    // Get actual overlay bounds on screen
                     const overlayRect = overlay.getBoundingClientRect();
 
-                    // Convert screen coordinates to video feed coordinates
                     const scaleX = videoW / screenW;
                     const scaleY = videoH / screenH;
 
@@ -843,14 +840,12 @@
                     let srcW = overlayRect.width * scaleX;
                     let srcH = overlayRect.height * scaleY;
 
-                    // Keep values inside video dimensions
                     srcX = Math.max(0, Math.min(srcX, videoW));
                     srcY = Math.max(0, Math.min(srcY, videoH));
                     srcW = Math.min(srcW, videoW - srcX);
                     srcH = Math.min(srcH, videoH - srcY);
 
                     if (srcW > 0 && srcH > 0) {
-                        // Crop only the video area behind the poster
                         analysisCtx.drawImage(video, srcX, srcY, srcW, srcH, 0, 0, 40, 40);
 
                         const pixels = analysisCtx.getImageData(0, 0, 40, 40).data;
@@ -858,20 +853,34 @@
                         for (let i = 0; i < pixels.length; i += 4) {
                             totalLuminance += (0.2126 * pixels[i] + 0.7152 * pixels[i + 1] + 0.0722 * pixels[i + 2]);
                         }
-                        const avgLuminance = totalLuminance / (40 * 40);
 
-                        // Brightness range: drops to 0.35 in deep shadow, caps at 0.95 in bright light
-                        const minBrightness = 0.65;
+                        // 1. Normalize environmental light from 0.0 (dark) to 1.0 (bright)
+                        const normalizedLight = totalLuminance / (40 * 40 * 255);
+
+                        // 2. Maximum Cap
                         const maxBrightness = 0.95;
-                        const newBrightness = minBrightness + (avgLuminance / 255) * (maxBrightness - minBrightness);
 
-                        state.envBrightness = newBrightness.toFixed(3);
+                        // 3. Response Curve Exponent (Gamma)
+                        // 0.4 - 0.5 = Keeps artwork readable in medium light while reacting strongly to deep shadows
+                        // 1.0       = Pure 1:1 linear relationship with room light
+                        const gamma = 0.45;
+
+                        // Calculate brightness purely from environmental light
+                        const calculatedBrightness = maxBrightness * Math.pow(normalizedLight, gamma);
+
+                        // Safety floor so artwork is never 100% invisible in pitch black
+                        const absoluteFloor = 0.30;
+                        const finalBrightness = Math.max(absoluteFloor, calculatedBrightness);
+
+                        state.envBrightness = finalBrightness.toFixed(3);
                         updateOverlay();
                     }
                 }
+                requestAnimationFrame(analyzeLight);
             }
 
-            setInterval(analyzeLight, 500);
+            // NEW LINE:
+            requestAnimationFrame(analyzeLight);
 
             async function startCamera() {
                 message.style.display = 'block';
