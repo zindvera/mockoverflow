@@ -793,17 +793,20 @@
 
             const activePointers = new Map();
 
-            const lerp = (start, end, factor = 0.20) => start + (end - start) * factor;
+            // Change lerp factor from 0.20 to 0.03 for ultra-slow response
+            const lerp = (start, end, factor = 0.03) => start + (end - start) * factor;
 
             function renderLoop() {
-                state.x = lerp(state.x, target.x);
-                state.y = lerp(state.y, target.y);
-                state.scale = lerp(state.scale, target.scale);
+                // Moves very slowly toward target position
+                state.x = lerp(state.x, target.x, 0.03);
+                state.y = lerp(state.y, target.y, 0.03);
+                state.scale = lerp(state.scale, target.scale, 0.03);
 
+                // Handle rotation wraparound with high latency
                 let rotDiff = (target.rotation - state.rotation) % 360;
                 if (rotDiff > 180) rotDiff -= 360;
                 if (rotDiff < -180) rotDiff += 360;
-                state.rotation += rotDiff * 0.20;
+                state.rotation += rotDiff * 0.03;
 
                 updateOverlay();
                 requestAnimationFrame(renderLoop);
