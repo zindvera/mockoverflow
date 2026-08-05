@@ -83,7 +83,7 @@
             pointer-events: auto;
         }
 
-        #getStickerBtn {
+        #getStickerBtn, .overlayGetBtn {
             background: #f4f2f8;
             /* Offwhite light violet greyish */
             color: #333;
@@ -100,7 +100,7 @@
             justify-content: center;
         }
 
-        #getStickerBtn img {
+        #getStickerBtn img, .overlayGetBtn img {
             width: 28px;
             height: 28px;
             object-fit: contain;
@@ -109,7 +109,7 @@
             filter: brightness(0.97);
         }
 
-        #getStickerBtn:active {
+        #getStickerBtn:active, .overlayGetBtn:active {
             transform: scale(0.98);
             background: #eceaf1;
         }
@@ -530,12 +530,12 @@
                 /* More margin for larger tablet button */
             }
 
-            #getStickerBtn {
+            #getStickerBtn, .overlayGetBtn {
                 font-size: 20px;
                 padding: 16px 30px;
             }
 
-            #getStickerBtn img {
+            #getStickerBtn img, .overlayGetBtn img {
                 width: 36px;
                 height: 36px;
             }
@@ -550,7 +550,7 @@
                 height: 50px;
             }
 
-            #controls {
+            #controls, #overlayControls {
                 padding: 0 85px;
                 /* Tablet view padding */
             }
@@ -670,6 +670,32 @@
         </div>
     </div>
 
+    <!-- Captured Image View Overlay -->
+    <div id="capturedOverlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:#000; z-index:99999;">
+        <!-- Top-Left Back Button -->
+        <button id="backToCameraBtn" style="position:absolute; top:20px; left:20px; z-index:100; padding:10px 18px; background:rgba(0,0,0,0.6); color:#fff; border:1px solid #fff; border-radius:20px; font-weight:bold; cursor:pointer;">
+            &larr; Back to Camera
+        </button>
+
+        <!-- Captured Result Image -->
+        <img id="capturedResultImg" style="width:100%; height:100%; object-fit:contain;" src="" alt="Captured Preview">
+
+        <!-- Bottom Controls Bar (Same Get Button + Download Icon) -->
+        <div id="overlayControls" style="width:100%; position:fixed; bottom:30px; left:0; display:flex; justify-content:space-between; align-items:center; padding:0 35px; box-sizing:border-box; z-index:100;">
+            <a href="#" id="overlayGetStickerBtn" class="overlayGetBtn">
+                <img id="overlayBtnStickerPreview" src="" alt="" style="display:none;">
+                Get This Poster
+            </a>
+            <a id="downloadResultBtn" href="#" download="poster-preview.jpg" style="width:55px; height:55px; background:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 15px rgba(0,0,0,0.3); text-decoration:none;">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+            </a>
+        </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script>
 
@@ -714,12 +740,19 @@
             // Update Get Button Link & Image Preview
             const getStickerBtn = document.getElementById('getStickerBtn');
             const btnImg = document.getElementById('btnStickerPreview');
-            if (getStickerBtn) {
-                getStickerBtn.href = validRedirectUrl;
-            }
+            const overlayGetStickerBtn = document.getElementById('overlayGetStickerBtn');
+            const overlayBtnImg = document.getElementById('overlayBtnStickerPreview');
+
+            if (getStickerBtn) getStickerBtn.href = validRedirectUrl;
+            if (overlayGetStickerBtn) overlayGetStickerBtn.href = validRedirectUrl;
+
             if (btnImg) {
                 btnImg.src = validArtUrl;
                 btnImg.style.display = 'inline-block';
+            }
+            if (overlayBtnImg) {
+                overlayBtnImg.src = validArtUrl;
+                overlayBtnImg.style.display = 'inline-block';
             }
 
             // Device check
@@ -804,9 +837,6 @@
             let initialDistance = null;
             let initialAngle = 0;
 
-            // 1. UPDATED LIVE OVERLAY (Subtle 4, 3, 3 Shadow + Rotation support)
-
-
             const updateOverlay = () => {
                 overlay.style.transform = `translateX(${state.x}px) translateY(${state.y}px) scale(${state.scale}) rotate(${state.rotation}deg)`;
 
@@ -824,8 +854,6 @@
                 overlay.style.webkitFilter = filterString;
             };
 
-
-
             function analyzeLight() {
                 if (video.readyState === video.HAVE_ENOUGH_DATA) {
                     const videoW = video.videoWidth;
@@ -837,7 +865,6 @@
                     const scaleX = videoW / screenW;
                     const scaleY = videoH / screenH;
 
-                    // Expand sampling box 25% outside the poster to capture surrounding wall
                     const paddingX = overlayRect.width * 0.25;
                     const paddingY = overlayRect.height * 0.25;
 
@@ -858,10 +885,9 @@
                         let totalLuminance = 0;
                         let count = 0;
 
-                        // Loop 40x40 grid, but ignore the central 60% (where the poster sits)
                         for (let y = 0; y < 40; y++) {
                             for (let x = 0; x < 40; x++) {
-                                if (x > 8 && x < 32 && y > 8 && y < 32) continue; // Skip poster area
+                                if (x > 8 && x < 32 && y > 8 && y < 32) continue;
 
                                 const i = (y * 40 + x) * 4;
                                 totalLuminance += (0.2126 * pixels[i] + 0.7152 * pixels[i + 1] + 0.0722 * pixels[i + 2]);
@@ -869,13 +895,9 @@
                             }
                         }
 
-                        // Real wall environmental light
                         const normalizedLight = totalLuminance / (count * 255);
-
-                        // Linear Remapping adjusted for natural paper reflectance
                         const calculatedBrightness = 0.68 + (normalizedLight * 0.28);
 
-                        // Floor raised to 0.70 to keep paper light outdoors; capped at 0.95 to avoid glowing
                         const MIN_BRIGHTNESS = 0.70;
                         const MAX_BRIGHTNESS = 0.95;
 
@@ -888,8 +910,6 @@
                 requestAnimationFrame(analyzeLight);
             }
 
-
-            // NEW LINE:
             requestAnimationFrame(analyzeLight);
 
             async function startCamera() {
@@ -928,7 +948,7 @@
             }
 
             viewport.addEventListener('pointerdown', (e) => {
-                if (e.target.closest('#controls') || e.target.closest('.tooltipClose') || e.target.closest('#gestureTooltip') || e.target.closest('#placementTooltip')) return;
+                if (e.target.closest('#controls') || e.target.closest('#capturedOverlay') || e.target.closest('.tooltipClose') || e.target.closest('#gestureTooltip') || e.target.closest('#placementTooltip')) return;
                 e.preventDefault();
                 viewport.setPointerCapture(e.pointerId);
                 activePointers.set(e.pointerId, { id: e.pointerId, clientX: e.clientX, clientY: e.clientY });
@@ -984,10 +1004,9 @@
             viewport.addEventListener('pointercancel', pointerEnd);
             viewport.addEventListener('pointerleave', pointerEnd);
 
-            // 3. DOUBLE TAP RESET (Kept exactly as original)
             let lastTap = 0;
             viewport.addEventListener('click', (e) => {
-                if (e.target.closest('#controls') || e.target.closest('.tooltipClose')) return;
+                if (e.target.closest('#controls') || e.target.closest('#capturedOverlay') || e.target.closest('.tooltipClose')) return;
                 const now = new Date().getTime();
                 if ((now - lastTap < 300) && (now - lastTap > 0)) {
                     state = { ...state, x: 0, y: 0, scale: 1, rotation: 0 };
@@ -999,7 +1018,7 @@
                 lastTap = now;
             });
 
-            // 4. SYNCED CAPTURE (High Quality + 4, 3, 3 Shadow + Rotation support)
+            // 4. CAPTURE EVENT & SHOW OVERLAY
             captureBtn.addEventListener('click', () => {
                 captureBtn.classList.add('loader');
                 setTimeout(() => {
@@ -1042,8 +1061,6 @@
                     const capY = 3 * scaleFactor * shadowScale;
                     const capBlur = 3 * scaleFactor * shadowScale;
 
-                    // NEW LINE:
-                    // NEW UPDATED LINES:
                     const capContrast = 0.80 + (state.envBrightness * 0.15);
                     ctx.filter = `drop-shadow(${capX}px ${capY}px ${capBlur}px rgba(0, 0, 0, 0.45)) brightness(${state.envBrightness}) contrast(${capContrast})`;
 
@@ -1055,7 +1072,9 @@
                         captureBtn.classList.remove('loader');
                         if (blob) {
                             const url = URL.createObjectURL(blob);
-                            window.open(url);
+                            document.getElementById('capturedResultImg').src = url;
+                            document.getElementById('downloadResultBtn').href = url;
+                            document.getElementById('capturedOverlay').style.display = 'block';
                         }
                     }, 'image/jpeg', 0.95);
                 }, 50);
@@ -1063,7 +1082,6 @@
 
             startCamera();
         }
-
 
         function setupDesktopExperience(validArtUrl, fullShareLink) {
             generateQRCode(fullShareLink);
@@ -1087,7 +1105,6 @@
 
             function animateWallArt() {
                 if (paused) return;
-                // Subtle scale/position adjustments for poster visualization (rotation removed)
                 switch (step) {
                     case 0: wallArtDiv.style.transform = "scale(0.65) translateY(-20%)"; break;
                     case 1: wallArtDiv.style.transform = "scale(0.6) translateY(-22%)"; break;
@@ -1109,7 +1126,6 @@
             const qrImage = document.getElementById('qrCodeImage');
             const tempDiv = document.createElement('div');
 
-            // NOTE: Decreased CorrectLevel to L to safely handle very long dynamic parameter strings without crashing
             new QRCode(tempDiv, {
                 text: url, width: 180, height: 180,
                 colorDark: "#000000", colorLight: "#ffffff",
@@ -1127,6 +1143,11 @@
                 }
             }, 300);
         }
+
+        // Back to Camera button action
+        document.getElementById('backToCameraBtn').addEventListener('click', () => {
+            document.getElementById('capturedOverlay').style.display = 'none';
+        });
 
     </script>
 </body>
