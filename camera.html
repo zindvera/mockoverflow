@@ -1154,7 +1154,7 @@
             }, 300);
         }
 
-        // --- CAPTURED PREVIEW INTERACTION (ZOOM, PAN & DOUBLE TAP) ---
+     // --- CAPTURED PREVIEW INTERACTION (ZOOM, PAN & DOUBLE TAP) ---
         const previewOverlay = document.getElementById('capturedOverlay');
         const previewImg = document.getElementById('capturedResultImg');
 
@@ -1168,7 +1168,10 @@
         let pStartX = 0;
         let pStartY = 0;
         let pInitialDist = null;
+        
         let lastPreviewTap = 0;
+        let tapStartX = 0;
+        let tapStartY = 0;
 
         const activePreviewPointers = new Map();
 
@@ -1180,16 +1183,16 @@
         }
 
         function updatePreviewTransform() {
-            // Apply scale bounds (1.0x to 3.5x)
+            // Constrain scale bounds (1.0x to 3.5x)
             previewScale = Math.min(3.5, Math.max(1.0, previewScale));
 
-            if (previewScale === 1) {
+            if (previewScale <= 1) {
                 previewX = 0;
                 previewY = 0;
             } else {
-                // Keep image within screen viewport bounds during zoom pan
-                const maxPanX = (window.innerWidth * (previewScale - 1)) / 2 + 100;
-                const maxPanY = (window.innerHeight * (previewScale - 1)) / 2 + 100;
+                // Keep image bounded within screen viewport during pan
+                const maxPanX = (window.innerWidth * (previewScale - 1)) / 2;
+                const maxPanY = (window.innerHeight * (previewScale - 1)) / 2;
 
                 previewX = Math.min(maxPanX, Math.max(-maxPanX, previewX));
                 previewY = Math.min(maxPanY, Math.max(-maxPanY, previewY));
@@ -1198,24 +1201,27 @@
             previewImg.style.transform = `translate(${previewX}px, ${previewY}px) scale(${previewScale})`;
         }
 
+        function getDistance(p1, p2) {
+            const dx = p2.clientX - p1.clientX;
+            const dy = p2.clientY - p1.clientY;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+
         previewOverlay.addEventListener('pointerdown', (e) => {
             if (e.target.closest('#backToCameraBtn') || e.target.closest('#overlayControls')) return;
-            e.preventDefault();
-            
-            // Register target pointer capture
-            e.target.setPointerCapture(e.pointerId);
+
             activePreviewPointers.set(e.pointerId, { clientX: e.clientX, clientY: e.clientY });
 
             if (activePreviewPointers.size === 1) {
                 pStartX = e.clientX;
                 pStartY = e.clientY;
+                tapStartX = e.clientX;
+                tapStartY = e.clientY;
                 pBaseX = previewX;
                 pBaseY = previewY;
             } else if (activePreviewPointers.size === 2) {
                 const pts = Array.from(activePreviewPointers.values());
-                const dx = pts[1].clientX - pts[0].clientX;
-                const dy = pts[1].clientY - pts[0].clientY;
-                pInitialDist = Math.sqrt(dx * dx + dy * dy);
+                pInitialDist = getDistance(pts[0], pts[1]);
                 pBaseScale = previewScale;
             }
         });
@@ -1223,6 +1229,7 @@
         previewOverlay.addEventListener('pointermove', (e) => {
             if (!activePreviewPointers.has(e.pointerId)) return;
             e.preventDefault();
+
             activePreviewPointers.get(e.pointerId).clientX = e.clientX;
             activePreviewPointers.get(e.pointerId).clientY = e.clientY;
 
@@ -1231,9 +1238,7 @@
                 previewY = pBaseY + (e.clientY - pStartY);
             } else if (activePreviewPointers.size >= 2) {
                 const pts = Array.from(activePreviewPointers.values());
-                const dx = pts[1].clientX - pts[0].clientX;
-                const dy = pts[1].clientY - pts[0].clientY;
-                const currentDist = Math.sqrt(dx * dx + dy * dy);
+                const currentDist = getDistance(pts[0], pts[1]);
 
                 if (pInitialDist && pInitialDist > 0) {
                     previewScale = pBaseScale * (currentDist / pInitialDist);
@@ -1244,8 +1249,35 @@
 
         function endPreviewPointer(e) {
             if (!activePreviewPointers.has(e.pointerId)) return;
+
+            // Handle Custom Double-Tap detection on touch release
+            if (activePreviewPointers.size === 1 && !e.target.closest('#backToCameraBtn') && !e.target.closest('#overlayControls')) {
+                const moveDist = Math.hypot(e.clientX - tapStartX, e.clientY - tapStartY);
+                const now = Date.now();
+
+                // Detect tap if finger moved less than 10px
+                if (moveDist < 10) {
+                    if (now - lastPreviewTap < 300 && now - lastPreviewTap > 0) {
+                        if (previewScale > 1.1) {
+                            resetPreviewTransform();
+                        } else {
+                            previewScale = 2.0;
+                            previewX = 0;
+                            previewY = 0;
+                            updatePreviewTransform();
+                        }
+                        lastPreviewTap = 0;
+                    } else {
+                        lastPreviewTap = now;
+                    }
+                }
+            }
+
             activePreviewPointers.delete(e.pointerId);
-            if (activePreviewPointers.size < 2) pInitialDist = null;
+
+            if (activePreviewPointers.size < 2) {
+                pInitialDist = null;
+            }
             if (activePreviewPointers.size === 1) {
                 const rem = Array.from(activePreviewPointers.values())[0];
                 pStartX = rem.clientX;
@@ -1259,23 +1291,6 @@
         previewOverlay.addEventListener('pointercancel', endPreviewPointer);
         previewOverlay.addEventListener('pointerleave', endPreviewPointer);
 
-        // Double-tap zoom (Toggle 100% / 200%)
-        previewOverlay.addEventListener('click', (e) => {
-            if (e.target.closest('#backToCameraBtn') || e.target.closest('#overlayControls')) return;
-            const now = new Date().getTime();
-            if ((now - lastPreviewTap < 300) && (now - lastPreviewTap > 0)) {
-                if (previewScale > 1.1) {
-                    resetPreviewTransform();
-                } else {
-                    previewScale = 2.0;
-                    previewX = 0;
-                    previewY = 0;
-                    updatePreviewTransform();
-                }
-            }
-            lastPreviewTap = now;
-        });
-
         function closePreviewOverlay() {
             const overlay = document.getElementById('capturedOverlay');
             if (overlay && overlay.style.display === 'block') {
@@ -1284,7 +1299,7 @@
             }
         }
 
-        // Back to Camera button action - calls history.back() to pop the overlay state smoothly
+        // Back to Camera button action
         document.getElementById('backToCameraBtn').addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -1295,8 +1310,8 @@
             }
         });
 
-        // Intercept native phone back hardware button / swipe gesture
-        window.addEventListener('popstate', (e) => {
+        // Intercept native browser back button / swipe gesture
+        window.addEventListener('popstate', () => {
             closePreviewOverlay();
         });
 
