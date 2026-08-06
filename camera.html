@@ -871,8 +871,6 @@
             analysisCanvas.height = 40;
 
             let isAnalyzing = true; // Control flag to pause loop on capture
-            let isInteracting = false; // Performance flag to bypass analysis & filters while user touches screen
-            let resumeTimer = null;
 
             let state = {
                 x: 0, y: 0, scale: 1, rotation: 0,
@@ -885,29 +883,24 @@
             let initialAngle = 0;
 
             const updateOverlay = () => {
-                // Always update 2D Transform (Lightweight GPU execution)
                 overlay.style.transform = `translateX(${state.x}px) translateY(${state.y}px) scale(${state.scale}) rotate(${state.rotation}deg)`;
 
-                // Update heavy CSS filters ONLY when user is NOT actively dragging
-                if (!isInteracting) {
-                    const shadowScale = Math.max(state.scale, 0.85);
-                    const liveX = 3 * shadowScale;
-                    const liveY = 3 * shadowScale;
-                    const liveBlur = 4 * shadowScale;
+                const shadowScale = Math.max(state.scale, 0.85);
+                const liveX = 3 * shadowScale;
+                const liveY = 3 * shadowScale;
+                const liveBlur = 4 * shadowScale;
 
-                    // Gently adapts contrast relative to light (0.80 to 0.95)
-                    const contrastVal = 0.80 + (state.envBrightness * 0.15);
+                // Gently adapts contrast relative to light (0.80 to 0.95)
+                const contrastVal = 0.80 + (state.envBrightness * 0.15);
 
-                    const filterString = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(0, 0, 0, 0.40)) brightness(${state.envBrightness}) contrast(${contrastVal})`;
+                const filterString = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(0, 0, 0, 0.40)) brightness(${state.envBrightness}) contrast(${contrastVal})`;
 
-                    overlay.style.filter = filterString;
-                    overlay.style.webkitFilter = filterString;
-                }
+                overlay.style.filter = filterString;
+                overlay.style.webkitFilter = filterString;
             };
 
             function analyzeLight() {
-                // Skip pixel analysis loop during active gestures or when captured overlay is active
-                if (!isAnalyzing || isInteracting) {
+                if (!isAnalyzing) {
                     requestAnimationFrame(analyzeLight);
                     return;
                 }
@@ -1007,11 +1000,6 @@
             viewport.addEventListener('pointerdown', (e) => {
                 if (e.target.closest('#controls') || e.target.closest('#capturedOverlay') || e.target.closest('.tooltipClose') || e.target.closest('#gestureTooltip') || e.target.closest('#placementTooltip')) return;
                 e.preventDefault();
-
-                // Clear any pending gesture-resume timer
-                if (resumeTimer) clearTimeout(resumeTimer);
-                isInteracting = true; // Pause analysis & heavy filter updates immediately
-
                 viewport.setPointerCapture(e.pointerId);
                 activePointers.set(e.pointerId, { id: e.pointerId, clientX: e.clientX, clientY: e.clientY });
 
@@ -1059,13 +1047,6 @@
                     const rem = Array.from(activePointers.values())[0];
                     state.startX = rem.clientX; state.startY = rem.clientY;
                     state.baseX = state.x; state.baseY = state.y;
-                } else if (activePointers.size === 0) {
-                    // Touch released: Debounce 300ms before resuming light analysis & updating shadow filters
-                    if (resumeTimer) clearTimeout(resumeTimer);
-                    resumeTimer = setTimeout(() => {
-                        isInteracting = false;
-                        updateOverlay(); // Calculate final shadow/lighting filter state once movement stops
-                    }, 300);
                 }
             }
 
