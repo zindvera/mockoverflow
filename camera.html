@@ -584,6 +584,33 @@
             overflow: hidden;
             touch-action: none;
         }
+
+        /* Medium-sized Right Top Close Icon Button */
+        #closeOverlayBtn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 101;
+            width: 44px;
+            height: 44px;
+            background: rgba(0, 0, 0, 0.45);
+            color: #ffffff;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+
+        #closeOverlayBtn:active {
+            transform: scale(0.92);
+            background: rgba(0, 0, 0, 0.65);
+        }
     </style>
 </head>
 
@@ -680,13 +707,12 @@
 
     <!-- Captured Image View Overlay -->
     <div id="capturedOverlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:#000; z-index:99999;">
-        <!-- Modern Top-Left Back Button -->
-        <button id="backToCameraBtn" type="button" style="position:absolute; top:20px; left:20px; z-index:100; padding:10px 18px; background:rgba(0,0,0,0.45); color:#fff; border:none; border-radius:30px; font-weight:600; font-size:14px; cursor:pointer; display:flex; align-items:center; gap:8px; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); box-shadow:0 4px 15px rgba(0,0,0,0.25);">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="19" y1="12" x2="5" y2="12"></line>
-                <polyline points="12 19 5 12 12 5"></polyline>
+        <!-- Top-Right Close Button -->
+        <button id="closeOverlayBtn" type="button" aria-label="Close Preview and return to camera">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
-            <span>Back to Camera</span>
         </button>
 
         <!-- Captured Result Image inside panzoom wrapper -->
@@ -1067,7 +1093,7 @@
             // Double Tap on Captured Image to Zoom 200% (or reset if zoomed)
             let capturedLastTap = 0;
             wrapper.addEventListener('click', (e) => {
-                if (e.target.closest('#overlayControls') || e.target.closest('#backToCameraBtn')) return;
+                if (e.target.closest('#overlayControls') || e.target.closest('#closeOverlayBtn')) return;
                 const now = new Date().getTime();
                 if ((now - capturedLastTap < 300) && (now - capturedLastTap > 0)) {
                     if (panzoom) {
@@ -1080,6 +1106,32 @@
                     }
                 }
                 capturedLastTap = now;
+            });
+
+            // Helper function to close overlay and reset back to camera
+            function closeCapturedOverlay() {
+                const overlay = document.getElementById('capturedOverlay');
+                if (overlay.style.display === 'none') return;
+
+                overlay.style.display = 'none';
+
+                // Destroy active panzoom instance
+                if (panzoom) {
+                    panzoom.destroy();
+                    panzoom = null;
+                }
+
+                // Resume light analysis & camera stream
+                isAnalyzing = true;
+                video.play().catch(err => console.error("Video play failed on return:", err));
+            }
+
+            // Listen for hardware/browser back navigation gesture
+            window.addEventListener('popstate', (e) => {
+                const overlay = document.getElementById('capturedOverlay');
+                if (overlay && overlay.style.display === 'block') {
+                    closeCapturedOverlay();
+                }
             });
 
             // 4. CAPTURE EVENT & SHOW OVERLAY
@@ -1145,6 +1197,9 @@
                             capturedImg.src = url;
                             document.getElementById('downloadResultBtn').href = url;
 
+                            // Push history state so back button closes overlay instead of leaving page
+                            history.pushState({ overlayOpen: true }, '');
+
                             // Display overlay FIRST so element has non-zero DOM dimensions
                             document.getElementById('capturedOverlay').style.display = 'block';
 
@@ -1157,22 +1212,16 @@
                 }, 50);
             });
 
-            // Back to Camera button action - hides overlay and restores camera feed
-            document.getElementById('backToCameraBtn').addEventListener('click', (e) => {
+            // Close button action - triggers history.back() if overlay history state exists, or calls close directly
+            document.getElementById('closeOverlayBtn').addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
 
-                document.getElementById('capturedOverlay').style.display = 'none';
-
-                // Destroy active panzoom instance
-                if (panzoom) {
-                    panzoom.destroy();
-                    panzoom = null;
+                if (history.state && history.state.overlayOpen) {
+                    history.back();
+                } else {
+                    closeCapturedOverlay();
                 }
-
-                // Resume light analysis & camera stream
-                isAnalyzing = true;
-                video.play().catch(err => console.error("Video play failed on return:", err));
             });
 
             startCamera();
