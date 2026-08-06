@@ -671,7 +671,7 @@
     </div>
 
     <!-- Captured Image View Overlay -->
-    <div id="capturedOverlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:#000; z-index:99999; overflow:hidden; touch-action:none;">
+    <div id="capturedOverlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:#000; z-index:99999;">
         <!-- Modern Top-Left Back Button -->
         <button id="backToCameraBtn" type="button" style="position:absolute; top:20px; left:20px; z-index:100; padding:10px 18px; background:rgba(0,0,0,0.45); color:#fff; border:none; border-radius:30px; font-weight:600; font-size:14px; cursor:pointer; display:flex; align-items:center; gap:8px; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); box-shadow:0 4px 15px rgba(0,0,0,0.25);">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -682,15 +682,15 @@
         </button>
 
         <!-- Captured Result Image -->
-        <img id="capturedResultImg" style="width:100%; height:100%; object-fit:contain; transform-origin:center center; touch-action:none;" src="" alt="Captured Preview" draggable="false">
+        <img id="capturedResultImg" style="width:100%; height:100%; object-fit:contain;" src="" alt="Captured Preview">
 
         <!-- Bottom Controls Bar (Same Get Button + Download Icon) -->
-        <div id="overlayControls" style="width:100%; position:fixed; bottom:30px; left:0; display:flex; justify-content:space-between; align-items:center; padding:0 35px; box-sizing:border-box; z-index:100; pointer-events:none;">
-            <a href="#" id="overlayGetStickerBtn" class="overlayGetBtn" style="pointer-events:auto;">
+        <div id="overlayControls" style="width:100%; position:fixed; bottom:30px; left:0; display:flex; justify-content:space-between; align-items:center; padding:0 35px; box-sizing:border-box; z-index:100;">
+            <a href="#" id="overlayGetStickerBtn" class="overlayGetBtn">
                 <img id="overlayBtnStickerPreview" src="" alt="" style="display:none;">
                 Get This Poster
             </a>
-            <a id="downloadResultBtn" href="#" download="poster-preview.jpg" style="width:55px; height:55px; background:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 15px rgba(0,0,0,0.3); text-decoration:none; pointer-events:auto;">
+            <a id="downloadResultBtn" href="#" download="poster-preview.jpg" style="width:55px; height:55px; background:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 15px rgba(0,0,0,0.3); text-decoration:none;">
                 <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                     <polyline points="7 10 12 15 17 10"></polyline>
@@ -1078,15 +1078,6 @@
                             const url = URL.createObjectURL(blob);
                             document.getElementById('capturedResultImg').src = url;
                             document.getElementById('downloadResultBtn').href = url;
-                            
-                            // Reset preview transform values manually before showing overlay
-                            pScale = 1;
-                            pX = 0;
-                            pY = 0;
-                            applyTransform(false);
-
-                            // Push history entry explicitly to intercept phone back button
-                            history.pushState({ isOverlayActive: true }, null, window.location.href);
                             document.getElementById('capturedOverlay').style.display = 'block';
                         }
                     }, 'image/jpeg', 0.95);
@@ -1157,145 +1148,11 @@
             }, 300);
         }
 
-        // --- FRESH CAPTURED PREVIEW INTERACTION (SMOOTH ZOOM, PAN & DOUBLE TAP) ---
-        const previewOverlay = document.getElementById('capturedOverlay');
-        const previewImg = document.getElementById('capturedResultImg');
-
-        let pScale = 1;
-        let pX = 0;
-        let pY = 0;
-
-        let startX = 0, startY = 0;
-        let initialPinchDist = 0;
-        let initialScale = 1;
-        
-        let lastTapTime = 0;
-        const activePreviewPointers = new Map();
-
-        // Helper to protect CTA buttons from zoom/pan gestures
-        function isCTATarget(target) {
-            return target.closest('#backToCameraBtn') || target.closest('#overlayControls');
-        }
-
-        function applyTransform(smooth = false) {
-            // Constrain scale bounds (1.0x to 4.0x)
-            pScale = Math.max(1, Math.min(pScale, 4));
-            
-            // Constrain pan (only allow movement if zoomed in)
-            if (pScale === 1) {
-                pX = 0;
-                pY = 0;
-            } else {
-                const maxPanX = (window.innerWidth * (pScale - 1)) / 2;
-                const maxPanY = (window.innerHeight * (pScale - 1)) / 2;
-                pX = Math.max(-maxPanX, Math.min(maxPanX, pX));
-                pY = Math.max(-maxPanY, Math.min(maxPanY, pY));
-            }
-
-            // Apply a smooth transition only for double-tap zoom, keep it instant for dragging/pinching
-            previewImg.style.transition = smooth ? 'transform 0.3s ease-in-out' : 'none';
-            previewImg.style.transform = `translate(${pX}px, ${pY}px) scale(${pScale})`;
-        }
-
-        function getPinchDistance(pointers) {
-            const dx = pointers[0].clientX - pointers[1].clientX;
-            const dy = pointers[0].clientY - pointers[1].clientY;
-            return Math.hypot(dx, dy);
-        }
-
-        previewOverlay.addEventListener('pointerdown', (e) => {
-            // Ignore touch if it hits the Back button or Bottom Controls
-            if (isCTATarget(e.target)) return;
-            e.preventDefault();
-            
-            activePreviewPointers.set(e.pointerId, e);
-
-            if (activePreviewPointers.size === 1) {
-                // Calculate anchor points factoring in current pan position
-                startX = e.clientX - pX;
-                startY = e.clientY - pY;
-            } else if (activePreviewPointers.size === 2) {
-                const pts = Array.from(activePreviewPointers.values());
-                initialPinchDist = getPinchDistance(pts);
-                initialScale = pScale;
-            }
-        });
-
-        previewOverlay.addEventListener('pointermove', (e) => {
-            if (!activePreviewPointers.has(e.pointerId)) return;
-            e.preventDefault();
-            activePreviewPointers.set(e.pointerId, e);
-
-            if (activePreviewPointers.size === 1 && pScale > 1) {
-                // 1-Finger Panning
-                pX = e.clientX - startX;
-                pY = e.clientY - startY;
-                applyTransform(false);
-            } else if (activePreviewPointers.size === 2) {
-                // 2-Finger Pinch Zooming
-                const pts = Array.from(activePreviewPointers.values());
-                const currentDist = getPinchDistance(pts);
-                if (initialPinchDist > 0) {
-                    pScale = initialScale * (currentDist / initialPinchDist);
-                    applyTransform(false);
-                }
-            }
-        });
-
-        function handlePointerUp(e) {
-            if (!activePreviewPointers.has(e.pointerId)) return;
-            
-            // Double-tap logic
-            if (activePreviewPointers.size === 1 && !isCTATarget(e.target)) {
-                const currentTime = Date.now();
-                const tapLength = currentTime - lastTapTime;
-                
-                if (tapLength < 300 && tapLength > 0) {
-                    // Toggle Zoom Level on Double Tap
-                    pScale = (pScale > 1.2) ? 1 : 2.5;
-                    applyTransform(true); // Enable smooth CSS transition
-                }
-                lastTapTime = currentTime;
-            }
-
-            activePreviewPointers.delete(e.pointerId);
-
-            // Re-anchor remaining finger if one is lifted during a pinch
-            if (activePreviewPointers.size === 1) {
-                const remaining = Array.from(activePreviewPointers.values())[0];
-                startX = remaining.clientX - pX;
-                startY = remaining.clientY - pY;
-            }
-        }
-
-        previewOverlay.addEventListener('pointerup', handlePointerUp);
-        previewOverlay.addEventListener('pointercancel', handlePointerUp);
-        previewOverlay.addEventListener('pointerleave', handlePointerUp);
-
-        // --- UI BUTTON HANDLERS ---
-        function closePreviewOverlay() {
-            const overlay = document.getElementById('capturedOverlay');
-            if (overlay && overlay.style.display === 'block') {
-                overlay.style.display = 'none';
-                pScale = 1; pX = 0; pY = 0;
-                applyTransform(true);
-            }
-        }
-
-        // Back to Camera button action
+        // Back to Camera button action - hides overlay to reveal camera stream
         document.getElementById('backToCameraBtn').addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            if (history.state && history.state.isOverlayActive) {
-                history.back();
-            } else {
-                closePreviewOverlay();
-            }
-        });
-
-        // Intercept native browser back button / swipe gesture
-        window.addEventListener('popstate', () => {
-            closePreviewOverlay();
+            document.getElementById('capturedOverlay').style.display = 'none';
         });
 
     </script>
