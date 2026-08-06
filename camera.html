@@ -1042,18 +1042,27 @@
                 lastTap = now;
             });
 
-            // Initialize Panzoom for Captured Overlay
+            // PANZOOM LOGIC FOR CAPTURED OVERLAY
+            let panzoom = null;
             const capturedImg = document.getElementById('capturedResultImg');
-            const panzoom = Panzoom(capturedImg, {
-                maxScale: 4,
-                minScale: 1,
-                contain: 'outside', // Prevents panning outside viewport boundary
-                cursor: 'move'
-            });
+            const wrapper = document.getElementById('capturedImageWrapper');
+
+            function initPanzoom() {
+                if (panzoom) {
+                    panzoom.destroy();
+                }
+                panzoom = Panzoom(capturedImg, {
+                    maxScale: 4,
+                    minScale: 1,
+                    contain: 'outside', // Prevents panning image off-screen
+                    cursor: 'move'
+                });
+            }
 
             // Mouse wheel zoom for desktop/laptops
-            const wrapper = document.getElementById('capturedImageWrapper');
-            wrapper.addEventListener('wheel', panzoom.zoomWithWheel);
+            wrapper.addEventListener('wheel', (e) => {
+                if (panzoom) panzoom.zoomWithWheel(e);
+            });
 
             // Double Tap on Captured Image to Zoom 200% (or reset if zoomed)
             let capturedLastTap = 0;
@@ -1061,11 +1070,13 @@
                 if (e.target.closest('#overlayControls') || e.target.closest('#backToCameraBtn')) return;
                 const now = new Date().getTime();
                 if ((now - capturedLastTap < 300) && (now - capturedLastTap > 0)) {
-                    const currentScale = panzoom.getScale();
-                    if (currentScale > 1.2) {
-                        panzoom.reset();
-                    } else {
-                        panzoom.zoomToPoint(2.0, { clientX: e.clientX, clientY: e.clientY }, { animate: true });
+                    if (panzoom) {
+                        const currentScale = panzoom.getScale();
+                        if (currentScale > 1.2) {
+                            panzoom.reset();
+                        } else {
+                            panzoom.zoomToPoint(2.0, { clientX: e.clientX, clientY: e.clientY }, { animate: true });
+                        }
                     }
                 }
                 capturedLastTap = now;
@@ -1125,17 +1136,22 @@
                         captureBtn.classList.remove('loader');
                         if (blob) {
                             const url = URL.createObjectURL(blob);
-                            capturedImg.src = url;
-                            document.getElementById('downloadResultBtn').href = url;
 
-                            // Pause heavy loops & video stream for 60fps pan/zoom performance
+                            // Pause camera & light analysis loop to ensure smooth performance
                             isAnalyzing = false;
                             video.pause();
 
-                            // Reset Panzoom scale before display
-                            panzoom.reset({ animate: false });
+                            // Set image source
+                            capturedImg.src = url;
+                            document.getElementById('downloadResultBtn').href = url;
 
+                            // Display overlay FIRST so element has non-zero DOM dimensions
                             document.getElementById('capturedOverlay').style.display = 'block';
+
+                            // Initialize Panzoom AFTER image source has loaded in the visible container
+                            capturedImg.onload = () => {
+                                initPanzoom();
+                            };
                         }
                     }, 'image/jpeg', 0.95);
                 }, 50);
@@ -1148,8 +1164,11 @@
 
                 document.getElementById('capturedOverlay').style.display = 'none';
 
-                // Reset Panzoom transformation state
-                panzoom.reset({ animate: false });
+                // Destroy active panzoom instance
+                if (panzoom) {
+                    panzoom.destroy();
+                    panzoom = null;
+                }
 
                 // Resume light analysis & camera stream
                 isAnalyzing = true;
