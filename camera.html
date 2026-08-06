@@ -42,7 +42,6 @@
             z-index: 10;
         }
 
-
         #overlayImage {
             position: absolute;
             z-index: 20;
@@ -53,9 +52,7 @@
             max-height: 80%;
             transform-origin: center center;
             display: none;
-
         }
-
 
         #previewCanvas {
             background: #1f1f1f;
@@ -576,6 +573,17 @@
         .tooltipClose:hover {
             opacity: 1;
         }
+
+        /* Container wrapper for Panzoom on Captured Overlay */
+        #capturedImageWrapper {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            touch-action: none;
+        }
     </style>
 </head>
 
@@ -681,8 +689,10 @@
             <span>Back to Camera</span>
         </button>
 
-        <!-- Captured Result Image -->
-        <img id="capturedResultImg" style="width:100%; height:100%; object-fit:contain;" src="" alt="Captured Preview">
+        <!-- Captured Result Image inside panzoom wrapper -->
+        <div id="capturedImageWrapper">
+            <img id="capturedResultImg" style="width:100%; height:100%; object-fit:contain;" src="" alt="Captured Preview">
+        </div>
 
         <!-- Bottom Controls Bar (Same Get Button + Download Icon) -->
         <div id="overlayControls" style="width:100%; position:fixed; bottom:30px; left:0; display:flex; justify-content:space-between; align-items:center; padding:0 35px; box-sizing:border-box; z-index:100;">
@@ -700,7 +710,10 @@
         </div>
     </div>
 
+    <!-- External Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://unpkg.com/@panzoom/panzoom/dist/panzoom.min.js"></script>
+
     <script>
 
         // 1. Parameter and Validation logic
@@ -831,6 +844,8 @@
             analysisCanvas.width = 40;
             analysisCanvas.height = 40;
 
+            let isAnalyzing = true; // Control flag to pause loop on capture
+
             let state = {
                 x: 0, y: 0, scale: 1, rotation: 0,
                 startX: 0, startY: 0, baseX: 0, baseY: 0, baseScale: 1, baseRotation: 0,
@@ -859,6 +874,11 @@
             };
 
             function analyzeLight() {
+                if (!isAnalyzing) {
+                    requestAnimationFrame(analyzeLight);
+                    return;
+                }
+
                 if (video.readyState === video.HAVE_ENOUGH_DATA) {
                     const videoW = video.videoWidth;
                     const videoH = video.videoHeight;
@@ -1022,6 +1042,35 @@
                 lastTap = now;
             });
 
+            // Initialize Panzoom for Captured Overlay
+            const capturedImg = document.getElementById('capturedResultImg');
+            const panzoom = Panzoom(capturedImg, {
+                maxScale: 4,
+                minScale: 1,
+                contain: 'outside', // Prevents panning outside viewport boundary
+                cursor: 'move'
+            });
+
+            // Mouse wheel zoom for desktop/laptops
+            const wrapper = document.getElementById('capturedImageWrapper');
+            wrapper.addEventListener('wheel', panzoom.zoomWithWheel);
+
+            // Double Tap on Captured Image to Zoom 200% (or reset if zoomed)
+            let capturedLastTap = 0;
+            wrapper.addEventListener('click', (e) => {
+                if (e.target.closest('#overlayControls') || e.target.closest('#backToCameraBtn')) return;
+                const now = new Date().getTime();
+                if ((now - capturedLastTap < 300) && (now - capturedLastTap > 0)) {
+                    const currentScale = panzoom.getScale();
+                    if (currentScale > 1.2) {
+                        panzoom.reset();
+                    } else {
+                        panzoom.zoomToPoint(2.0, { clientX: e.clientX, clientY: e.clientY }, { animate: true });
+                    }
+                }
+                capturedLastTap = now;
+            });
+
             // 4. CAPTURE EVENT & SHOW OVERLAY
             captureBtn.addEventListener('click', () => {
                 captureBtn.classList.add('loader');
@@ -1076,12 +1125,35 @@
                         captureBtn.classList.remove('loader');
                         if (blob) {
                             const url = URL.createObjectURL(blob);
-                            document.getElementById('capturedResultImg').src = url;
+                            capturedImg.src = url;
                             document.getElementById('downloadResultBtn').href = url;
+
+                            // Pause heavy loops & video stream for 60fps pan/zoom performance
+                            isAnalyzing = false;
+                            video.pause();
+
+                            // Reset Panzoom scale before display
+                            panzoom.reset({ animate: false });
+
                             document.getElementById('capturedOverlay').style.display = 'block';
                         }
                     }, 'image/jpeg', 0.95);
                 }, 50);
+            });
+
+            // Back to Camera button action - hides overlay and restores camera feed
+            document.getElementById('backToCameraBtn').addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                document.getElementById('capturedOverlay').style.display = 'none';
+
+                // Reset Panzoom transformation state
+                panzoom.reset({ animate: false });
+
+                // Resume light analysis & camera stream
+                isAnalyzing = true;
+                video.play().catch(err => console.error("Video play failed on return:", err));
             });
 
             startCamera();
@@ -1147,13 +1219,6 @@
                 }
             }, 300);
         }
-
-        // Back to Camera button action - hides overlay to reveal camera stream
-        document.getElementById('backToCameraBtn').addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            document.getElementById('capturedOverlay').style.display = 'none';
-        });
 
     </script>
 </body>
