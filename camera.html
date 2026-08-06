@@ -1079,8 +1079,11 @@
                             document.getElementById('capturedResultImg').src = url;
                             document.getElementById('downloadResultBtn').href = url;
                             
-                            // Reset preview transform
-                            resetPreviewTransform();
+                            // Reset preview transform values manually before showing overlay
+                            pScale = 1;
+                            pX = 0;
+                            pY = 0;
+                            applyTransform(false);
 
                             // Push history entry explicitly to intercept phone back button
                             history.pushState({ isOverlayActive: true }, null, window.location.href);
@@ -1154,148 +1157,128 @@
             }, 300);
         }
 
-     // --- CAPTURED PREVIEW INTERACTION (ZOOM, PAN & DOUBLE TAP) ---
+        // --- FRESH CAPTURED PREVIEW INTERACTION (SMOOTH ZOOM, PAN & DOUBLE TAP) ---
         const previewOverlay = document.getElementById('capturedOverlay');
         const previewImg = document.getElementById('capturedResultImg');
 
-        let previewScale = 1;
-        let previewX = 0;
-        let previewY = 0;
+        let pScale = 1;
+        let pX = 0;
+        let pY = 0;
 
-        let pBaseScale = 1;
-        let pBaseX = 0;
-        let pBaseY = 0;
-        let pStartX = 0;
-        let pStartY = 0;
-        let pInitialDist = null;
+        let startX = 0, startY = 0;
+        let initialPinchDist = 0;
+        let initialScale = 1;
         
-        let lastPreviewTap = 0;
-        let tapStartX = 0;
-        let tapStartY = 0;
-
+        let lastTapTime = 0;
         const activePreviewPointers = new Map();
 
-        function resetPreviewTransform() {
-            previewScale = 1;
-            previewX = 0;
-            previewY = 0;
-            updatePreviewTransform();
+        // Helper to protect CTA buttons from zoom/pan gestures
+        function isCTATarget(target) {
+            return target.closest('#backToCameraBtn') || target.closest('#overlayControls');
         }
 
-        function updatePreviewTransform() {
-            // Constrain scale bounds (1.0x to 3.5x)
-            previewScale = Math.min(3.5, Math.max(1.0, previewScale));
-
-            if (previewScale <= 1) {
-                previewX = 0;
-                previewY = 0;
+        function applyTransform(smooth = false) {
+            // Constrain scale bounds (1.0x to 4.0x)
+            pScale = Math.max(1, Math.min(pScale, 4));
+            
+            // Constrain pan (only allow movement if zoomed in)
+            if (pScale === 1) {
+                pX = 0;
+                pY = 0;
             } else {
-                // Keep image bounded within screen viewport during pan
-                const maxPanX = (window.innerWidth * (previewScale - 1)) / 2;
-                const maxPanY = (window.innerHeight * (previewScale - 1)) / 2;
-
-                previewX = Math.min(maxPanX, Math.max(-maxPanX, previewX));
-                previewY = Math.min(maxPanY, Math.max(-maxPanY, previewY));
+                const maxPanX = (window.innerWidth * (pScale - 1)) / 2;
+                const maxPanY = (window.innerHeight * (pScale - 1)) / 2;
+                pX = Math.max(-maxPanX, Math.min(maxPanX, pX));
+                pY = Math.max(-maxPanY, Math.min(maxPanY, pY));
             }
 
-            previewImg.style.transform = `translate(${previewX}px, ${previewY}px) scale(${previewScale})`;
+            // Apply a smooth transition only for double-tap zoom, keep it instant for dragging/pinching
+            previewImg.style.transition = smooth ? 'transform 0.3s ease-in-out' : 'none';
+            previewImg.style.transform = `translate(${pX}px, ${pY}px) scale(${pScale})`;
         }
 
-        function getDistance(p1, p2) {
-            const dx = p2.clientX - p1.clientX;
-            const dy = p2.clientY - p1.clientY;
-            return Math.sqrt(dx * dx + dy * dy);
+        function getPinchDistance(pointers) {
+            const dx = pointers[0].clientX - pointers[1].clientX;
+            const dy = pointers[0].clientY - pointers[1].clientY;
+            return Math.hypot(dx, dy);
         }
 
         previewOverlay.addEventListener('pointerdown', (e) => {
-            if (e.target.closest('#backToCameraBtn') || e.target.closest('#overlayControls')) return;
-
-            activePreviewPointers.set(e.pointerId, { clientX: e.clientX, clientY: e.clientY });
+            // Ignore touch if it hits the Back button or Bottom Controls
+            if (isCTATarget(e.target)) return;
+            e.preventDefault();
+            
+            activePreviewPointers.set(e.pointerId, e);
 
             if (activePreviewPointers.size === 1) {
-                pStartX = e.clientX;
-                pStartY = e.clientY;
-                tapStartX = e.clientX;
-                tapStartY = e.clientY;
-                pBaseX = previewX;
-                pBaseY = previewY;
+                // Calculate anchor points factoring in current pan position
+                startX = e.clientX - pX;
+                startY = e.clientY - pY;
             } else if (activePreviewPointers.size === 2) {
                 const pts = Array.from(activePreviewPointers.values());
-                pInitialDist = getDistance(pts[0], pts[1]);
-                pBaseScale = previewScale;
+                initialPinchDist = getPinchDistance(pts);
+                initialScale = pScale;
             }
         });
 
         previewOverlay.addEventListener('pointermove', (e) => {
             if (!activePreviewPointers.has(e.pointerId)) return;
             e.preventDefault();
+            activePreviewPointers.set(e.pointerId, e);
 
-            activePreviewPointers.get(e.pointerId).clientX = e.clientX;
-            activePreviewPointers.get(e.pointerId).clientY = e.clientY;
-
-            if (activePreviewPointers.size === 1 && previewScale > 1) {
-                previewX = pBaseX + (e.clientX - pStartX);
-                previewY = pBaseY + (e.clientY - pStartY);
-            } else if (activePreviewPointers.size >= 2) {
+            if (activePreviewPointers.size === 1 && pScale > 1) {
+                // 1-Finger Panning
+                pX = e.clientX - startX;
+                pY = e.clientY - startY;
+                applyTransform(false);
+            } else if (activePreviewPointers.size === 2) {
+                // 2-Finger Pinch Zooming
                 const pts = Array.from(activePreviewPointers.values());
-                const currentDist = getDistance(pts[0], pts[1]);
-
-                if (pInitialDist && pInitialDist > 0) {
-                    previewScale = pBaseScale * (currentDist / pInitialDist);
+                const currentDist = getPinchDistance(pts);
+                if (initialPinchDist > 0) {
+                    pScale = initialScale * (currentDist / initialPinchDist);
+                    applyTransform(false);
                 }
             }
-            updatePreviewTransform();
         });
 
-        function endPreviewPointer(e) {
+        function handlePointerUp(e) {
             if (!activePreviewPointers.has(e.pointerId)) return;
-
-            // Handle Custom Double-Tap detection on touch release
-            if (activePreviewPointers.size === 1 && !e.target.closest('#backToCameraBtn') && !e.target.closest('#overlayControls')) {
-                const moveDist = Math.hypot(e.clientX - tapStartX, e.clientY - tapStartY);
-                const now = Date.now();
-
-                // Detect tap if finger moved less than 10px
-                if (moveDist < 10) {
-                    if (now - lastPreviewTap < 300 && now - lastPreviewTap > 0) {
-                        if (previewScale > 1.1) {
-                            resetPreviewTransform();
-                        } else {
-                            previewScale = 2.0;
-                            previewX = 0;
-                            previewY = 0;
-                            updatePreviewTransform();
-                        }
-                        lastPreviewTap = 0;
-                    } else {
-                        lastPreviewTap = now;
-                    }
+            
+            // Double-tap logic
+            if (activePreviewPointers.size === 1 && !isCTATarget(e.target)) {
+                const currentTime = Date.now();
+                const tapLength = currentTime - lastTapTime;
+                
+                if (tapLength < 300 && tapLength > 0) {
+                    // Toggle Zoom Level on Double Tap
+                    pScale = (pScale > 1.2) ? 1 : 2.5;
+                    applyTransform(true); // Enable smooth CSS transition
                 }
+                lastTapTime = currentTime;
             }
 
             activePreviewPointers.delete(e.pointerId);
 
-            if (activePreviewPointers.size < 2) {
-                pInitialDist = null;
-            }
+            // Re-anchor remaining finger if one is lifted during a pinch
             if (activePreviewPointers.size === 1) {
-                const rem = Array.from(activePreviewPointers.values())[0];
-                pStartX = rem.clientX;
-                pStartY = rem.clientY;
-                pBaseX = previewX;
-                pBaseY = previewY;
+                const remaining = Array.from(activePreviewPointers.values())[0];
+                startX = remaining.clientX - pX;
+                startY = remaining.clientY - pY;
             }
         }
 
-        previewOverlay.addEventListener('pointerup', endPreviewPointer);
-        previewOverlay.addEventListener('pointercancel', endPreviewPointer);
-        previewOverlay.addEventListener('pointerleave', endPreviewPointer);
+        previewOverlay.addEventListener('pointerup', handlePointerUp);
+        previewOverlay.addEventListener('pointercancel', handlePointerUp);
+        previewOverlay.addEventListener('pointerleave', handlePointerUp);
 
+        // --- UI BUTTON HANDLERS ---
         function closePreviewOverlay() {
             const overlay = document.getElementById('capturedOverlay');
             if (overlay && overlay.style.display === 'block') {
                 overlay.style.display = 'none';
-                resetPreviewTransform();
+                pScale = 1; pX = 0; pY = 0;
+                applyTransform(true);
             }
         }
 
