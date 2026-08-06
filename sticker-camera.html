@@ -83,7 +83,7 @@
             pointer-events: auto;
         }
 
-        #getStickerBtn {
+        #getStickerBtn, .overlayGetBtn {
             background: #f4f2f8;
             /* Offwhite light violet greyish */
             color: #333;
@@ -100,7 +100,7 @@
             justify-content: center;
         }
 
-        #getStickerBtn img {
+        #getStickerBtn img, .overlayGetBtn img {
             width: 28px;
             height: 28px;
             object-fit: contain;
@@ -109,7 +109,7 @@
             filter: brightness(0.97);
         }
 
-        #getStickerBtn:active {
+        #getStickerBtn:active, .overlayGetBtn:active {
             transform: scale(0.98);
             background: #eceaf1;
         }
@@ -530,12 +530,12 @@
                 /* More margin for larger tablet button */
             }
 
-            #getStickerBtn {
+            #getStickerBtn, .overlayGetBtn {
                 font-size: 20px;
                 padding: 16px 30px;
             }
 
-            #getStickerBtn img {
+            #getStickerBtn img, .overlayGetBtn img {
                 width: 36px;
                 height: 36px;
             }
@@ -550,7 +550,7 @@
                 height: 50px;
             }
 
-            #controls {
+            #controls, #overlayControls {
                 padding: 0 85px;
                 /* Tablet view padding */
             }
@@ -575,6 +575,44 @@
 
         .tooltipClose:hover {
             opacity: 1;
+        }
+
+        /* Container wrapper for Panzoom on Captured Overlay */
+        #capturedImageWrapper {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        /* Medium-sized Right Top Close Icon Button */
+        #closeOverlayBtn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 101;
+            width: 44px;
+            height: 44px;
+            background: rgba(0, 0, 0, 0.45);
+            color: #ffffff;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+
+        #closeOverlayBtn:active {
+            transform: scale(0.92);
+            background: rgba(0, 0, 0, 0.65);
         }
     </style>
 </head>
@@ -621,7 +659,7 @@
         <div id="controls">
             <a href="#" id="getStickerBtn">
                 <img id="btnStickerPreview" src="" alt="" style="display:none;">
-                Get This Poster
+                Get This Sticker
             </a>
             <button id="captureBtn" aria-label="Capture Picture"></button>
         </div>
@@ -671,7 +709,41 @@
         </div>
     </div>
 
+    <!-- Captured Image View Overlay -->
+    <div id="capturedOverlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:#000; z-index:99999;">
+        <!-- Top-Right Close Button -->
+        <button id="closeOverlayBtn" type="button" aria-label="Close Preview and return to camera">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
+
+        <!-- Captured Result Image inside panzoom wrapper -->
+        <div id="capturedImageWrapper">
+            <img id="capturedResultImg" style="width:100%; height:100%; object-fit:contain;" src="" alt="Captured Preview">
+        </div>
+
+        <!-- Bottom Controls Bar (Same Get Button + Download Icon) -->
+        <div id="overlayControls" style="width:100%; position:fixed; bottom:30px; left:0; display:flex; justify-content:space-between; align-items:center; padding:0 35px; box-sizing:border-box; z-index:100;">
+            <a href="#" id="overlayGetStickerBtn" class="overlayGetBtn">
+                <img id="overlayBtnStickerPreview" src="" alt="" style="display:none;">
+                Get This Sticker
+            </a>
+            <a id="downloadResultBtn" href="#" download="sticker-preview.jpg" style="width:55px; height:55px; background:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 15px rgba(0,0,0,0.3); text-decoration:none;">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+            </a>
+        </div>
+    </div>
+
+    <!-- External Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://unpkg.com/@panzoom/panzoom/dist/panzoom.min.js"></script>
+
     <script>
 
         // 1. Parameter and Validation logic
@@ -715,12 +787,19 @@
             // Update Get Button Link & Image Preview
             const getStickerBtn = document.getElementById('getStickerBtn');
             const btnImg = document.getElementById('btnStickerPreview');
-            if (getStickerBtn) {
-                getStickerBtn.href = validRedirectUrl;
-            }
+            const overlayGetStickerBtn = document.getElementById('overlayGetStickerBtn');
+            const overlayBtnImg = document.getElementById('overlayBtnStickerPreview');
+
+            if (getStickerBtn) getStickerBtn.href = validRedirectUrl;
+            if (overlayGetStickerBtn) overlayGetStickerBtn.href = validRedirectUrl;
+
             if (btnImg) {
                 btnImg.src = validArtUrl;
                 btnImg.style.display = 'inline-block';
+            }
+            if (overlayBtnImg) {
+                overlayBtnImg.src = validArtUrl;
+                overlayBtnImg.style.display = 'inline-block';
             }
 
             // Device check
@@ -795,6 +874,9 @@
             analysisCanvas.width = 40;
             analysisCanvas.height = 40;
 
+            let isAnalyzing = true; // Control flag to pause light analysis loop on capture
+            let analysisInterval = null;
+
             let state = {
                 x: 0, y: 0, scale: 1, rotation: 0,
                 startX: 0, startY: 0, baseX: 0, baseY: 0, baseScale: 1, baseRotation: 0,
@@ -805,12 +887,11 @@
             let initialDistance = null;
             let initialAngle = 0;
 
-            // 1. UPDATED LIVE OVERLAY (Subtle 4, 3, 3 Shadow + Rotation support)
+            // 1. LIVE OVERLAY UPDATE (Subtle 4, 3, 3 Shadow + Rotation support)
             const updateOverlay = () => {
                 overlay.style.transform = `translateX(${state.x}px) translateY(${state.y}px) scale(${state.scale}) rotate(${state.rotation}deg)`;
 
                 const shadowScale = Math.max(state.scale, 0.85);
-                // Subtle shadow values
                 const liveX = 4 * shadowScale;
                 const liveY = 3 * shadowScale;
                 const liveBlur = 3 * shadowScale;
@@ -821,8 +902,10 @@
                 overlay.style.webkitFilter = filterString;
             };
 
-            // 2. UPDATED BRIGHTNESS (Slightly increased floor)
+            // 2. BRIGHTNESS ANALYSIS (Paused when captured overlay is active)
             function analyzeLight() {
+                if (!isAnalyzing) return;
+
                 if (video.readyState === video.HAVE_ENOUGH_DATA) {
                     analysisCtx.drawImage(video, 0, 0, 40, 40);
                     const pixels = analysisCtx.getImageData(0, 0, 40, 40).data;
@@ -832,7 +915,6 @@
                     }
                     const avgLuminance = totalLuminance / (40 * 40);
 
-                    // Increased floor to 0.74 and narrowed range to 0.22 for subtle pop
                     const newBrightness = 0.74 + (avgLuminance / 255) * 0.22;
 
                     state.envBrightness = newBrightness.toFixed(3);
@@ -840,7 +922,7 @@
                 }
             }
 
-            setInterval(analyzeLight, 500);
+            analysisInterval = setInterval(analyzeLight, 500);
 
             async function startCamera() {
                 message.style.display = 'block';
@@ -878,7 +960,7 @@
             }
 
             viewport.addEventListener('pointerdown', (e) => {
-                if (e.target.closest('#controls') || e.target.closest('.tooltipClose') || e.target.closest('#gestureTooltip') || e.target.closest('#placementTooltip')) return;
+                if (e.target.closest('#controls') || e.target.closest('#capturedOverlay') || e.target.closest('.tooltipClose') || e.target.closest('#gestureTooltip') || e.target.closest('#placementTooltip')) return;
                 e.preventDefault();
                 viewport.setPointerCapture(e.pointerId);
                 activePointers.set(e.pointerId, { id: e.pointerId, clientX: e.clientX, clientY: e.clientY });
@@ -934,10 +1016,10 @@
             viewport.addEventListener('pointercancel', pointerEnd);
             viewport.addEventListener('pointerleave', pointerEnd);
 
-            // 3. DOUBLE TAP RESET (Kept exactly as original)
+            // 3. DOUBLE TAP RESET
             let lastTap = 0;
             viewport.addEventListener('click', (e) => {
-                if (e.target.closest('#controls') || e.target.closest('.tooltipClose')) return;
+                if (e.target.closest('#controls') || e.target.closest('#capturedOverlay') || e.target.closest('.tooltipClose')) return;
                 const now = new Date().getTime();
                 if ((now - lastTap < 300) && (now - lastTap > 0)) {
                     state = { ...state, x: 0, y: 0, scale: 1, rotation: 0 };
@@ -949,7 +1031,73 @@
                 lastTap = now;
             });
 
-            // 4. SYNCED CAPTURE (High Quality + 4, 3, 3 Shadow + Rotation support)
+            // PANZOOM LOGIC FOR CAPTURED OVERLAY
+            let panzoom = null;
+            const capturedImg = document.getElementById('capturedResultImg');
+            const wrapper = document.getElementById('capturedImageWrapper');
+
+            function initPanzoom() {
+                if (panzoom) {
+                    panzoom.destroy();
+                }
+                panzoom = Panzoom(capturedImg, {
+                    maxScale: 4,
+                    minScale: 1,
+                    contain: 'outside', // Prevents panning image off-screen
+                    cursor: 'move'
+                });
+            }
+
+            // Mouse wheel zoom for desktop/laptops
+            wrapper.addEventListener('wheel', (e) => {
+                if (panzoom) panzoom.zoomWithWheel(e);
+            });
+
+            // Double Tap on Captured Image to Zoom 200% (or reset if zoomed)
+            let capturedLastTap = 0;
+            wrapper.addEventListener('click', (e) => {
+                if (e.target.closest('#overlayControls') || e.target.closest('#closeOverlayBtn')) return;
+                const now = new Date().getTime();
+                if ((now - capturedLastTap < 300) && (now - capturedLastTap > 0)) {
+                    if (panzoom) {
+                        const currentScale = panzoom.getScale();
+                        if (currentScale > 1.2) {
+                            panzoom.reset();
+                        } else {
+                            panzoom.zoomToPoint(2.0, { clientX: e.clientX, clientY: e.clientY }, { animate: true });
+                        }
+                    }
+                }
+                capturedLastTap = now;
+            });
+
+            // Helper function to close overlay and reset back to camera
+            function closeCapturedOverlay() {
+                const overlay = document.getElementById('capturedOverlay');
+                if (overlay.style.display === 'none') return;
+
+                overlay.style.display = 'none';
+
+                // Destroy active panzoom instance
+                if (panzoom) {
+                    panzoom.destroy();
+                    panzoom = null;
+                }
+
+                // Resume light analysis & camera stream
+                isAnalyzing = true;
+                video.play().catch(err => console.error("Video play failed on return:", err));
+            }
+
+            // Listen for hardware/browser back navigation gesture
+            window.addEventListener('popstate', (e) => {
+                const overlay = document.getElementById('capturedOverlay');
+                if (overlay && overlay.style.display === 'block') {
+                    closeCapturedOverlay();
+                }
+            });
+
+            // 4. HIGH QUALITY CAPTURE & OVERLAY DISPLAY
             captureBtn.addEventListener('click', () => {
                 captureBtn.classList.add('loader');
                 setTimeout(() => {
@@ -1001,10 +1149,40 @@
                         captureBtn.classList.remove('loader');
                         if (blob) {
                             const url = URL.createObjectURL(blob);
-                            window.open(url);
+
+                            // Pause camera stream & light analysis loop for performance
+                            isAnalyzing = false;
+                            video.pause();
+
+                            // Set image source
+                            capturedImg.src = url;
+                            document.getElementById('downloadResultBtn').href = url;
+
+                            // Push history state so hardware back button closes overlay instead of leaving page
+                            history.pushState({ overlayOpen: true }, '');
+
+                            // Display overlay FIRST so element has non-zero DOM dimensions
+                            document.getElementById('capturedOverlay').style.display = 'block';
+
+                            // Initialize Panzoom AFTER image source has loaded in the visible container
+                            capturedImg.onload = () => {
+                                initPanzoom();
+                            };
                         }
                     }, 'image/jpeg', 0.95);
                 }, 50);
+            });
+
+            // Close button action - triggers history.back() if overlay state exists, or closes directly
+            document.getElementById('closeOverlayBtn').addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                if (history.state && history.state.overlayOpen) {
+                    history.back();
+                } else {
+                    closeCapturedOverlay();
+                }
             });
 
             startCamera();
@@ -1071,7 +1249,6 @@
             const qrImage = document.getElementById('qrCodeImage');
             const tempDiv = document.createElement('div');
             
-            // NOTE: Decreased CorrectLevel to L to safely handle very long dynamic parameter strings without crashing
             new QRCode(tempDiv, {
                 text: url, width: 180, height: 180,
                 colorDark: "#000000", colorLight: "#ffffff",
