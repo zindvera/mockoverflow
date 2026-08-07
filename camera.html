@@ -1198,7 +1198,9 @@
                             document.getElementById('downloadResultBtn').href = url;
 
                             // Push history state so back button closes overlay instead of leaving page
-                            history.pushState({ overlayOpen: true }, '');
+                            if (!history.state || !history.state.overlayOpen) {
+                                history.pushState({ overlayOpen: true }, '');
+                            }
 
                             // Display overlay FIRST so element has non-zero DOM dimensions
                             document.getElementById('capturedOverlay').style.display = 'block';
