@@ -489,6 +489,9 @@
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s ease;
+            overflow-y: auto;
+            padding: 40px 20px;
+            box-sizing: border-box;
         }
 
         .modal-overlay.active {
@@ -507,10 +510,11 @@
             box-shadow: 0 25px 80px rgba(43, 1, 49, 0.12);
             border: 1px solid #f0f0f5;
             max-width: 1000px;
-            width: 90%;
+            width: 100%;
             transform: translateY(20px);
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             position: relative;
+            margin: auto;
         }
 
         .modal-overlay.active .modal-layout {
@@ -522,18 +526,29 @@
 
         .modal-close {
             position: absolute;
-            top: 25px;
-            right: 30px;
+            top: 18px;
+            right: 20px;
             font-size: 2rem;
-            color: #a0a0b0;
-            background: none;
-            border: none;
+            color: #6c757d;
+            background: #f8f8fb;
+            border: 1px solid #e0e0e8;
+            border-radius: 50%;
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
-            transition: color 0.2s;
+            transition: all 0.2s ease;
             line-height: 1;
+            z-index: 100;
         }
 
-        .modal-close:hover { color: var(--brand-pink); }
+        .modal-close:hover { 
+            color: #fff; 
+            background: var(--brand-pink);
+            border-color: var(--brand-pink);
+        }
 
         .modal-title {
             font-size: 2.2rem;
@@ -607,7 +622,9 @@
             h1 { font-size: 2.4rem; text-align: center; }
             .hero-subtitle { text-align: center; margin: 0 auto 2.5rem auto; }
             .form-wrapper { text-align: center; margin-bottom: 40px; }
-            .modal-layout { flex-direction: column; padding: 40px 30px; gap: 30px; overflow-y: auto; max-height: 95vh; }
+            .modal-overlay { padding: 20px 10px; align-items: flex-start; }
+            .modal-layout { flex-direction: column; padding: 40px 24px; gap: 30px; }
+            .modal-close { top: 15px; right: 15px; width: 36px; height: 36px; font-size: 1.6rem; }
             .nav-container { justify-content: center; flex-direction: column; gap: 15px; }
             .nav-logo { margin-right: 0; }
         }
@@ -761,7 +778,7 @@
     <!-- FULL WIDTH MODAL UI -->
     <div class="modal-overlay" id="successModal">
         <div class="modal-layout">
-            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <button class="modal-close" onclick="handleModalCloseBtn()">&times;</button>
             
             <div class="modal-left">
                 <h3 class="modal-title">Your link is ready.</h3>
@@ -959,10 +976,8 @@
             const tooltip = document.getElementById('mo-tooltip');
             if (tooltip) tooltip.classList.add('hidden');
 
-            const encodedArt = encodeURIComponent(artUrl);
-            const encodedRedirect = encodeURIComponent(redirectUrl);
-            
-            let finalUrl = `https://mockoverflow.online/show/poster/?art=${encodedArt}&redirect=${encodedRedirect}`;
+            // Raw unencoded concatenation
+            let finalUrl = `https://mockoverflow.online/camera.html?art=${artUrl}&redirect=${redirectUrl}`;
 
             document.getElementById('generatedLinkOutput').value = finalUrl;
             document.getElementById('visitBtn').href = finalUrl;
@@ -975,12 +990,39 @@
             copyBtn.style.backgroundImage = 'var(--brand-gradient)';
             copyBtn.style.backgroundColor = 'transparent';
 
+            // Lock background body scroll
+            document.body.style.overflow = 'hidden';
+
+            // Push history state so back button closes modal
+            if (!history.state || !history.state.modalOpen) {
+                history.pushState({ modalOpen: true }, '');
+            }
+
             document.getElementById('successModal').classList.add('active');
         }
 
         function closeModal() {
-            document.getElementById('successModal').classList.remove('active');
+            const modal = document.getElementById('successModal');
+            if (!modal.classList.contains('active')) return;
+
+            modal.classList.remove('active');
+            // Restore background body scroll
+            document.body.style.overflow = 'auto';
         }
+
+        // Handle Close Icon Click
+        function handleModalCloseBtn() {
+            if (history.state && history.state.modalOpen) {
+                history.back();
+            } else {
+                closeModal();
+            }
+        }
+
+        // Hardware/Browser Back Gesture Navigation Listener
+        window.addEventListener('popstate', (e) => {
+            closeModal();
+        });
 
         function copyModalLink() {
             const input = document.getElementById('generatedLinkOutput');
