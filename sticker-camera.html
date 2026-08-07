@@ -42,7 +42,6 @@
             z-index: 10;
         }
 
-
         #overlayImage {
             position: absolute;
             z-index: 20;
@@ -53,9 +52,7 @@
             max-height: 80%;
             transform-origin: center center;
             display: none;
-
         }
-
 
         #previewCanvas {
             background: #1f1f1f;
@@ -875,7 +872,6 @@
             analysisCanvas.height = 40;
 
             let isAnalyzing = true; // Control flag to pause light analysis loop on capture
-            let analysisInterval = null;
 
             let state = {
                 x: 0, y: 0, scale: 1, rotation: 0,
@@ -887,42 +883,85 @@
             let initialDistance = null;
             let initialAngle = 0;
 
-            // 1. LIVE OVERLAY UPDATE (Subtle 4, 3, 3 Shadow + Rotation support)
             const updateOverlay = () => {
                 overlay.style.transform = `translateX(${state.x}px) translateY(${state.y}px) scale(${state.scale}) rotate(${state.rotation}deg)`;
 
                 const shadowScale = Math.max(state.scale, 0.85);
-                const liveX = 4 * shadowScale;
+                const liveX = 3 * shadowScale;
                 const liveY = 3 * shadowScale;
-                const liveBlur = 3 * shadowScale;
+                const liveBlur = 4 * shadowScale;
 
-                const filterString = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(0, 0, 0, 0.45)) brightness(${state.envBrightness})`;
+                // Gently adapts contrast relative to light (0.80 to 0.95)
+                const contrastVal = 0.80 + (state.envBrightness * 0.15);
+
+                const filterString = `drop-shadow(${liveX}px ${liveY}px ${liveBlur}px rgba(0, 0, 0, 0.40)) brightness(${state.envBrightness}) contrast(${contrastVal})`;
 
                 overlay.style.filter = filterString;
                 overlay.style.webkitFilter = filterString;
             };
 
-            // 2. BRIGHTNESS ANALYSIS (Paused when captured overlay is active)
             function analyzeLight() {
-                if (!isAnalyzing) return;
+                if (!isAnalyzing) {
+                    requestAnimationFrame(analyzeLight);
+                    return;
+                }
 
                 if (video.readyState === video.HAVE_ENOUGH_DATA) {
-                    analysisCtx.drawImage(video, 0, 0, 40, 40);
-                    const pixels = analysisCtx.getImageData(0, 0, 40, 40).data;
-                    let totalLuminance = 0;
-                    for (let i = 0; i < pixels.length; i += 4) {
-                        totalLuminance += (0.2126 * pixels[i] + 0.7152 * pixels[i + 1] + 0.0722 * pixels[i + 2]);
+                    const videoW = video.videoWidth;
+                    const videoH = video.videoHeight;
+                    const screenW = window.innerWidth;
+                    const screenH = window.innerHeight;
+
+                    const overlayRect = overlay.getBoundingClientRect();
+                    const scaleX = videoW / screenW;
+                    const scaleY = videoH / screenH;
+
+                    const paddingX = overlayRect.width * 0.25;
+                    const paddingY = overlayRect.height * 0.25;
+
+                    let srcX = (overlayRect.left - paddingX) * scaleX;
+                    let srcY = (overlayRect.top - paddingY) * scaleY;
+                    let srcW = (overlayRect.width + paddingX * 2) * scaleX;
+                    let srcH = (overlayRect.height + paddingY * 2) * scaleY;
+
+                    srcX = Math.max(0, Math.min(srcX, videoW));
+                    srcY = Math.max(0, Math.min(srcY, videoH));
+                    srcW = Math.min(srcW, videoW - srcX);
+                    srcH = Math.min(srcH, videoH - srcY);
+
+                    if (srcW > 0 && srcH > 0) {
+                        analysisCtx.drawImage(video, srcX, srcY, srcW, srcH, 0, 0, 40, 40);
+
+                        const pixels = analysisCtx.getImageData(0, 0, 40, 40).data;
+                        let totalLuminance = 0;
+                        let count = 0;
+
+                        for (let y = 0; y < 40; y++) {
+                            for (let x = 0; x < 40; x++) {
+                                if (x > 8 && x < 32 && y > 8 && y < 32) continue;
+
+                                const i = (y * 40 + x) * 4;
+                                totalLuminance += (0.2126 * pixels[i] + 0.7152 * pixels[i + 1] + 0.0722 * pixels[i + 2]);
+                                count++;
+                            }
+                        }
+
+                        const normalizedLight = totalLuminance / (count * 255);
+                        const calculatedBrightness = 0.68 + (normalizedLight * 0.28);
+
+                        const MIN_BRIGHTNESS = 0.70;
+                        const MAX_BRIGHTNESS = 0.95;
+
+                        const finalBrightness = Math.min(MAX_BRIGHTNESS, Math.max(MIN_BRIGHTNESS, calculatedBrightness));
+
+                        state.envBrightness = finalBrightness.toFixed(3);
+                        updateOverlay();
                     }
-                    const avgLuminance = totalLuminance / (40 * 40);
-
-                    const newBrightness = 0.74 + (avgLuminance / 255) * 0.22;
-
-                    state.envBrightness = newBrightness.toFixed(3);
-                    updateOverlay();
                 }
+                requestAnimationFrame(analyzeLight);
             }
 
-            analysisInterval = setInterval(analyzeLight, 500);
+            requestAnimationFrame(analyzeLight);
 
             async function startCamera() {
                 message.style.display = 'block';
@@ -953,7 +992,7 @@
                 const p2 = pointers[1];
                 const dx = p2.clientX - p1.clientX;
                 const dy = p2.clientY - p1.clientY;
-                return { 
+                return {
                     distance: Math.sqrt(dx * dx + dy * dy),
                     angle: Math.atan2(dy, dx)
                 };
@@ -993,7 +1032,7 @@
                     if (currentDetails && initialDistance) {
                         const scaleFactor = currentDetails.distance / initialDistance;
                         state.scale = Math.min(2.5, Math.max(0.1, state.baseScale * scaleFactor));
-                        
+
                         const angleDiff = currentDetails.angle - initialAngle;
                         state.rotation = state.baseRotation + (angleDiff * 180 / Math.PI);
                     }
@@ -1016,7 +1055,6 @@
             viewport.addEventListener('pointercancel', pointerEnd);
             viewport.addEventListener('pointerleave', pointerEnd);
 
-            // 3. DOUBLE TAP RESET
             let lastTap = 0;
             viewport.addEventListener('click', (e) => {
                 if (e.target.closest('#controls') || e.target.closest('#capturedOverlay') || e.target.closest('.tooltipClose')) return;
@@ -1097,7 +1135,7 @@
                 }
             });
 
-            // 4. HIGH QUALITY CAPTURE & OVERLAY DISPLAY
+            // 4. CAPTURE EVENT & SHOW OVERLAY
             captureBtn.addEventListener('click', () => {
                 captureBtn.classList.add('loader');
                 setTimeout(() => {
@@ -1140,7 +1178,9 @@
                     const capY = 3 * scaleFactor * shadowScale;
                     const capBlur = 3 * scaleFactor * shadowScale;
 
-                    ctx.filter = `drop-shadow(${capX}px ${capY}px ${capBlur}px rgba(0, 0, 0, 0.45)) brightness(${state.envBrightness})`;
+                    const capContrast = 0.80 + (state.envBrightness * 0.15);
+                    ctx.filter = `drop-shadow(${capX}px ${capY}px ${capBlur}px rgba(0, 0, 0, 0.45)) brightness(${state.envBrightness}) contrast(${capContrast})`;
+
                     ctx.globalAlpha = 0.98;
                     ctx.drawImage(overlay, -oW / 2, -oH / 2, oW, oH);
                     ctx.restore();
@@ -1150,7 +1190,7 @@
                         if (blob) {
                             const url = URL.createObjectURL(blob);
 
-                            // Pause camera stream & light analysis loop for performance
+                            // Pause camera & light analysis loop to ensure smooth performance
                             isAnalyzing = false;
                             video.pause();
 
@@ -1158,8 +1198,10 @@
                             capturedImg.src = url;
                             document.getElementById('downloadResultBtn').href = url;
 
-                            // Push history state so hardware back button closes overlay instead of leaving page
-                            history.pushState({ overlayOpen: true }, '');
+                            // Push history state so back button closes overlay instead of leaving page
+                            if (!history.state || !history.state.overlayOpen) {
+                                history.pushState({ overlayOpen: true }, '');
+                            }
 
                             // Display overlay FIRST so element has non-zero DOM dimensions
                             document.getElementById('capturedOverlay').style.display = 'block';
@@ -1173,7 +1215,7 @@
                 }, 50);
             });
 
-            // Close button action - triggers history.back() if overlay state exists, or closes directly
+            // Close button action - triggers history.back() if overlay history state exists, or calls close directly
             document.getElementById('closeOverlayBtn').addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -1187,7 +1229,6 @@
 
             startCamera();
         }
-
 
         function setupDesktopExperience(validArtUrl, fullShareLink) {
             generateQRCode(fullShareLink);
@@ -1203,7 +1244,7 @@
             let slideStep = 0;
             let stickerStep = 0;
 
-            // Background sliding animation matching sticker-2.html
+            // Background sliding animation matching sticker-camera.html
             function slideImage() {
                 let transformStyle = "";
                 switch (slideStep % 5) {
@@ -1217,7 +1258,7 @@
                 slideStep++;
             }
 
-            // Sticker scaling and rotation animation matching sticker-2.html
+            // Sticker scaling and rotation animation matching sticker-camera.html
             function animateWallArt() {
                 let transformStyle = "";
                 switch (stickerStep % 10) {
@@ -1242,13 +1283,12 @@
             slideImage();
             animateWallArt();
         }
-        
 
         function generateQRCode(url) {
             const loader = document.getElementById('loader');
             const qrImage = document.getElementById('qrCodeImage');
             const tempDiv = document.createElement('div');
-            
+
             new QRCode(tempDiv, {
                 text: url, width: 180, height: 180,
                 colorDark: "#000000", colorLight: "#ffffff",
