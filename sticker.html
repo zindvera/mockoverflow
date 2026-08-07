@@ -704,6 +704,125 @@
     footer a:hover {
       color: var(--brand-pink);
     }
+
+    /* --- MODERN SVG ICON STYLING FOR WHY IT'S FREE --- */
+    .fc-icon-wrapper {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: #f0ebff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .fc-icon-wrapper svg {
+      width: 24px;
+      height: 24px;
+      stroke: var(--brand-purple);
+    }
+
+    .warning-card .fc-icon-wrapper {
+      background: #ffebe8;
+    }
+
+    .warning-card .fc-icon-wrapper svg {
+      stroke: #dc2626;
+    }
+
+    /* --- FAQ ACCORDION SECTION --- */
+    .faq-section {
+      margin-top: 60px;
+      padding-top: 50px;
+      border-top: 1px solid #f0f0f5;
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+      padding-bottom: 40px;
+    }
+
+    .faq-title {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 25px;
+      text-align: left;
+    }
+
+    .accordion-custom {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .accordion-item-custom {
+      background: var(--input-bg);
+      border-radius: 12px;
+      border: 1px solid #e0e0e8;
+      overflow: hidden;
+      transition: all 0.2s ease;
+    }
+
+    .accordion-item-custom details {
+      width: 100%;
+    }
+
+    .accordion-item-custom summary {
+      padding: 18px 24px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-main);
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+    }
+
+    .accordion-item-custom summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .accordion-item-custom summary::after {
+      content: "+";
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--brand-purple);
+      transition: transform 0.2s ease;
+    }
+
+    .accordion-item-custom details[open] summary::after {
+      content: "−";
+      transform: rotate(180deg);
+    }
+
+    .accordion-item-custom details[open] summary {
+      border-bottom: 1px solid #e0e0e8;
+      background: #ffffff;
+    }
+
+    .accordion-body-custom {
+      padding: 20px 24px;
+      font-size: 1rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      background: #ffffff;
+    }
+
+    .accordion-body-custom ol {
+      margin-bottom: 0;
+      padding-left: 20px;
+    }
+
+    .accordion-body-custom li {
+      margin-bottom: 8px;
+    }
+
+    .accordion-body-custom li:last-child {
+      margin-bottom: 0;
+    }
   </style>
 </head>
 
@@ -813,7 +932,13 @@
         <!-- Card 1 -->
         <div class="col-lg-4 col-md-6 col-12">
           <div class="free-card">
-            <span class="fc-icon">🎨</span>
+            <div class="fc-icon-wrapper">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+            </div>
             <div class="fc-title">Zero Cost Link Generation</div>
             <div class="fc-desc">
               As an independent creator, you can generate unlimited camera view links for your artwork without paying
@@ -825,7 +950,14 @@
         <!-- Card 2 -->
         <div class="col-lg-4 col-md-6 col-12">
           <div class="free-card">
-            <span class="fc-icon">🤝</span>
+            <div class="fc-icon-wrapper">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+            </div>
             <div class="fc-title">Our Affiliate Partnership</div>
             <div class="fc-desc">
               To keep this tool free for artists, we automatically attach our affiliate ID to your generated destination
@@ -837,7 +969,14 @@
         <!-- Card 3 (The Warning Rule) -->
         <div class="col-lg-4 col-md-6 col-12">
           <div class="free-card warning-card">
-            <span class="fc-icon">⚠️</span>
+            <div class="fc-icon-wrapper">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z">
+                </path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+            </div>
             <div class="fc-title">The Fair Use Rule</div>
             <div class="fc-desc">
               The tool remains free <strong>only</strong> if our affiliate ID stays in the link. Bypassing or removing
@@ -845,6 +984,74 @@
             </div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Frequently Asked Questions (FAQ) Section -->
+    <div class="faq-section">
+      <h2 class="faq-title">Frequently Asked Questions</h2>
+      <div class="accordion-custom">
+
+        <div class="accordion-item-custom">
+          <details>
+            <summary>What is MockOverflow Sticker Camera View?</summary>
+            <div class="accordion-body-custom">
+              It creates a custom link for your sticker designs. When customers open it on their mobile phone, their
+              camera lets them place, scale, and rotate your sticker in real-time on their actual laptop, water bottle,
+              journal, or phone case—no app download required.
+            </div>
+          </details>
+        </div>
+
+        <div class="accordion-item-custom">
+          <details>
+            <summary>Is it really 100% free? What's the catch?</summary>
+            <div class="accordion-body-custom">
+              Yes, it’s 100% free with <strong>no signup and no payment required</strong>. We automatically attach our
+              affiliate ID to your product destination link. If a customer buys through your link, we earn a small
+              commission from the marketplace at zero extra cost to you or your buyer.
+            </div>
+          </details>
+        </div>
+
+        <div class="accordion-item-custom">
+          <details>
+            <summary>How do I prepare and get my Sticker Image URL?</summary>
+            <div class="accordion-body-custom">
+              Your Sticker Image URL must be a direct web link ending in .png, .jpg, or .webp.
+              <ol class="mt-2">
+                <li><strong>Transparent PNG Required:</strong> Export your artwork as a transparent PNG using any editor
+                  (Canva, Photoshop, Photopea, etc.) so your customer's real laptop or item shows around the sticker
+                  shape.</li>
+                <li><strong>Die-Cut / White Border (Your Choice):</strong> You decide whether to add a white
+                  border/outline around your design in your image editor to simulate a vinyl die-cut sticker.</li>
+                <li><strong>Upload &amp; Get Link:</strong> Upload your transparent PNG to any public image host (like
+                  Imgur, Postimages, ImgBB, or Cloudinary) and copy the direct image link.</li>
+              </ol>
+            </div>
+          </details>
+        </div>
+
+        <div class="accordion-item-custom">
+          <details>
+            <summary>What is the Product Destination URL?</summary>
+            <div class="accordion-body-custom">
+              The web page where buyers purchase your sticker (for example, your product listing page on Etsy,
+              Redbubble, Zazzle, or your Shopify store).
+            </div>
+          </details>
+        </div>
+
+        <div class="accordion-item-custom">
+          <details>
+            <summary>Where should I share my generated link?</summary>
+            <div class="accordion-body-custom">
+              <strong>Anywhere you want!</strong> Share it on Instagram bio/stories, TikTok, Pinterest, Facebook, in
+              product descriptions, or print it as a QR code on packaging inserts and freebie cards.
+            </div>
+          </details>
+        </div>
+
       </div>
     </div>
   </main>
@@ -1116,53 +1323,53 @@
 
 
     function startAnimations() {
-            const hContainer = document.getElementById('homeImageContainer');
-            const hSticker = document.getElementById('homeSticker');
-            const mContainer = document.getElementById('modalImageContainer');
-            const mSticker = document.getElementById('modalSticker');
+      const hContainer = document.getElementById('homeImageContainer');
+      const hSticker = document.getElementById('homeSticker');
+      const mContainer = document.getElementById('modalImageContainer');
+      const mSticker = document.getElementById('modalSticker');
 
-            let slideStep = 0;
-            let stickerStep = 0;
+      let slideStep = 0;
+      let stickerStep = 0;
 
-            function slideImage() {
-                let transformStyle = "";
-                switch (slideStep % 5) {
-                    case 0: transformStyle = "translateX(-20px) translateY(0)"; break;
-                    case 1: transformStyle = "translateX(-10px) translateY(0)"; break;
-                    case 2: transformStyle = "translateX(-5px) translateY(-15px)"; break;
-                    case 3: transformStyle = "translateX(-10px) translateY(15px)"; break;
-                    case 4: transformStyle = "translateX(0) translateY(0)"; break;
-                }
-                if (hContainer) hContainer.style.transform = transformStyle;
-                if (mContainer) mContainer.style.transform = transformStyle;
-                slideStep++;
-            }
-
-            function animateSticker() {
-                let transformStyle = "";
-                switch (stickerStep % 10) {
-                    case 0: transformStyle = "scale(0.6) translateY(-20%) rotate(50deg)"; break;
-                    case 1: transformStyle = "scale(0.4) translateY(-30%) rotate(40deg)"; break;
-                    case 2: transformStyle = "scale(0.55) translateY(-18%) rotate(25deg)"; break;
-                    case 3: transformStyle = "scale(0.64) translateY(-21%) rotate(30deg)"; break;
-                    case 4: transformStyle = "scale(0.45) translateY(-20%) rotate(35deg)"; break;
-                    case 5: transformStyle = "scale(0.38) translateY(-28%) rotate(40deg)"; break;
-                    case 6: transformStyle = "scale(0.5) translateY(-18%) rotate(6deg)"; break;
-                    case 7: transformStyle = "scale(0.4) translateY(-23%) rotate(0deg)"; break;
-                    case 8: transformStyle = "scale(0.55) translateY(-19%) rotate(50deg)"; break;
-                    case 9: transformStyle = "scale(0.4) translateY(-25%) rotate(40deg)"; break;
-                }
-                if (hSticker) hSticker.style.transform = transformStyle;
-                if (mSticker) mSticker.style.transform = transformStyle;
-                stickerStep++;
-            }
-
-            setInterval(slideImage, 5000);
-            setInterval(animateSticker, 5000);
-            slideImage();
-            animateSticker();
+      function slideImage() {
+        let transformStyle = "";
+        switch (slideStep % 5) {
+          case 0: transformStyle = "translateX(-20px) translateY(0)"; break;
+          case 1: transformStyle = "translateX(-10px) translateY(0)"; break;
+          case 2: transformStyle = "translateX(-5px) translateY(-15px)"; break;
+          case 3: transformStyle = "translateX(-10px) translateY(15px)"; break;
+          case 4: transformStyle = "translateX(0) translateY(0)"; break;
         }
-        
+        if (hContainer) hContainer.style.transform = transformStyle;
+        if (mContainer) mContainer.style.transform = transformStyle;
+        slideStep++;
+      }
+
+      function animateSticker() {
+        let transformStyle = "";
+        switch (stickerStep % 10) {
+          case 0: transformStyle = "scale(0.6) translateY(-20%) rotate(50deg)"; break;
+          case 1: transformStyle = "scale(0.4) translateY(-30%) rotate(40deg)"; break;
+          case 2: transformStyle = "scale(0.55) translateY(-18%) rotate(25deg)"; break;
+          case 3: transformStyle = "scale(0.64) translateY(-21%) rotate(30deg)"; break;
+          case 4: transformStyle = "scale(0.45) translateY(-20%) rotate(35deg)"; break;
+          case 5: transformStyle = "scale(0.38) translateY(-28%) rotate(40deg)"; break;
+          case 6: transformStyle = "scale(0.5) translateY(-18%) rotate(6deg)"; break;
+          case 7: transformStyle = "scale(0.4) translateY(-23%) rotate(0deg)"; break;
+          case 8: transformStyle = "scale(0.55) translateY(-19%) rotate(50deg)"; break;
+          case 9: transformStyle = "scale(0.4) translateY(-25%) rotate(40deg)"; break;
+        }
+        if (hSticker) hSticker.style.transform = transformStyle;
+        if (mSticker) mSticker.style.transform = transformStyle;
+        stickerStep++;
+      }
+
+      setInterval(slideImage, 5000);
+      setInterval(animateSticker, 5000);
+      slideImage();
+      animateSticker();
+    }
+
   </script>
 </body>
 

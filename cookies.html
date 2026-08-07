@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cookie Policy - MockOverflow</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body { 
+            font-family: 'Segoe UI', Roboto, sans-serif; 
+            line-height: 1.7; 
+            color: #2d3436; 
+            background: linear-gradient(120deg, #f6f8fa 0%, #eaf2fb 100%); 
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Common Top Nav --- */
+        .navbar {
+            background: #ffffff;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .navbar img { height: 40px; }
+
+        /* --- Main Content --- */
+        .main-content {
+            flex: 1;
+            padding: 60px 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .card { 
+            max-width: 700px; 
+            width: 100%;
+            background: #ffffff; 
+            padding: 50px; 
+            border-radius: 24px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.05); 
+        }
+        
+        h1 { font-size: 32px; color: #4e2ecf; margin-bottom: 25px; text-align: center; }
+        h2 { font-size: 20px; color: #1a1a1a; margin-top: 35px; margin-bottom: 12px; border-left: 5px solid #4e2ecf; padding-left: 15px; }
+        p { margin-bottom: 20px; font-size: 16px; color: #4a4a4a; }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 15px;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e8;
+        }
+
+        th {
+            background-color: #f8f8fb;
+            color: #1a1a1a;
+            font-weight: 700;
+        }
+
+        .highlight-box {
+            background: #fff9f0;
+            border: 1px solid #ffeaa7;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+        
+        strong { color: #2d3436; }
+
+        /* --- Common Footer --- */
+        footer {
+            background: #ffffff;
+            padding: 40px 20px;
+            text-align: center;
+            border-top: 1px solid #eee;
+        }
+        .footer-links {
+            margin-bottom: 20px;
+        }
+        .footer-links a {
+            text-decoration: none;
+            color: #636e72;
+            margin: 0 15px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .footer-links a:hover { color: #4e2ecf; }
+        .copyright { font-size: 13px; color: #b2bec3; }
+
+        @media (max-width: 600px) {
+            .card { padding: 30px 20px; }
+            h1 { font-size: 26px; }
+            .footer-links a { display: block; margin: 10px 0; }
+            table { font-size: 13px; }
+            th, td { padding: 8px 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="/"><img src="https://mockoverflow.online/media/mockoverflow-phone.png" alt="MockOverflow Logo"></a>
+    </nav>
+
+    <div class="main-content">
+        <div class="card">
+            <h1>Cookie Policy</h1>
+            <p>This Cookie Policy explains how MockOverflow.online uses cookies and local browser storage to provide a smooth, uninterrupted user experience.</p>
+
+            <h2>1. What Are Cookies and Local Storage?</h2>
+            <p>Cookies and local storage (<code>localStorage</code>) are small text files or key-value pairs stored directly in your browser by websites you visit. They allow websites to remember your preferences so you don't have to re-enter settings every time you switch pages.</p>
+
+            <h2>2. What We Store &amp; Why</h2>
+            <p>MockOverflow maintains a strict <strong>minimal data policy</strong>. We do not use persistent tracking cookies, cross-site behavioral cookies, or user profile analytics. We only store essential UI preferences:</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Storage Key</th>
+                        <th>Type</th>
+                        <th>Purpose</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>posterTooltipSeen</code></td>
+                        <td>Cookie</td>
+                        <td>Remembers if you dismissed the camera gesture guide so it doesn't pop up again.</td>
+                    </tr>
+                    <tr>
+                        <td><code>mo_hide_tooltips</code></td>
+                        <td>LocalStorage</td>
+                        <td>Remembers if you dismissed the form helper tooltips on the home generator page.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="highlight-box">
+                <p style="margin-bottom: 0;"><strong>No Personal Tracking:</strong> None of our local browser storage keys contain your name, email, location, or private browsing history. They exist solely to manage interface tooltips.</p>
+            </div>
+
+            <h2>3. Third-Party Marketplace Links</h2>
+            <p>When you click "Get This Item" to visit partner stores (such as Etsy, Zazzle, or Redbubble), those external websites may place their own referral cookies to attribute the sales referral to MockOverflow. These third-party cookies are governed by the respective privacy policies of those marketplaces.</p>
+
+            <h2>4. How to Manage or Disable Cookies</h2>
+            <p>You can clear or disable cookies and local storage at any time through your browser settings. However, doing so will cause tutorial tooltips to appear again during your next visit.</p>
+
+            <h2>5. Contact Us</h2>
+            <p>If you have any questions regarding our Cookie Policy, please reach out to us at <strong>contact@mockoverflow.online</strong>.</p>
+        </div>
+    </div>
+
+    <footer> 
+        <div class="footer-links">
+            <a href="about.html">About</a>
+            <a href="privacy.html">Privacy Policy</a>
+            <a href="terms.html">Terms of Service</a>
+            <a href="cookies.html">Cookies</a>
+            <a href="contact.html">Contact</a>
+        </div>
+        <p class="copyright">&copy; 2026 MockOverflow. All rights reserved.</p>
+    </footer>
+
+</body>
+</html>

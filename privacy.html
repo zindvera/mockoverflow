@@ -6,88 +6,27 @@
     <title>Privacy Policy - MockOverflow</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        
         body { 
             font-family: 'Segoe UI', Roboto, sans-serif; 
-            line-height: 1.7; 
-            color: #2d3436; 
+            line-height: 1.7; color: #2d3436; 
             background: linear-gradient(120deg, #f6f8fa 0%, #eaf2fb 100%); 
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+            min-height: 100vh; display: flex; flex-direction: column; 
         }
-
-        /* --- Common Top Nav --- */
-        .navbar {
-            background: #ffffff;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
+        .navbar { background: #ffffff; padding: 15px 20px; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); sticky: top; z-index: 1000; }
         .navbar img { height: 40px; }
-
-        /* --- Main Content --- */
-        .main-content {
-            flex: 1;
-            padding: 60px 20px;
-            display: flex;
-            justify-content: center;
-        }
-
-        .card { 
-            max-width: 700px; 
-            width: 100%;
-            background: #ffffff; 
-            padding: 50px; 
-            border-radius: 24px; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.05); 
-        }
-        
+        .main-content { flex: 1; padding: 60px 20px; display: flex; justify-content: center; }
+        .card { max-width: 700px; width: 100%; background: #ffffff; padding: 50px; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); }
         h1 { font-size: 32px; color: #4e2ecf; margin-bottom: 25px; text-align: center; }
         h2 { font-size: 20px; color: #1a1a1a; margin-top: 35px; margin-bottom: 12px; border-left: 5px solid #4e2ecf; padding-left: 15px; }
         p { margin-bottom: 20px; font-size: 16px; color: #4a4a4a; }
-        
-        .highlight-box {
-            background: #fff9f0;
-            border: 1px solid #ffeaa7;
-            padding: 20px;
-            border-radius: 12px;
-            margin: 20px 0;
-        }
-        
+        .highlight-box { background: #fff9f0; border: 1px solid #ffeaa7; padding: 20px; border-radius: 12px; margin: 20px 0; }
         strong { color: #2d3436; }
-
-        /* --- Common Footer --- */
-        footer {
-            background: #ffffff;
-            padding: 40px 20px;
-            text-align: center;
-            border-top: 1px solid #eee;
-        }
-        .footer-links {
-            margin-bottom: 20px;
-        }
-        .footer-links a {
-            text-decoration: none;
-            color: #636e72;
-            margin: 0 15px;
-            font-size: 14px;
-            font-weight: 500;
-            transition: color 0.2s;
-        }
+        footer { background: #ffffff; padding: 40px 20px; text-align: center; border-top: 1px solid #eee; }
+        .footer-links { margin-bottom: 20px; }
+        .footer-links a { text-decoration: none; color: #636e72; margin: 0 15px; font-size: 14px; font-weight: 500; transition: color 0.2s; }
         .footer-links a:hover { color: #4e2ecf; }
         .copyright { font-size: 13px; color: #b2bec3; }
-
-        @media (max-width: 600px) {
-            .card { padding: 30px 20px; }
-            h1 { font-size: 26px; }
-            .footer-links a { display: block; margin: 10px 0; }
-        }
+        @media (max-width: 600px) { .card { padding: 30px 20px; } h1 { font-size: 26px; } .footer-links a { display: block; margin: 10px 0; } }
     </style>
 </head>
 <body>
@@ -99,21 +38,24 @@
     <div class="main-content">
         <div class="card">
             <h1>Privacy Policy</h1>
-            <p>Your privacy is paramount. Because MockOverflow uses your camera to preview stickers and posters, we maintain a strict "local-only" policy.</p>
+            <p>At MockOverflow.online, we respect your privacy and process all interactive visual media locally on your device.</p>
 
-            <h2>1. Camera Privacy</h2>
-            <p>When using our visualization tool, our code requests access to your camera to overlay designs. <strong>This video feed remains strictly on your device.</strong> We do not record, store, or transmit any video or photo data of your home or workspace to our servers.</p>
+            <h2>1. Camera & Screen Capture Privacy</h2>
+            <p>Our camera preview feature uses your device's web browser to overlay poster or sticker designs in real time. <strong>All video feeds and screen snapshots remain local to your device.</strong> MockOverflow does not record, stream, transmit, or store video feeds or captured preview images on any external server.</p>
 
-            <h2>2. Use of Cookies</h2>
+            <h2>2. Local Browser Storage & Cookies</h2>
             <div class="highlight-box">
-                <p style="margin-bottom: 0;">To provide a better user experience, we use a small data file called a "cookie" (or local browser storage). This is used solely to remember if you have already viewed our <strong>Tooltip Guide</strong>. This ensures you aren't interrupted by instructions once you already know how to use the tool.</p>
+                <p style="margin-bottom: 0;">We use standard browser cookies and <code>localStorage</code> purely to remember your preferences—such as whether you have dismissed our user guide tooltips (<code>posterTooltipSeen</code> and <code>mo_hide_tooltips</code>). We do not use persistent tracking cookies or collect personal identification profiles.</p>
             </div>
 
-            <h2>3. No Personal Data Collection</h2>
-            <p>MockOverflow is designed to be used anonymously. We do not collect or store your name, email address, or physical location during your browsing session.</p>
+            <h2>3. External Stores & Affiliate Link Tracking</h2>
+            <p>MockOverflow operates as an affiliate-supported visualization service. When you click destination buttons ("Get This Poster" or "Get This Sticker"), you are directed to third-party marketplaces. These links contain standard affiliate parameters that allow partner stores to identify MockOverflow as the referral source. No personal camera data or private user information is ever shared with external stores.</p>
 
-            <h2>4. External Marketplaces</h2>
-            <p>Our "Get This Item" links take you to external sites like Redbubble or Etsy. We do not pass your camera data or browsing history to these stores. Once you leave MockOverflow, your activity is governed by the privacy policy of that specific marketplace.</p>
+            <h2>4. Information Security</h2>
+            <p>MockOverflow does not require user accounts, passwords, or payment information. Because we operate an anonymous, client-side preview engine, your personal usage data remains private to your local browsing session.</p>
+
+            <h2>5. Contact Us</h2>
+            <p>If you have questions regarding this Privacy Policy, please reach out to us at <strong>contact@mockoverflow.online</strong>.</p>
         </div>
     </div>
 

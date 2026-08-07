@@ -6,86 +6,28 @@
     <title>Terms of Service - MockOverflow</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        
         body { 
             font-family: 'Segoe UI', Helvetica, Arial, sans-serif; 
-            line-height: 1.6; 
-            color: #333; 
+            line-height: 1.6; color: #333; 
             background: linear-gradient(120deg, #f6f8fa 0%, #eaf2fb 100%); 
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+            min-height: 100vh; display: flex; flex-direction: column; 
         }
-
-        /* --- Common Top Nav --- */
-        .navbar {
-            background: #ffffff;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
+        .navbar { background: #ffffff; padding: 15px 20px; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); sticky: top; z-index: 1000; }
         .navbar img { height: 40px; }
-
-        /* --- Main Content --- */
-        .main-content {
-            flex: 1;
-            padding: 40px 20px;
-            display: flex;
-            justify-content: center;
-        }
-
-        .card { 
-            max-width: 750px; 
-            width: 100%;
-            background: #ffffff; 
-            padding: 40px; 
-            border-radius: 20px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05); 
-        }
-        
+        .main-content { flex: 1; padding: 40px 20px; display: flex; justify-content: center; }
+        .card { max-width: 750px; width: 100%; background: #ffffff; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
         h1 { font-size: 28px; color: #4e2ecf; margin-bottom: 25px; text-align: center; }
         h2 { font-size: 20px; color: #000; margin-top: 30px; margin-bottom: 12px; border-left: 5px solid #4e2ecf; padding-left: 15px; }
         p { margin-bottom: 15px; font-size: 16px; color: #444; }
-        
-        .disclaimer-box {
-            background: #fff5f5;
-            border: 1px solid #feb2b2;
-            padding: 20px;
-            border-radius: 12px;
-            margin: 20px 0;
-            color: #c53030;
-            font-weight: 500;
-        }
-        
+        .disclaimer-box { background: #fff5f5; border: 1px solid #feb2b2; padding: 20px; border-radius: 12px; margin: 20px 0; color: #c53030; font-weight: 500; }
         ul { margin-bottom: 20px; padding-left: 20px; color: #444; }
         li { margin-bottom: 10px; }
         strong { color: #000; }
-
-        /* --- Common Footer --- */
-        footer {
-            background: #ffffff;
-            padding: 30px 20px;
-            text-align: center;
-            border-top: 1px solid #eee;
-        }
-        .footer-links a {
-            text-decoration: none;
-            color: #636e72;
-            margin: 0 10px;
-            font-size: 14px;
-        }
+        footer { background: #ffffff; padding: 30px 20px; text-align: center; border-top: 1px solid #eee; }
+        .footer-links a { text-decoration: none; color: #636e72; margin: 0 10px; font-size: 14px; }
         .footer-links a:hover { color: #4e2ecf; }
         .copyright { font-size: 12px; color: #999; margin-top: 15px; }
-
-        @media (max-width: 600px) {
-            .card { padding: 25px; }
-            h1 { font-size: 24px; }
-        }
+        @media (max-width: 600px) { .card { padding: 25px; } h1 { font-size: 24px; } }
     </style>
 </head>
 <body>
@@ -98,27 +40,35 @@
         <div class="card">
             <h1>Terms of Service</h1>
 
-            <p>By using MockOverflow.online, you agree to the following terms. Please read them carefully.</p>
+            <p>Welcome to MockOverflow.online ("MockOverflow", "we", "us"). By accessing our website, generating camera view links, or using our augmented reality visualization tool, you agree to these Terms of Service. Please read them carefully.</p>
 
-            <h2>1. Service Purpose</h2>
-            <p>MockOverflow is a digital tool for visualization and ideas. It helps you see how a sticker or poster might look in your space. Because you can manually change the size and rotation of the design with your fingers, the image on your screen is an <strong>approximate preview</strong>, not a 100% exact measurement of the physical product.</p>
+            <h2>1. Service Purpose & AR Visualization Disclaimer</h2>
+            <p>MockOverflow provides a web-based augmented reality (AR) preview tool for poster and sticker designs. The interactive camera view provides a real-time <strong>visual simulation only</strong>. Because users can manually drag, rotate, and scale artwork on their screen, MockOverflow does not guarantee that physical products will strictly match the dimensions or scale shown in the preview.</p>
 
             <div class="disclaimer-box">
-                Note: We do not guarantee that the physical sticker will be exactly the same size as shown in your manual preview.
+                Notice: MockOverflow is a visualization tool. We do not guarantee exact 1:1 physical size accuracy between manual screen previews and real-world products.
             </div>
 
-            <h2>2. Third-Party Purchases</h2>
-            <p>MockOverflow does not sell, ship, or manufacture physical stickers. When you click "Get This Sticker," you are redirected to a third-party store (such as Redbubble, Etsy, or an independent shop).</p>
+            <h2>2. Link Generation & The Fair Use Rule</h2>
+            <p>Independent creators and artists are permitted to generate camera view links for marketing their artwork. MockOverflow is provided as a free service supported through affiliate partnerships.</p>
             <ul>
-                <li>We are not responsible for the payment, shipping, or quality of the physical item.</li>
-                <li>Any issues with your order must be handled directly with the store where you made the purchase.</li>
+                <li><strong>Affiliate Parameters:</strong> Generated links automatically embed MockOverflow affiliate tracking parameters attached to destination product URLs.</li>
+                <li><strong>The Fair Use Rule:</strong> The service remains free on the condition that embedded affiliate parameters remain intact. Attempting to strip, alter, cloak, or bypass MockOverflow affiliate tracking parameters violates these Terms and will result in the immediate and permanent blocking of the affected links.</li>
             </ul>
 
-            <h2>3. Intellectual Property</h2>
-            <p>The designs shown on this website belong to the artists and creators who made them. You are allowed to use this tool for personal previewing. You may not download, scrape, or use these digital assets for commercial purposes or redistribute them without permission.</p>
+            <h2>3. Third-Party Purchases & Marketplace Disclaimer</h2>
+            <p>MockOverflow does not manufacture, print, process payments for, or ship physical items. When users click buttons such as "Get This Poster" or "Get This Sticker," they are redirected to independent third-party marketplaces (e.g., Zazzle, Etsy, Redbubble, or independent web stores).</p>
+            <ul>
+                <li>Orders, fulfillment, payments, returns, and product quality are strictly managed by the respective third-party store.</li>
+                <li>MockOverflow is not responsible or liable for transaction disputes or physical order fulfillment.</li>
+            </ul>
 
-            <h2>4. Tool Usage</h2>
-            <p>We provide this tool "as is." While we try to make it work on all devices, we cannot guarantee it will work perfectly on every browser or phone model. We are not liable for any technical issues that occur while using the camera feature.</p>
+            <h2>4. Intellectual Property & DMCA Policy</h2>
+            <p>Creators submitting image URLs to MockOverflow warrant that they own or hold all necessary licenses and permissions for the submitted artwork. Users may not submit copyrighted, defamatory, or unlawful content.</p>
+            <p>If you are a copyright owner and believe that artwork displayed via a MockOverflow link infringes upon your copyright, please submit a notice to <strong>contact@mockoverflow.online</strong> including the infringing URL and proof of ownership for prompt review and link removal.</p>
+
+            <h2>5. Service Availability & Liability</h2>
+            <p>MockOverflow is provided on an "as is" and "as available" basis. While we strive for maximum compatibility across modern mobile devices and browsers, we make no guarantees regarding uninterrupted access, video processing performance, or browser-specific camera behavior.</p>
         </div>
     </div>
 
