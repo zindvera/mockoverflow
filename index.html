@@ -704,9 +704,6 @@
             color: var(--brand-pink);
         }
 
-
-
-
         /* --- MODERN SVG ICON STYLING FOR WHY IT'S FREE --- */
         .fc-icon-wrapper {
             width: 48px;
@@ -850,7 +847,6 @@
                 <div class="audience-nav">
                     <a href="index.html" class="active">Posters</a>
                     <a href="sticker.html">Stickers</a>
-
                 </div>
             </div>
         </div>
@@ -865,7 +861,6 @@
                         <span class="highlight-gradient">Camera View Link</span>
                     </h1>
 
-                    <!-- Sales & Customer Benefit Focused Subtitle -->
                     <p class="hero-subtitle">
                         Let your customers see your artwork on their own wall through their phone camera. Share the link
                         to build buyer confidence and boost your sales.
@@ -893,7 +888,7 @@
                     <div class="input-group-custom" id="redirectInputWrapper">
                         <!-- Validation Error Tooltip -->
                         <div id="redirect-error-tooltip" class="mo-error-tooltip hidden">
-                            <span>Please enter a valid product destination URL starting with https://</span>
+                            <span id="redirect-error-text">Please enter a valid product destination URL starting with https://</span>
                             <button onclick="closeErrorTooltip('redirect-error-tooltip')"
                                 class="error-tooltip-close">&times;</button>
                         </div>
@@ -933,7 +928,6 @@
             </div>
         </div>
 
-
         <!-- Minimalist Process Cards: Why It's Free & Terms -->
         <div class="why-free-section">
             <div class="why-free-header">
@@ -941,7 +935,6 @@
             </div>
 
             <div class="row g-4">
-                <!-- Card 1 -->
                 <div class="col-lg-4 col-md-6 col-12">
                     <div class="free-card">
                         <div class="fc-icon-wrapper">
@@ -960,7 +953,6 @@
                     </div>
                 </div>
 
-                <!-- Card 2 -->
                 <div class="col-lg-4 col-md-6 col-12">
                     <div class="free-card">
                         <div class="fc-icon-wrapper">
@@ -980,7 +972,6 @@
                     </div>
                 </div>
 
-                <!-- Card 3 (The Warning Rule) -->
                 <div class="col-lg-4 col-md-6 col-12">
                     <div class="free-card warning-card">
                         <div class="fc-icon-wrapper">
@@ -1072,7 +1063,6 @@
             </div>
         </div>
 
-
     </main>
 
     <!-- FULL WIDTH MODAL UI -->
@@ -1121,6 +1111,22 @@
     </footer>
 
     <script>
+        // --- ALLOWED PLATFORMS FETCH LOGIC ---
+        let allowedPlatforms = [];
+
+        async function fetchAllowedPlatforms() {
+            try {
+                const response = await fetch('allowed-platforms.json');
+                if (response.ok) {
+                    allowedPlatforms = await response.json();
+                } else {
+                    console.error("Failed to load allowed-platforms.json:", response.status);
+                }
+            } catch (error) {
+                console.error("Error fetching allowed platforms:", error);
+            }
+        }
+
         // --- IMAGE PROCESSING LOGIC (AUTO-CROP TRANSPARENCY) ---
         function processWallArtImage(url, element) {
             const img = new Image();
@@ -1181,6 +1187,7 @@
         let currentTooltipStep = 1;
 
         window.addEventListener('load', () => {
+            fetchAllowedPlatforms();
             startAnimations();
 
             const artLayer = document.getElementById('homeWallArt');
@@ -1193,7 +1200,6 @@
             }
 
             if (localStorage.getItem('mo_hide_tooltips') !== 'true') {
-                // Wait exactly 4 seconds before showing Step 1
                 setTimeout(() => {
                     showTooltip(1);
                 }, 4000);
@@ -1205,9 +1211,8 @@
             const tooltip = document.getElementById('mo-tooltip');
             const textEl = document.getElementById('tooltip-text');
 
-            tooltip.classList.add('hidden'); // Hide temporarily before moving
+            tooltip.classList.add('hidden');
 
-            // Brief pause to allow the DOM to hide before moving and fading in
             setTimeout(() => {
                 if (step === 1) {
                     textEl.textContent = "Paste your artwork's direct image URL here to test.";
@@ -1217,7 +1222,6 @@
                     document.getElementById('redirectInputWrapper').appendChild(tooltip);
                 }
 
-                // Trigger reflow to ensure the CSS transition plays correctly
                 void tooltip.offsetWidth;
                 tooltip.classList.remove('hidden');
             }, 50);
@@ -1228,20 +1232,26 @@
             tooltip.classList.add('hidden');
 
             if (currentTooltipStep === 1) {
-                // User closed Step 1. Wait exactly 0.5s before showing Step 2.
                 setTimeout(() => {
-                    // Check local storage in case they triggered "Create Link" before the half second finished
                     if (localStorage.getItem('mo_hide_tooltips') !== 'true') {
                         showTooltip(2);
                     }
                 }, 500);
             } else {
-                // User closed Step 2. Never show tooltips again.
                 localStorage.setItem('mo_hide_tooltips', 'true');
             }
         }
 
         // --- ERROR TOOLTIP LOGIC ---
+        function showErrorTooltip(tooltipId, message) {
+            const el = document.getElementById(tooltipId);
+            if (message) {
+                const textSpan = el.querySelector('span');
+                if (textSpan) textSpan.textContent = message;
+            }
+            el.classList.remove('hidden');
+        }
+
         function closeErrorTooltip(tooltipId) {
             document.getElementById(tooltipId).classList.add('hidden');
         }
@@ -1253,7 +1263,6 @@
             const artUrl = artInput.value.trim();
             const redirectUrl = redirectInput.value.trim();
 
-            // Auto-hide any visible error tooltips initially on submission attempt
             closeErrorTooltip('art-error-tooltip');
             closeErrorTooltip('redirect-error-tooltip');
 
@@ -1261,29 +1270,45 @@
             const isValidArt = /^https:\/\/.*\.(jpg|jpeg|png|webp)$/i.test(artUrl);
             const isValidRedirect = /^https:\/\//i.test(redirectUrl);
 
-            // Sequential Validation: Show one error tooltip at a time
             if (!isValidArt) {
-                document.getElementById('art-error-tooltip').classList.remove('hidden');
-                return; // Stop execution, don't check redirect yet
+                showErrorTooltip('art-error-tooltip', 'Please enter a valid wall art image URL (https://... ending in .jpg, .png, .webp)');
+                return;
             }
 
             if (!isValidRedirect) {
-                document.getElementById('redirect-error-tooltip').classList.remove('hidden');
-                return; // Stop execution if second input fails
+                showErrorTooltip('redirect-error-tooltip', 'Please enter a valid product destination URL starting with https://');
+                return;
             }
 
-            // Immediately save state so tooltip logic completely aborts if active
+            // Domain Extraction & Whitelist Validation
+            let inputHostname = "";
+            try {
+                const parsedUrl = new URL(redirectUrl);
+                inputHostname = parsedUrl.hostname.toLowerCase();
+            } catch (e) {
+                showErrorTooltip('redirect-error-tooltip', 'Please enter a valid product destination URL starting with https://');
+                return;
+            }
+
+            const isAllowed = allowedPlatforms.some(platform => {
+                const targetDomain = platform.domain.toLowerCase().trim();
+                return inputHostname === targetDomain || inputHostname.endsWith('.' + targetDomain);
+            });
+
+            if (!isAllowed) {
+                showErrorTooltip('redirect-error-tooltip', `this domain ${inputHostname} is not allowed`);
+                return;
+            }
+
             localStorage.setItem('mo_hide_tooltips', 'true');
             const tooltip = document.getElementById('mo-tooltip');
             if (tooltip) tooltip.classList.add('hidden');
 
-            // Raw unencoded concatenation
             let finalUrl = `https://mockoverflow.online/camera.html?art=${artUrl}&redirect=${redirectUrl}`;
 
             document.getElementById('generatedLinkOutput').value = finalUrl;
             document.getElementById('visitBtn').href = finalUrl;
 
-            // Process cropping for the modal preview
             processWallArtImage(artUrl, document.getElementById('modalWallArt'));
 
             const copyBtn = document.getElementById('copyBtn');
@@ -1291,10 +1316,8 @@
             copyBtn.style.backgroundImage = 'var(--brand-gradient)';
             copyBtn.style.backgroundColor = 'transparent';
 
-            // Lock background body scroll
             document.body.style.overflow = 'hidden';
 
-            // Push history state so back button closes modal
             if (!history.state || !history.state.modalOpen) {
                 history.pushState({ modalOpen: true }, '');
             }
@@ -1307,11 +1330,9 @@
             if (!modal.classList.contains('active')) return;
 
             modal.classList.remove('active');
-            // Restore background body scroll
             document.body.style.overflow = 'auto';
         }
 
-        // Handle Close Icon Click
         function handleModalCloseBtn() {
             if (history.state && history.state.modalOpen) {
                 history.back();
@@ -1320,7 +1341,6 @@
             }
         }
 
-        // Hardware/Browser Back Gesture Navigation Listener
         window.addEventListener('popstate', (e) => {
             closeModal();
         });
@@ -1334,7 +1354,7 @@
                 const btn = document.getElementById('copyBtn');
                 btn.textContent = 'Copied!';
                 btn.style.backgroundImage = 'none';
-                btn.style.backgroundColor = '#10B981'; // Green success
+                btn.style.backgroundColor = '#10B981';
             };
 
             try {

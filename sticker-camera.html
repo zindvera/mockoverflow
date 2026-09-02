@@ -744,9 +744,16 @@
     <script>
 
         // 1. Parameter and Validation logic
-        const urlParams = new URLSearchParams(window.location.search);
-        const artUrl = urlParams.get('art');
-        const redirectUrl = urlParams.get('redirect');
+        function getQueryParam(param) {
+            const regex = new RegExp('[?&]' + param + '(=([^&#]*)|&|#|$)');
+            const results = regex.exec(window.location.href);
+            if (!results) return null;
+            if (!results[2]) return '';
+            return decodeURIComponent(results[2].replace(/\+/g, ' '));
+        }
+
+        const artUrl = getQueryParam('art');
+        const redirectUrl = getQueryParam('redirect');
 
         function showError(title, description) {
             const overlay = document.getElementById('notFoundOverlay');
@@ -756,16 +763,74 @@
             if (document.getElementById('desktopAlert')) document.getElementById('desktopAlert').style.display = 'none';
         }
 
-        // Validate Assets before starting
-        if (!artUrl) {
-            showError("Wall Art Link Does Not Exist", "Please provide a valid image URL to preview the wall art.");
-        } else if (!redirectUrl) {
-            showError("Redirect URL Not Exist", "A destination link is required to proceed with the checkout.");
-        } else {
+        async function validateAndStart() {
+            if (!artUrl) {
+                showError("Wall Art Link Does Not Exist", "Please provide a valid image URL to preview the wall art.");
+                return;
+            }
+            if (!redirectUrl) {
+                showError("Redirect URL Not Exist", "A destination link is required to proceed with the checkout.");
+                return;
+            }
+
+            // 1. Fetch Whitelist JSON
+            let allowedPlatforms = [];
+            try {
+                const response = await fetch('allowed-platforms.json');
+                if (response.ok) {
+                    allowedPlatforms = await response.json();
+                } else {
+                    showError("Access Denied", "Unable to verify allowed domains.");
+                    return;
+                }
+            } catch (err) {
+                showError("Access Denied", "Unable to verify allowed domains.");
+                return;
+            }
+
+            // 2. Extract and Validate Destination Domain
+            let targetUrlObj;
+            try {
+                targetUrlObj = new URL(redirectUrl);
+            } catch (e) {
+                showError("Invalid URL", "The provided destination URL is not valid.");
+                return;
+            }
+
+            const inputHostname = targetUrlObj.hostname.toLowerCase();
+            const matchedPlatform = allowedPlatforms.find(platform => {
+                const targetDomain = (platform.domain || "").toLowerCase().trim();
+                return inputHostname === targetDomain || inputHostname.endsWith('.' + targetDomain);
+            });
+
+            if (!matchedPlatform) {
+                showError("Access Denied", `this domain ${inputHostname} is not allowed`);
+                return;
+            }
+
+            // 3. Exact matching for paramName & affiliateId from allowed-platforms.json
+            let finalDestinationUrl = redirectUrl;
+
+            const paramName = matchedPlatform.paramName;
+            const affiliateId = matchedPlatform.affiliateId;
+
+            if (
+                paramName &&
+                affiliateId &&
+                String(paramName).trim() !== "" &&
+                String(affiliateId).trim() !== "" &&
+                affiliateId !== null &&
+                affiliateId !== "null"
+            ) {
+                targetUrlObj.searchParams.set(String(paramName).trim(), String(affiliateId).trim());
+                finalDestinationUrl = targetUrlObj.toString();
+            }
+
+            // 4. Verify Art Image Loads
             const checkImg = new Image();
             checkImg.onload = function () {
                 // Success - start app
-                initApp(artUrl, redirectUrl);
+                initApp(artUrl, finalDestinationUrl);
             };
             checkImg.onerror = function () {
                 // Not Found - show message
@@ -773,6 +838,8 @@
             };
             checkImg.src = artUrl;
         }
+
+        validateAndStart();
 
         function initApp(validArtUrl, validRedirectUrl) {
             const fullShareLink = window.location.href;

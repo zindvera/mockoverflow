@@ -1,0 +1,38 @@
+[
+  {
+    "name": "Amazon",
+    "domain": "amazon.com",
+    "paramName": "",
+    "affiliateId": ""
+  },
+  {
+    "name": "Zazzle",
+    "domain": "zazzle.com",
+    "paramName": "rf",
+    "affiliateId": "238648196915341612"
+  },
+  {
+    "name": "Etsy",
+    "domain": "etsy.com",
+    "paramName": "",
+    "affiliateId": ""
+  },
+  {
+    "name": "Redbubble",
+    "domain": "redbubble.com",
+    "paramName": "",
+    "affiliateId": ""
+  },
+  {
+    "name": "Society6",
+    "domain": "society6.com",
+    "paramName": "",
+    "affiliateId": ""
+  },
+  {
+    "name": "Shopify Stores",
+    "domain": "myshopify.com",
+    "paramName": "",
+    "affiliateId": ""
+  }
+]

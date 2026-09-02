@@ -885,7 +885,7 @@
           <div class="input-group-custom" id="redirectInputWrapper">
             <!-- Validation Error Tooltip -->
             <div id="redirect-error-tooltip" class="mo-error-tooltip hidden">
-              <span>Please enter a valid product destination URL starting with https://</span>
+              <span id="redirect-error-text">Please enter a valid product destination URL starting with https://</span>
               <button onclick="closeErrorTooltip('redirect-error-tooltip')" class="error-tooltip-close">&times;</button>
             </div>
 
@@ -1102,6 +1102,22 @@
   </footer>
 
   <script>
+    // --- ALLOWED PLATFORMS FETCH LOGIC ---
+    let allowedPlatforms = [];
+
+    async function fetchAllowedPlatforms() {
+      try {
+        const response = await fetch('allowed-platforms.json');
+        if (response.ok) {
+          allowedPlatforms = await response.json();
+        } else {
+          console.error("Failed to load allowed-platforms.json:", response.status);
+        }
+      } catch (error) {
+        console.error("Error fetching allowed platforms:", error);
+      }
+    }
+
     // --- IMAGE PROCESSING LOGIC (AUTO-CROP TRANSPARENCY) ---
     function processStickerImage(url, element) {
       const img = new Image();
@@ -1162,6 +1178,7 @@
     let currentTooltipStep = 1;
 
     window.addEventListener('load', () => {
+      fetchAllowedPlatforms();
       startAnimations();
 
       const stickerLayer = document.getElementById('homeSticker');
@@ -1174,7 +1191,6 @@
       }
 
       if (localStorage.getItem('mo_hide_tooltips') !== 'true') {
-        // Wait exactly 4 seconds before showing Step 1
         setTimeout(() => {
           showTooltip(1);
         }, 4000);
@@ -1218,6 +1234,15 @@
     }
 
     // --- ERROR TOOLTIP LOGIC ---
+    function showErrorTooltip(tooltipId, message) {
+      const el = document.getElementById(tooltipId);
+      if (message) {
+        const textSpan = el.querySelector('span');
+        if (textSpan) textSpan.textContent = message;
+      }
+      el.classList.remove('hidden');
+    }
+
     function closeErrorTooltip(tooltipId) {
       document.getElementById(tooltipId).classList.add('hidden');
     }
@@ -1237,12 +1262,32 @@
       const isValidRedirect = /^https:\/\//i.test(redirectUrl);
 
       if (!isValidArt) {
-        document.getElementById('art-error-tooltip').classList.remove('hidden');
+        showErrorTooltip('art-error-tooltip', 'Please enter a valid sticker image URL (https://... ending in .jpg, .png, .webp)');
         return;
       }
 
       if (!isValidRedirect) {
-        document.getElementById('redirect-error-tooltip').classList.remove('hidden');
+        showErrorTooltip('redirect-error-tooltip', 'Please enter a valid product destination URL starting with https://');
+        return;
+      }
+
+      // Domain Extraction & Whitelist Validation
+      let inputHostname = "";
+      try {
+        const parsedUrl = new URL(redirectUrl);
+        inputHostname = parsedUrl.hostname.toLowerCase();
+      } catch (e) {
+        showErrorTooltip('redirect-error-tooltip', 'Please enter a valid product destination URL starting with https://');
+        return;
+      }
+
+      const isAllowed = allowedPlatforms.some(platform => {
+        const targetDomain = platform.domain.toLowerCase().trim();
+        return inputHostname === targetDomain || inputHostname.endsWith('.' + targetDomain);
+      });
+
+      if (!isAllowed) {
+        showErrorTooltip('redirect-error-tooltip', `this domain ${inputHostname} is not allowed`);
         return;
       }
 
@@ -1250,7 +1295,6 @@
       const tooltip = document.getElementById('mo-tooltip');
       if (tooltip) tooltip.classList.add('hidden');
 
-      // Raw unencoded concatenation
       let finalUrl = `https://mockoverflow.online/sticker-camera.html?art=${artUrl}&redirect=${redirectUrl}`;
 
       document.getElementById('generatedLinkOutput').value = finalUrl;
@@ -1263,10 +1307,8 @@
       copyBtn.style.backgroundImage = 'var(--brand-gradient)';
       copyBtn.style.backgroundColor = 'transparent';
 
-      // Lock background body scroll
       document.body.style.overflow = 'hidden';
 
-      // Push history state so back button closes modal
       if (!history.state || !history.state.modalOpen) {
         history.pushState({ modalOpen: true }, '');
       }
@@ -1279,11 +1321,9 @@
       if (!modal.classList.contains('active')) return;
 
       modal.classList.remove('active');
-      // Restore background body scroll
       document.body.style.overflow = 'auto';
     }
 
-    // Handle Close Icon Click
     function handleModalCloseBtn() {
       if (history.state && history.state.modalOpen) {
         history.back();
@@ -1292,7 +1332,6 @@
       }
     }
 
-    // Hardware/Browser Back Gesture Navigation Listener
     window.addEventListener('popstate', (e) => {
       closeModal();
     });
@@ -1320,7 +1359,6 @@
         console.error('Failed to copy', err);
       }
     }
-
 
     function startAnimations() {
       const hContainer = document.getElementById('homeImageContainer');
@@ -1369,7 +1407,6 @@
       slideImage();
       animateSticker();
     }
-
   </script>
 </body>
 
