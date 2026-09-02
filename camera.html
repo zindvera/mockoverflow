@@ -940,17 +940,16 @@
             let isAnalyzing = true; // Control flag to pause loop on capture
 
             let state = {
-                x: 0, y: 0, scale: 1, rotation: 0,
-                startX: 0, startY: 0, baseX: 0, baseY: 0, baseScale: 1, baseRotation: 0,
+                x: 0, y: 0, scale: 1,
+                startX: 0, startY: 0, baseX: 0, baseY: 0, baseScale: 1,
                 envBrightness: 0.95
             };
 
             const activePointers = new Map();
             let initialDistance = null;
-            let initialAngle = 0;
 
             const updateOverlay = () => {
-                overlay.style.transform = `translateX(${state.x}px) translateY(${state.y}px) scale(${state.scale}) rotate(${state.rotation}deg)`;
+                overlay.style.transform = `translateX(${state.x}px) translateY(${state.y}px) scale(${state.scale})`;
 
                 const shadowScale = Math.max(state.scale, 0.85);
                 const liveX = 3 * shadowScale;
@@ -1059,8 +1058,7 @@
                 const dx = p2.clientX - p1.clientX;
                 const dy = p2.clientY - p1.clientY;
                 return {
-                    distance: Math.sqrt(dx * dx + dy * dy),
-                    angle: Math.atan2(dy, dx)
+                    distance: Math.sqrt(dx * dx + dy * dy)
                 };
             }
 
@@ -1077,9 +1075,7 @@
                     const details = getPinchDetails();
                     if (details) {
                         initialDistance = details.distance;
-                        initialAngle = details.angle;
                         state.baseScale = state.scale;
-                        state.baseRotation = state.rotation;
                     }
                 }
             });
@@ -1098,9 +1094,6 @@
                     if (currentDetails && initialDistance) {
                         const scaleFactor = currentDetails.distance / initialDistance;
                         state.scale = Math.min(2.5, Math.max(0.1, state.baseScale * scaleFactor));
-
-                        const angleDiff = currentDetails.angle - initialAngle;
-                        state.rotation = state.baseRotation + (angleDiff * 180 / Math.PI);
                     }
                 }
                 updateOverlay();
@@ -1126,7 +1119,7 @@
                 if (e.target.closest('#controls') || e.target.closest('#capturedOverlay') || e.target.closest('.tooltipClose')) return;
                 const now = new Date().getTime();
                 if ((now - lastTap < 300) && (now - lastTap > 0)) {
-                    state = { ...state, x: 0, y: 0, scale: 1, rotation: 0 };
+                    state = { ...state, x: 0, y: 0, scale: 1 };
                     updateOverlay();
                     resetTip.textContent = "RESET!";
                     resetTip.style.display = 'block';
@@ -1237,7 +1230,6 @@
                     ctx.save();
                     ctx.translate((window.innerWidth / 2) + state.x, (window.innerHeight / 2) + state.y);
                     ctx.scale(state.scale, state.scale);
-                    ctx.rotate(state.rotation * Math.PI / 180);
 
                     const shadowScale = Math.max(state.scale, 0.4);
                     const capX = 4 * scaleFactor * shadowScale;
